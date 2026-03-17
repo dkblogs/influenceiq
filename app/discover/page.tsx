@@ -1,10 +1,29 @@
 "use client"
 import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
 
 const niches = ["All", "Food", "Tech", "Fitness", "Finance", "Fashion", "Travel", "Gaming"]
 const platforms = ["All", "Instagram", "YouTube", "LinkedIn"]
 
+function firstName(name: string) {
+  return name?.split(" ")[0] || name
+}
+
+function LockedField({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+      🔒{" "}
+      <a href="/login" className="text-purple-600 hover:underline" onClick={e => e.stopPropagation()}>
+        Sign in to view
+      </a>
+    </span>
+  )
+}
+
 export default function Discover() {
+  const { data: session, status } = useSession()
+  const loggedIn = status !== "loading" && !!session
+
   const [influencers, setInfluencers] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedNiche, setSelectedNiche] = useState("All")
@@ -29,7 +48,6 @@ export default function Discover() {
     if (selectedNiche !== "All") params.set("niche", selectedNiche)
     if (selectedPlatform !== "All") params.set("platform", selectedPlatform)
     if (search) params.set("search", search)
-
     const res = await fetch(`/api/influencers?${params}`)
     const data = await res.json()
     setInfluencers(data.influencers || [])
@@ -42,6 +60,10 @@ export default function Discover() {
     )
   }
 
+  function handleCardClick(id: string) {
+    window.location.href = loggedIn ? `/influencer/${id}` : "/login"
+  }
+
   return (
     <main className="min-h-screen bg-white">
       <nav className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-gray-100 sticky top-0 bg-white z-50">
@@ -49,32 +71,31 @@ export default function Discover() {
           <span className="text-2xl">⚡</span>
           <span className="text-xl font-semibold">Influence<span className="text-purple-600">IQ</span></span>
         </a>
-        {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-4">
           <a href="/discover" className="text-sm text-purple-600 font-medium">Find Influencers</a>
           <a href="/brands" className="text-sm text-gray-500 hover:text-gray-900">Find Brands</a>
           <a href="/campaigns" className="text-sm text-gray-500 hover:text-gray-900">Campaigns</a>
-          <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Dashboard</a>
+          {loggedIn
+            ? <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Dashboard</a>
+            : <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Sign in</a>
+          }
         </div>
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden flex flex-col gap-1.5 p-2"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
+        <button className="md:hidden flex flex-col gap-1.5 p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
           <span className="block w-5 h-0.5 bg-gray-600"></span>
           <span className="block w-5 h-0.5 bg-gray-600"></span>
           <span className="block w-5 h-0.5 bg-gray-600"></span>
         </button>
       </nav>
 
-      {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="md:hidden border-b border-gray-100 bg-white px-4 py-4 flex flex-col gap-3 z-40">
           <a href="/discover" className="text-sm text-purple-600 font-medium py-2 border-b border-gray-50">Find Influencers</a>
           <a href="/brands" className="text-sm text-gray-600 py-2 border-b border-gray-50">Find Brands</a>
           <a href="/campaigns" className="text-sm text-gray-600 py-2 border-b border-gray-50">Campaigns</a>
-          <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center">Dashboard</a>
+          {loggedIn
+            ? <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center">Dashboard</a>
+            : <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center">Sign in</a>
+          }
         </div>
       )}
 
@@ -82,14 +103,26 @@ export default function Discover() {
         <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-1">Find Influencers</h1>
         <p className="text-gray-500 mb-8">Browse AI-scored influencers. Free to search and filter.</p>
 
+        {/* Sign-in nudge for guests */}
+        {!loggedIn && status !== "loading" && (
+          <div className="bg-purple-50 border border-purple-100 rounded-xl px-4 py-3 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <p className="text-sm text-purple-800">
+              🔒 <strong>Sign in free</strong> to see full names, handles, stats, AI scores and contact details.
+            </p>
+            <a href="/signup" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 whitespace-nowrap text-center">
+              Create free account
+            </a>
+          </div>
+        )}
+
         <div className="flex gap-3 mb-6">
           <input
             className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
-            placeholder="Search by name, handle, or city..."
+            placeholder="Search by name, niche, or city..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          {bookmarks.length > 0 && (
+          {loggedIn && bookmarks.length > 0 && (
             <div className="flex items-center gap-2 px-4 py-2.5 bg-purple-50 border border-purple-200 rounded-lg text-sm text-purple-700 whitespace-nowrap">
               🔖 {bookmarks.length} saved
             </div>
@@ -151,61 +184,121 @@ export default function Discover() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {influencers.map((inf) => (
-              <div key={inf.id} onClick={() => window.location.href = `/influencer/${inf.id}`} className="border border-gray-100 rounded-xl p-5 hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer">
+              <div
+                key={inf.id}
+                onClick={() => handleCardClick(inf.id)}
+                className="border border-gray-100 rounded-xl p-5 hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer"
+              >
+                {/* Header row */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className={`w-12 h-12 rounded-full ${colorMap[inf.initials] || "bg-purple-500"} flex items-center justify-center text-white font-medium flex-shrink-0`}>
                       {inf.initials}
                     </div>
                     <div>
-                      <div className="flex items-center gap-1">
-                        <span className="font-medium text-gray-900 text-sm">{inf.name}</span>
-                        {inf.verified && <span className="text-blue-500 text-xs">✓</span>}
+                      {/* Name: first name always visible, full name locked */}
+                      <div className="flex items-center gap-1 mb-0.5">
+                        {loggedIn ? (
+                          <>
+                            <span className="font-medium text-gray-900 text-sm">{inf.name}</span>
+                            {inf.verified && <span className="text-blue-500 text-xs">✓</span>}
+                          </>
+                        ) : (
+                          <>
+                            <span className="font-medium text-gray-900 text-sm">{firstName(inf.name)}</span>
+                            {inf.verified && <span className="text-blue-500 text-xs">✓</span>}
+                          </>
+                        )}
                       </div>
-                      <div className="text-xs text-gray-400">{inf.handle} · {inf.location}</div>
-                      <div className="flex gap-1 mt-1 flex-wrap">
+                      {/* Handle: locked for guests */}
+                      <div className="text-xs text-gray-400 mb-1">
+                        {loggedIn ? (
+                          <>{inf.handle} · {inf.location}</>
+                        ) : (
+                          <>{inf.location} · <LockedField label="handle" /></>
+                        )}
+                      </div>
+                      <div className="flex gap-1 flex-wrap">
                         <span className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">{inf.niche}</span>
                         <span className="text-xs bg-gray-50 text-gray-600 px-2 py-0.5 rounded-full">{inf.platform}</span>
                       </div>
                     </div>
                   </div>
+
+                  {/* AI Score: locked for guests */}
                   <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                    <div className="text-center">
-                      <div className="text-xl font-semibold text-purple-600">{inf.score}</div>
-                      <div className="text-xs text-gray-400">AI Score</div>
+                    {loggedIn ? (
+                      <div className="text-center">
+                        <div className="text-xl font-semibold text-purple-600">{inf.score}</div>
+                        <div className="text-xs text-gray-400">AI Score</div>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <div className="text-xl text-gray-300">🔒</div>
+                        <div className="text-xs text-gray-400">AI Score</div>
+                      </div>
+                    )}
+                    {loggedIn && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleBookmark(inf.id) }}
+                        className={`text-lg transition-transform hover:scale-110 ${bookmarks.includes(inf.id) ? "text-purple-600" : "text-gray-300"}`}
+                      >
+                        🔖
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Stats row */}
+                {loggedIn ? (
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    <div className="bg-gray-50 rounded-lg p-2 text-center">
+                      <div className="text-sm font-medium text-gray-900">{inf.followers}</div>
+                      <div className="text-xs text-gray-400">Followers</div>
                     </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleBookmark(inf.id) }}
-                      className={`text-lg transition-transform hover:scale-110 ${bookmarks.includes(inf.id) ? "text-purple-600" : "text-gray-300"}`}
+                    <div className="bg-gray-50 rounded-lg p-2 text-center">
+                      <div className="text-sm font-medium text-gray-900">{inf.engagement}</div>
+                      <div className="text-xs text-gray-400">Engagement</div>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-2 text-center">
+                      <div className="text-sm font-medium text-gray-900">{inf.rate}</div>
+                      <div className="text-xs text-gray-400">Avg. rate</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    {["Followers", "Engagement", "Avg. rate"].map((label) => (
+                      <div key={label} className="bg-gray-50 rounded-lg p-2 text-center">
+                        <div className="text-base text-gray-300">🔒</div>
+                        <div className="text-xs text-gray-400">{label}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* CTA */}
+                {loggedIn ? (
+                  <div className="flex gap-2">
+                    <a
+                      href={`/influencer/${inf.id}`}
+                      onClick={e => e.stopPropagation()}
+                      className="flex-1 bg-purple-600 text-white py-2 rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors text-center"
                     >
-                      🔖
+                      Unlock contact — 5 cr
+                    </a>
+                    <button className="flex-1 border border-gray-200 text-gray-600 py-2 rounded-lg text-xs hover:bg-gray-50 transition-colors">
+                      AI report — 3 cr
                     </button>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                  <div className="bg-gray-50 rounded-lg p-2 text-center">
-                    <div className="text-sm font-medium text-gray-900">{inf.followers}</div>
-                    <div className="text-xs text-gray-400">Followers</div>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-2 text-center">
-                    <div className="text-sm font-medium text-gray-900">{inf.engagement}</div>
-                    <div className="text-xs text-gray-400">Engagement</div>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-2 text-center">
-                    <div className="text-sm font-medium text-gray-900">{inf.rate}</div>
-                    <div className="text-xs text-gray-400">Avg. rate</div>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <a href={`/influencer/${inf.id}`} className="flex-1 bg-purple-600 text-white py-2 rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors text-center">
-                    Unlock contact — 5 cr
+                ) : (
+                  <a
+                    href="/login"
+                    onClick={e => e.stopPropagation()}
+                    className="block w-full text-center border border-purple-200 text-purple-600 py-2 rounded-lg text-xs font-medium hover:bg-purple-50 transition-colors"
+                  >
+                    🔒 Sign in to view full profile
                   </a>
-                  <button className="flex-1 border border-gray-200 text-gray-600 py-2 rounded-lg text-xs hover:bg-gray-50 transition-colors">
-                    AI report — 3 cr
-                  </button>
-                </div>
+                )}
               </div>
             ))}
           </div>

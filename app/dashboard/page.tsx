@@ -33,7 +33,7 @@ export default function Dashboard() {
 
   if (!session) return null
 
-  const user = session.user
+  const user = session.user as { name?: string | null; email?: string | null; id?: string; role?: string }
   const initial = user.name ? user.name[0].toUpperCase() : "U"
 
   return (
@@ -139,7 +139,7 @@ export default function Dashboard() {
           <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 p-6">
             <h2 className="font-medium text-gray-900 mb-4">Get started</h2>
             <div className="space-y-3">
-              <div className="flex items-center gap-4 p-3 rounded-lg border border-gray-100 hover:bg-gray-50">
+              <a href={user.role === "brand" ? "/discover" : "/brands"} className="flex items-center gap-4 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
                 <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-lg flex-shrink-0">🔍</div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-gray-900">
@@ -149,9 +149,9 @@ export default function Dashboard() {
                     {user.role === "brand" ? "Search by niche, platform, location — free" : "Find brands looking for your niche — free"}
                   </div>
                 </div>
-                <a href={user.role === "brand" ? "/discover" : "/brands"} className="text-xs text-purple-600 font-medium whitespace-nowrap">Browse →</a>
-              </div>
-              <div className="flex items-center gap-4 p-3 rounded-lg border border-gray-100 hover:bg-gray-50">
+                <span className="text-xs text-purple-600 font-medium whitespace-nowrap">Browse →</span>
+              </a>
+              <a href="/campaigns" className="flex items-center gap-4 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
                 <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-lg flex-shrink-0">📋</div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-gray-900">Open campaigns</div>
@@ -159,16 +159,35 @@ export default function Dashboard() {
                     {user.role === "brand" ? "Post a campaign — 15 credits" : "Apply to campaigns — 2 credits each"}
                   </div>
                 </div>
-                <a href="/campaigns" className="text-xs text-purple-600 font-medium whitespace-nowrap">View →</a>
-              </div>
-              <div className="flex items-center gap-4 p-3 rounded-lg border border-gray-100 hover:bg-gray-50">
+                <span className="text-xs text-purple-600 font-medium whitespace-nowrap">View →</span>
+              </a>
+              {user.role === "brand" ? (
+                <a href="/recommend" className="flex items-center gap-4 p-3 rounded-lg border border-purple-100 bg-purple-50/40 hover:bg-purple-50 transition-colors">
+                  <div className="w-8 h-8 bg-purple-200 rounded-lg flex items-center justify-center text-lg flex-shrink-0">🤖</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-gray-900">AI Influencer Recommendations</div>
+                    <div className="text-xs text-gray-400">Describe your campaign · get your best matches · free</div>
+                  </div>
+                  <span className="text-xs text-purple-600 font-medium whitespace-nowrap">Try →</span>
+                </a>
+              ) : (
+                <a href="/bio-writer" className="flex items-center gap-4 p-3 rounded-lg border border-purple-100 bg-purple-50/40 hover:bg-purple-50 transition-colors">
+                  <div className="w-8 h-8 bg-purple-200 rounded-lg flex items-center justify-center text-lg flex-shrink-0">✍️</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-gray-900">AI Bio Writer</div>
+                    <div className="text-xs text-gray-400">Get a professional bio for your media kit · free</div>
+                  </div>
+                  <span className="text-xs text-purple-600 font-medium whitespace-nowrap">Try →</span>
+                </a>
+              )}
+              <a href="/pricing" className="flex items-center gap-4 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
                 <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-lg flex-shrink-0">💳</div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-gray-900">Buy more credits</div>
                   <div className="text-xs text-gray-400">Starter ₹499 · Growth ₹1,499 · Agency ₹3,999</div>
                 </div>
-                <a href="/pricing" className="text-xs text-purple-600 font-medium whitespace-nowrap">Buy →</a>
-              </div>
+                <span className="text-xs text-purple-600 font-medium whitespace-nowrap">Buy →</span>
+              </a>
             </div>
           </div>
 

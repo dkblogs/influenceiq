@@ -1,5 +1,10 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
+import { useSession } from "next-auth/react"
+
+function firstName(name: string) {
+  return name?.split(" ")[0] || name
+}
 
 function CountUp({ target, suffix = "" }: { target: number; suffix?: string }) {
   const [count, setCount] = useState(0)
@@ -55,6 +60,8 @@ const scoreFactors = [
 ]
 
 export default function Home() {
+  const { data: session, status } = useSession()
+  const loggedIn = status !== "loading" && !!session
   const [aiDemo, setAiDemo] = useState(false)
   const [email, setEmail] = useState("")
   const [subscribed, setSubscribed] = useState(false)
@@ -81,8 +88,14 @@ export default function Home() {
           <a href="/campaigns" className="text-sm text-gray-500 hover:text-gray-900">Open Campaigns</a>
           <a href="/how-it-works" className="text-sm text-gray-500 hover:text-gray-900">How it works</a>
           <a href="/pricing" className="text-sm text-gray-500 hover:text-gray-900">Pricing</a>
-          <a href="/login" className="text-sm border border-gray-200 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50">Log in</a>
-          <a href="/signup" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Get started free</a>
+          {loggedIn ? (
+            <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Dashboard</a>
+          ) : (
+            <>
+              <a href="/login" className="text-sm border border-gray-200 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50">Log in</a>
+              <a href="/signup" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Get started free</a>
+            </>
+          )}
         </div>
         {/* Mobile hamburger */}
         <button
@@ -105,8 +118,14 @@ export default function Home() {
           <a href="/how-it-works" className="text-sm text-gray-600 py-2 border-b border-gray-50">How it works</a>
           <a href="/pricing" className="text-sm text-gray-600 py-2 border-b border-gray-50">Pricing</a>
           <div className="flex gap-3 pt-2">
-            <a href="/login" className="flex-1 text-sm border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-center hover:bg-gray-50">Log in</a>
-            <a href="/signup" className="flex-1 text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center hover:bg-purple-700">Get started</a>
+            {loggedIn ? (
+              <a href="/dashboard" className="flex-1 text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center hover:bg-purple-700">Dashboard</a>
+            ) : (
+              <>
+                <a href="/login" className="flex-1 text-sm border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-center hover:bg-gray-50">Log in</a>
+                <a href="/signup" className="flex-1 text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center hover:bg-purple-700">Get started</a>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -195,22 +214,46 @@ export default function Home() {
                       {inf.initials}
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900 text-sm">{inf.name}</div>
-                      <div className="text-xs text-gray-400">{inf.handle}</div>
+                      <div className="font-medium text-gray-900 text-sm">
+                        {loggedIn ? inf.name : firstName(inf.name)}
+                      </div>
+                      {loggedIn ? (
+                        <div className="text-xs text-gray-400">{inf.handle}</div>
+                      ) : (
+                        <div className="text-xs text-gray-300 select-none blur-sm">{inf.handle}</div>
+                      )}
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-lg font-semibold text-purple-600">{inf.score}</div>
-                    <div className="text-xs text-gray-400">AI Score</div>
+                    {loggedIn ? (
+                      <>
+                        <div className="text-lg font-semibold text-purple-600">{inf.score}</div>
+                        <div className="text-xs text-gray-400">AI Score</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-lg text-gray-300">🔒</div>
+                        <div className="text-xs text-gray-400">AI Score</div>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-2 mb-3 flex-wrap">
                   <span className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">{inf.niche}</span>
                   <span className="text-xs bg-gray-50 text-gray-500 px-2 py-0.5 rounded-full">{inf.platform}</span>
-                  <span className="text-xs bg-gray-50 text-gray-500 px-2 py-0.5 rounded-full">{inf.followers}</span>
+                  {loggedIn ? (
+                    <span className="text-xs bg-gray-50 text-gray-500 px-2 py-0.5 rounded-full">{inf.followers}</span>
+                  ) : (
+                    <span className="text-xs bg-gray-50 text-gray-300 px-2 py-0.5 rounded-full blur-sm select-none">{inf.followers}</span>
+                  )}
                 </div>
-                <a href="/discover" className="block w-full text-center bg-purple-50 text-purple-700 py-2 rounded-lg text-xs font-medium hover:bg-purple-100 transition-colors">
-                  View profile →
+                {!loggedIn && (
+                  <div className="text-xs text-center text-gray-400 mb-2">
+                    🔒 <a href="/login" className="text-purple-600 hover:underline">Sign in to see full details</a>
+                  </div>
+                )}
+                <a href={loggedIn ? "/discover" : "/login"} className="block w-full text-center bg-purple-50 text-purple-700 py-2 rounded-lg text-xs font-medium hover:bg-purple-100 transition-colors">
+                  {loggedIn ? "View profile →" : "Sign in to view →"}
                 </a>
               </div>
             ))}
