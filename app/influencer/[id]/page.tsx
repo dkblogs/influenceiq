@@ -7,15 +7,6 @@ function firstName(name: string) {
   return name?.split(" ")[0] || name
 }
 
-function LockedInline() {
-  return (
-    <span className="inline-flex items-center gap-1 text-sm text-gray-400">
-      🔒{" "}
-      <a href="/login" className="text-purple-600 hover:underline text-sm">Sign in to view</a>
-    </span>
-  )
-}
-
 function SignupPromptCard() {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
@@ -122,6 +113,11 @@ export default function InfluencerProfile() {
     )
   }
 
+  // Tier helpers
+  const tier1 = !loggedIn                  // not logged in
+  const tier2 = loggedIn && !unlocked      // logged in, not unlocked
+  const tier3 = loggedIn && unlocked       // logged in + unlocked
+
   return (
     <main className="min-h-screen bg-gray-50">
 
@@ -151,24 +147,27 @@ export default function InfluencerProfile() {
               {influencer.initials}
             </div>
             <div className="flex-1 min-w-0">
-              {/* Name row */}
+
+              {/* Name */}
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                {loggedIn ? (
-                  <h1 className="text-xl md:text-2xl font-semibold text-gray-900">{influencer.name}</h1>
-                ) : (
-                  <h1 className="text-xl md:text-2xl font-semibold text-gray-900">{firstName(influencer.name)}</h1>
-                )}
+                <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
+                  {tier1 ? firstName(influencer.name) : influencer.name}
+                </h1>
                 {influencer.verified && (
                   <span className="bg-blue-50 text-blue-600 text-xs px-2 py-0.5 rounded-full font-medium">✓ Verified</span>
                 )}
               </div>
 
-              {/* Handle + location row */}
+              {/* Handle + location */}
               <div className="text-gray-400 text-sm mb-3">
-                {loggedIn ? (
+                {tier1 && (
+                  <>{influencer.location} · <span className="inline-flex items-center gap-1">🔒 <a href="/login" className="text-purple-600 hover:underline">Sign in to view</a></span></>
+                )}
+                {tier2 && (
+                  <>{influencer.location} · <span className="inline-flex items-center gap-1 text-gray-400">🔒 <span className="text-purple-600 text-xs">Unlock contact to view handle</span></span></>
+                )}
+                {tier3 && (
                   <>{influencer.handle} · {influencer.location}</>
-                ) : (
-                  <>{influencer.location} · <LockedInline /></>
                 )}
               </div>
 
@@ -176,20 +175,32 @@ export default function InfluencerProfile() {
                 <span className="text-sm bg-purple-50 text-purple-700 px-3 py-1 rounded-full">{influencer.niche}</span>
                 <span className="text-sm bg-gray-50 text-gray-600 px-3 py-1 rounded-full">{influencer.platform}</span>
               </div>
-              {/* Bio always visible */}
               <p className="text-gray-500 text-sm leading-relaxed">{influencer.about}</p>
             </div>
 
-            {/* AI Score: locked for guests */}
+            {/* AI Score */}
             <div className="text-center flex-shrink-0 sm:ml-auto">
-              {loggedIn ? (
-                <>
-                  <div className="text-3xl md:text-4xl font-semibold text-purple-600">{influencer.score}</div>
-                  <div className="text-xs text-gray-400 mt-1">AI Score</div>
-                </>
-              ) : (
+              {tier1 && (
                 <>
                   <div className="text-3xl md:text-4xl text-gray-300">🔒</div>
+                  <div className="text-xs text-gray-400 mt-1">AI Score</div>
+                </>
+              )}
+              {tier2 && (
+                <>
+                  <div className="text-2xl text-gray-300">🔒</div>
+                  <div className="text-xs text-purple-500 mt-1">Get AI report</div>
+                </>
+              )}
+              {tier3 && aiScores && (
+                <>
+                  <div className="text-3xl md:text-4xl font-semibold text-purple-600">{aiScores.overallScore}</div>
+                  <div className="text-xs text-gray-400 mt-1">AI Score</div>
+                </>
+              )}
+              {tier3 && !aiScores && (
+                <>
+                  <div className="text-2xl text-gray-300">—</div>
                   <div className="text-xs text-gray-400 mt-1">AI Score</div>
                 </>
               )}
@@ -197,37 +208,40 @@ export default function InfluencerProfile() {
           </div>
         </div>
 
-        {/* Stats: locked for guests */}
-        <div className="grid grid-cols-3 gap-3 md:gap-4 mb-6">
-          {loggedIn ? (
-            <>
-              <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5 text-center">
-                <div className="text-xl md:text-2xl font-semibold text-gray-900">{influencer.followers}</div>
-                <div className="text-xs md:text-sm text-gray-400 mt-1">Followers</div>
-              </div>
-              <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5 text-center">
-                <div className="text-xl md:text-2xl font-semibold text-gray-900">{influencer.engagement}</div>
-                <div className="text-xs md:text-sm text-gray-400 mt-1">Engagement</div>
-              </div>
-              <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5 text-center">
-                <div className="text-xl md:text-2xl font-semibold text-gray-900">{influencer.rate}</div>
-                <div className="text-xs md:text-sm text-gray-400 mt-1">Avg. rate</div>
-              </div>
-            </>
-          ) : (
-            <>
-              {["Followers", "Engagement", "Avg. rate"].map((label) => (
-                <div key={label} className="bg-white rounded-xl border border-gray-100 p-4 md:p-5 text-center">
-                  <div className="text-2xl text-gray-300 mb-1">🔒</div>
-                  <div className="text-xs md:text-sm text-gray-400">{label}</div>
-                </div>
-              ))}
-            </>
-          )}
-        </div>
+        {/* Stats row */}
+        {tier1 ? (
+          /* Tier 1: replace stats with sign-in prompt */
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6 text-center">
+            <div className="text-2xl mb-2">🔒</div>
+            <p className="text-sm font-medium text-gray-700 mb-3">Sign in to see stats</p>
+            <a href="/login" className="inline-block bg-purple-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors">
+              Sign in free
+            </a>
+          </div>
+        ) : (
+          /* Tier 2 + 3: stats visible */
+          <div className="grid grid-cols-3 gap-3 md:gap-4 mb-6">
+            <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5 text-center">
+              <div className="text-xl md:text-2xl font-semibold text-gray-900">{influencer.followers}</div>
+              <div className="text-xs md:text-sm text-gray-400 mt-1">Followers</div>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5 text-center">
+              <div className="text-xl md:text-2xl font-semibold text-gray-900">{influencer.engagement}</div>
+              <div className="text-xs md:text-sm text-gray-400 mt-1">Engagement</div>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5 text-center">
+              <div className="text-xl md:text-2xl font-semibold text-gray-900">{influencer.rate}</div>
+              <div className="text-xs md:text-sm text-gray-400 mt-1">Avg. rate</div>
+            </div>
+          </div>
+        )}
 
-        {/* AI Score Breakdown OR signup prompt */}
-        {loggedIn ? (
+        {/* AI Score Breakdown */}
+        {tier1 ? (
+          <div className="mb-6">
+            <SignupPromptCard />
+          </div>
+        ) : (
           <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-8 mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
               <div>
@@ -282,18 +296,14 @@ export default function InfluencerProfile() {
               </div>
             )}
           </div>
-        ) : (
-          <div className="mb-6">
-            <SignupPromptCard />
-          </div>
         )}
 
-        {/* Contact section: logged in only */}
-        {loggedIn && (
+        {/* Contact section */}
+        {tier1 ? null : (
           <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-8">
             <h2 className="font-semibold text-gray-900 mb-2">Contact details</h2>
 
-            {unlocked ? (
+            {tier3 ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3 p-4 bg-green-50 rounded-xl">
                   <span className="text-lg">✉️</span>
@@ -314,6 +324,7 @@ export default function InfluencerProfile() {
                 </div>
               </div>
             ) : (
+              /* tier2: show unlock button */
               <div>
                 <p className="text-sm text-gray-500 mb-4">
                   Unlock this influencer's email and phone number to contact them directly.
