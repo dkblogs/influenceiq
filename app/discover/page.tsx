@@ -1,39 +1,43 @@
 "use client"
-import { useState } from "react"
-
-const allInfluencers = [
-  { name: "Priya Sharma", handle: "@priyaeats", location: "Mumbai", niche: "Food", platform: "Instagram", followers: "84K", engagement: "6.2%", score: 91, rate: "₹8,000", initials: "PS", color: "bg-purple-500" },
-  { name: "Rohit Kumar", handle: "@rohittech", location: "Bangalore", niche: "Tech", platform: "YouTube", followers: "210K", engagement: "4.8%", score: 87, rate: "₹25,000", initials: "RK", color: "bg-orange-500" },
-  { name: "Ananya Nair", handle: "@ananyafits", location: "Delhi", niche: "Fitness", platform: "Instagram", followers: "42K", engagement: "8.1%", score: 79, rate: "₹4,000", initials: "AN", color: "bg-green-500" },
-  { name: "Vikram Mehta", handle: "@vikramfinance", location: "Chennai", niche: "Finance", platform: "LinkedIn", followers: "38K", engagement: "5.4%", score: 84, rate: "₹6,000", initials: "VM", color: "bg-yellow-500" },
-  { name: "Sneha Patel", handle: "@snehastyle", location: "Ahmedabad", niche: "Fashion", platform: "Instagram", followers: "95K", engagement: "7.3%", score: 88, rate: "₹12,000", initials: "SP", color: "bg-pink-500" },
-  { name: "Arjun Das", handle: "@arjuntravels", location: "Kolkata", niche: "Travel", platform: "YouTube", followers: "156K", engagement: "5.9%", score: 82, rate: "₹18,000", initials: "AD", color: "bg-blue-500" },
-  { name: "Meera Iyer", handle: "@meeracooks", location: "Hyderabad", niche: "Food", platform: "Instagram", followers: "62K", engagement: "7.8%", score: 86, rate: "₹7,500", initials: "MI", color: "bg-red-500" },
-  { name: "Karan Singh", handle: "@karangames", location: "Pune", niche: "Gaming", platform: "YouTube", followers: "320K", engagement: "3.9%", score: 80, rate: "₹30,000", initials: "KS", color: "bg-indigo-500" },
-  { name: "Divya Rao", handle: "@divyabeauty", location: "Bangalore", niche: "Fashion", platform: "Instagram", followers: "78K", engagement: "6.8%", score: 85, rate: "₹9,000", initials: "DR", color: "bg-teal-500" },
-]
+import { useState, useEffect } from "react"
 
 const niches = ["All", "Food", "Tech", "Fitness", "Finance", "Fashion", "Travel", "Gaming"]
 const platforms = ["All", "Instagram", "YouTube", "LinkedIn"]
 
 export default function Discover() {
+  const [influencers, setInfluencers] = useState([])
+  const [loading, setLoading] = useState(true)
   const [selectedNiche, setSelectedNiche] = useState("All")
   const [selectedPlatform, setSelectedPlatform] = useState("All")
   const [search, setSearch] = useState("")
   const [bookmarks, setBookmarks] = useState([])
 
-  const filtered = allInfluencers.filter((inf) => {
-    const matchNiche = selectedNiche === "All" || inf.niche === selectedNiche
-    const matchPlatform = selectedPlatform === "All" || inf.platform === selectedPlatform
-    const matchSearch = inf.name.toLowerCase().includes(search.toLowerCase()) ||
-      inf.handle.toLowerCase().includes(search.toLowerCase()) ||
-      inf.location.toLowerCase().includes(search.toLowerCase())
-    return matchNiche && matchPlatform && matchSearch
-  })
+  const colorMap = {
+    PS: "bg-purple-500", RK: "bg-orange-500", AN: "bg-green-500",
+    VM: "bg-yellow-500", SP: "bg-pink-500", AD: "bg-blue-500",
+    MI: "bg-red-500", KS: "bg-indigo-500", DR: "bg-teal-500",
+  }
 
-  function toggleBookmark(handle) {
+  useEffect(() => {
+    fetchInfluencers()
+  }, [selectedNiche, selectedPlatform, search])
+
+  async function fetchInfluencers() {
+    setLoading(true)
+    const params = new URLSearchParams()
+    if (selectedNiche !== "All") params.set("niche", selectedNiche)
+    if (selectedPlatform !== "All") params.set("platform", selectedPlatform)
+    if (search) params.set("search", search)
+
+    const res = await fetch(`/api/influencers?${params}`)
+    const data = await res.json()
+    setInfluencers(data.influencers || [])
+    setLoading(false)
+  }
+
+  function toggleBookmark(id) {
     setBookmarks((prev) =>
-      prev.includes(handle) ? prev.filter((h) => h !== handle) : [...prev, handle]
+      prev.includes(id) ? prev.filter((b) => b !== id) : [...prev, id]
     )
   }
 
@@ -46,8 +50,9 @@ export default function Discover() {
         </a>
         <div className="flex items-center gap-4">
           <a href="/discover" className="text-sm text-purple-600 font-medium">Find Influencers</a>
-          <a href="/join" className="text-sm text-gray-500 hover:text-gray-900">For Influencers</a>
-          <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Get Started</a>
+          <a href="/brands" className="text-sm text-gray-500 hover:text-gray-900">Find Brands</a>
+          <a href="/campaigns" className="text-sm text-gray-500 hover:text-gray-900">Campaigns</a>
+          <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Dashboard</a>
         </div>
       </nav>
 
@@ -55,7 +60,6 @@ export default function Discover() {
         <h1 className="text-3xl font-semibold text-gray-900 mb-1">Find Influencers</h1>
         <p className="text-gray-500 mb-8">Browse AI-scored influencers. Free to search and filter.</p>
 
-        {/* Search */}
         <div className="flex gap-3 mb-6">
           <input
             className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
@@ -70,55 +74,53 @@ export default function Discover() {
           )}
         </div>
 
-        {/* Niche filters */}
         <div className="mb-4">
           <div className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">Niche</div>
           <div className="flex gap-2 flex-wrap">
             {niches.map((n) => (
-              <button
-                key={n}
-                onClick={() => setSelectedNiche(n)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  selectedNiche === n
-                    ? "bg-purple-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
+              <button key={n} onClick={() => setSelectedNiche(n)}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedNiche === n ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
                 {n}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Platform filters */}
         <div className="mb-8">
           <div className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">Platform</div>
           <div className="flex gap-2 flex-wrap">
             {platforms.map((p) => (
-              <button
-                key={p}
-                onClick={() => setSelectedPlatform(p)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  selectedPlatform === p
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
+              <button key={p} onClick={() => setSelectedPlatform(p)}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedPlatform === p ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
                 {p}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Results count */}
         <div className="text-sm text-gray-400 mb-4">
-          Showing {filtered.length} influencer{filtered.length !== 1 ? "s" : ""}
+          {loading ? "Loading..." : `Showing ${influencers.length} influencer${influencers.length !== 1 ? "s" : ""}`}
           {selectedNiche !== "All" && ` in ${selectedNiche}`}
           {selectedPlatform !== "All" && ` on ${selectedPlatform}`}
         </div>
 
-        {/* Grid */}
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-3 gap-6">
+            {[1,2,3,4,5,6].map((n) => (
+              <div key={n} className="border border-gray-100 rounded-xl p-5 animate-pulse">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-gray-200"></div>
+                  <div className="flex-1">
+                    <div className="h-3 bg-gray-200 rounded mb-2 w-3/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+                <div className="h-3 bg-gray-200 rounded mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+              </div>
+            ))}
+          </div>
+        ) : influencers.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <div className="text-4xl mb-3">🔍</div>
             <div className="font-medium text-gray-600 mb-1">No influencers found</div>
@@ -126,15 +128,18 @@ export default function Discover() {
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-6">
-            {filtered.map((inf) => (
-              <div key={inf.handle} className="border border-gray-100 rounded-xl p-5 hover:shadow-md transition-all hover:-translate-y-0.5">
+            {influencers.map((inf) => (
+              <div key={inf.id} className="border border-gray-100 rounded-xl p-5 hover:shadow-md transition-all hover:-translate-y-0.5">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-full ${inf.color} flex items-center justify-center text-white font-medium`}>
+                    <div className={`w-12 h-12 rounded-full ${colorMap[inf.initials] || "bg-purple-500"} flex items-center justify-center text-white font-medium`}>
                       {inf.initials}
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900 text-sm">{inf.name}</div>
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium text-gray-900 text-sm">{inf.name}</span>
+                        {inf.verified && <span className="text-blue-500 text-xs">✓</span>}
+                      </div>
                       <div className="text-xs text-gray-400">{inf.handle} · {inf.location}</div>
                       <div className="flex gap-1 mt-1">
                         <span className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">{inf.niche}</span>
@@ -148,8 +153,8 @@ export default function Discover() {
                       <div className="text-xs text-gray-400">AI Score</div>
                     </div>
                     <button
-                      onClick={() => toggleBookmark(inf.handle)}
-                      className={`text-lg transition-transform hover:scale-110 ${bookmarks.includes(inf.handle) ? "text-purple-600" : "text-gray-300"}`}
+                      onClick={() => toggleBookmark(inf.id)}
+                      className={`text-lg transition-transform hover:scale-110 ${bookmarks.includes(inf.id) ? "text-purple-600" : "text-gray-300"}`}
                     >
                       🔖
                     </button>
@@ -172,9 +177,9 @@ export default function Discover() {
                 </div>
 
                 <div className="flex gap-2">
-                  <button className="flex-1 bg-purple-600 text-white py-2 rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors">
+                  <a href={`/influencer/${inf.id}`} className="flex-1 bg-purple-600 text-white py-2 rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors text-center">
                     Unlock contact — 5 cr
-                  </button>
+                  </a>
                   <button className="flex-1 border border-gray-200 text-gray-600 py-2 rounded-lg text-xs hover:bg-gray-50 transition-colors">
                     AI report — 3 cr
                   </button>

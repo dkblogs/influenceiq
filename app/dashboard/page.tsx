@@ -1,11 +1,12 @@
 "use client"
 import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [credits, setCredits] = useState(null)
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -13,7 +14,15 @@ export default function Dashboard() {
     }
   }, [status, router])
 
-  if (status === "loading") {
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetch(`/api/user-credits?userId=${session.user.id}`)
+        .then(res => res.json())
+        .then(data => setCredits(data.credits))
+    }
+  }, [session])
+
+  if (status === "loading" || credits === null) {
     return (
       <main className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-gray-400 text-sm">Loading...</div>
@@ -24,7 +33,6 @@ export default function Dashboard() {
   if (!session) return null
 
   const user = session.user
-  const credits = user.credits || 0
   const initial = user.name ? user.name[0].toUpperCase() : "U"
 
   return (
@@ -74,9 +82,7 @@ export default function Dashboard() {
           <div className="bg-white rounded-xl p-5 border border-gray-100">
             <div className="text-sm text-gray-500 mb-1">Credits remaining</div>
             <div className="text-2xl font-semibold text-purple-600">{credits}</div>
-            <div className="text-xs text-gray-400 mt-1">
-              {credits === 5 ? "Free welcome credits" : "Never expire"}
-            </div>
+            <div className="text-xs text-gray-400 mt-1">Never expire</div>
           </div>
           <div className="bg-white rounded-xl p-5 border border-gray-100">
             <div className="text-sm text-gray-500 mb-1">Influencers unlocked</div>
@@ -118,7 +124,7 @@ export default function Dashboard() {
                 <div className="flex-1">
                   <div className="text-sm font-medium text-gray-900">Open campaigns</div>
                   <div className="text-xs text-gray-400">
-                    {user.role === "brand" ? "Post a campaign and get applications — 15 credits" : "Apply to brand campaigns — 2 credits each"}
+                    {user.role === "brand" ? "Post a campaign — 15 credits" : "Apply to campaigns — 2 credits each"}
                   </div>
                 </div>
                 <a href="/campaigns" className="text-xs text-purple-600 font-medium">View →</a>

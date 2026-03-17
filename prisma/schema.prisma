@@ -61,3 +61,33 @@ model CreditTransaction {
   amount    Int
   createdAt DateTime @default(now())
 }
+model Influencer {
+  id           String   @id @default(cuid())
+  name         String
+  handle       String
+  location     String
+  niche        String
+  platform     String
+  followers    String
+  engagement   String
+  score        Int
+  rate         String
+  initials     String
+  about        String?
+  email        String?
+  phone        String?
+  verified     Boolean  @default(false)
+  userId       String?
+  createdAt    DateTime @default(now())
+  @@unique([handle])
+}
+
+model UnlockedContact {
+  id           String   @id @default(cuid())
+  userId       String
+  influencerId String
+  createdAt    DateTime @default(now())
+
+  @@unique([userId, influencerId])
+  
+}
