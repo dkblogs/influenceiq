@@ -1,4 +1,5 @@
 import { prisma } from "../../../lib/prisma"
+import { sendEmail, welcomeEmail } from "../../../lib/email"
 const bcrypt = require("bcryptjs")
 
 
@@ -51,6 +52,9 @@ export async function POST(request) {
         amount: 5,
       },
     })
+
+    const template = welcomeEmail({ name, role: user.role })
+    sendEmail({ to: email, subject: template.subject, html: template.html })
 
     return Response.json({
       success: true,

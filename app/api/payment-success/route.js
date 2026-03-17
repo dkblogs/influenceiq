@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { getServerSession } from "next-auth"
+import { sendEmail, paymentConfirmationEmail } from "@/lib/email"
 
 export async function POST(request) {
   try {
@@ -25,8 +25,17 @@ export async function POST(request) {
 
     const updated = await prisma.user.findUnique({
       where: { id: userId },
-      select: { credits: true },
+      select: { name: true, email: true, credits: true },
     })
+
+    const template = paymentConfirmationEmail({
+      name: updated.name,
+      plan: plan || "Credits",
+      credits: parseInt(credits),
+      newTotal: updated.credits,
+      paymentId: razorpay_payment_id || "N/A",
+    })
+    sendEmail({ to: updated.email, subject: template.subject, html: template.html })
 
     return Response.json({
       success: true,
