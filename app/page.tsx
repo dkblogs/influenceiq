@@ -168,30 +168,30 @@ export default function Home() {
       </section>
 
       {/* Live stats */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-6 px-4 md:px-8 py-12 md:py-16 max-w-4xl mx-auto">
-        <div className="text-center">
-          <div className="text-3xl md:text-4xl font-semibold text-gray-900 mb-1">
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 px-4 md:px-8 py-10 md:py-16 max-w-4xl mx-auto">
+        <div className="text-center px-2">
+          <div className="text-2xl md:text-4xl font-semibold text-gray-900 mb-1">
             <CountUp target={12400} suffix="+" />
           </div>
-          <div className="text-sm text-gray-400">Influencers listed</div>
+          <div className="text-xs md:text-sm text-gray-400">Influencers listed</div>
         </div>
-        <div className="text-center">
-          <div className="text-3xl md:text-4xl font-semibold text-purple-600 mb-1">
+        <div className="text-center px-2">
+          <div className="text-2xl md:text-4xl font-semibold text-purple-600 mb-1">
             <CountUp target={8920} />
           </div>
-          <div className="text-sm text-gray-400">AI verified</div>
+          <div className="text-xs md:text-sm text-gray-400">AI verified</div>
         </div>
-        <div className="text-center">
-          <div className="text-3xl md:text-4xl font-semibold text-gray-900 mb-1">
+        <div className="text-center px-2">
+          <div className="text-2xl md:text-4xl font-semibold text-gray-900 mb-1">
             <CountUp target={340} suffix="+" />
           </div>
-          <div className="text-sm text-gray-400">Niches covered</div>
+          <div className="text-xs md:text-sm text-gray-400">Niches covered</div>
         </div>
-        <div className="text-center">
-          <div className="text-3xl md:text-4xl font-semibold text-gray-900 mb-1">
+        <div className="text-center px-2">
+          <div className="text-2xl md:text-4xl font-semibold text-gray-900 mb-1">
             <CountUp target={5} />
           </div>
-          <div className="text-sm text-gray-400">Platforms</div>
+          <div className="text-xs md:text-sm text-gray-400">Platforms</div>
         </div>
       </section>
 

@@ -99,7 +99,7 @@ export default function Discover() {
         </div>
       )}
 
-      <div className="px-4 md:px-8 py-8 md:py-10 max-w-6xl mx-auto">
+      <div className="px-3 md:px-8 py-8 md:py-10 max-w-6xl mx-auto">
         <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-1">Find Influencers</h1>
         <p className="text-gray-500 mb-8">Browse AI-scored influencers. Free to search and filter.</p>
 
@@ -160,7 +160,7 @@ export default function Discover() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1,2,3,4,5,6].map((n) => (
               <div key={n} className="border border-gray-100 rounded-xl p-5 animate-pulse">
                 <div className="flex items-center gap-3 mb-4">
@@ -182,7 +182,7 @@ export default function Discover() {
             <div className="text-sm">Try a different niche or platform</div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {influencers.map((inf) => (
               <div
                 key={inf.id}
@@ -251,7 +251,7 @@ export default function Discover() {
 
                 {/* Stats row */}
                 {loggedIn ? (
-                  <div className="grid grid-cols-3 gap-2 mb-4">
+                  <div className="grid grid-cols-3 gap-1 mb-4">
                     <div className="bg-gray-50 rounded-lg p-2 text-center">
                       <div className="text-sm font-medium text-gray-900">{inf.followers}</div>
                       <div className="text-xs text-gray-400">Followers</div>
@@ -266,10 +266,13 @@ export default function Discover() {
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-3 gap-2 mb-4">
+                  <div className="grid grid-cols-3 gap-1 mb-4">
                     {["Followers", "Engagement", "Avg. rate"].map((label) => (
                       <div key={label} className="bg-gray-50 rounded-lg p-2 text-center">
-                        <div className="text-base text-gray-300">🔒</div>
+                        <div className="flex items-center justify-center gap-1 text-gray-400 text-xs">
+                          <span>🔒</span>
+                          <span className="text-purple-600">Sign in</span>
+                        </div>
                         <div className="text-xs text-gray-400">{label}</div>
                       </div>
                     ))}
@@ -278,7 +281,7 @@ export default function Discover() {
 
                 {/* CTA */}
                 {loggedIn ? (
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2">
                     <a
                       href={`/influencer/${inf.id}`}
                       onClick={e => e.stopPropagation()}
@@ -294,9 +297,9 @@ export default function Discover() {
                   <a
                     href="/login"
                     onClick={e => e.stopPropagation()}
-                    className="block w-full text-center border border-purple-200 text-purple-600 py-2 rounded-lg text-xs font-medium hover:bg-purple-50 transition-colors"
+                    className="w-full block text-center bg-purple-600 text-white py-2 rounded-lg text-xs font-medium"
                   >
-                    🔒 Sign in to view full profile
+                    Sign in to view profile
                   </a>
                 )}
               </div>
