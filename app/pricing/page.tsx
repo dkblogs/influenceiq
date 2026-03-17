@@ -1,6 +1,42 @@
+"use client"
+
 export default function Pricing() {
+  async function handlePayment(amount, credits, plan) {
+    const res = await fetch("/api/payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount, credits, plan }),
+    })
+    const data = await res.json()
+
+    const options = {
+      key: data.keyId,
+      amount: data.amount,
+      currency: data.currency,
+      name: "InfluenceIQ",
+      description: `${plan} Plan — ${credits} credits`,
+      order_id: data.orderId,
+      handler: function (response) {
+        alert(`Payment successful! ${credits} credits will be added to your account.`)
+      },
+      prefill: {
+        name: "",
+        email: "",
+      },
+      theme: {
+        color: "#7C3AED",
+      },
+    }
+
+    const razor = new window.Razorpay(options)
+    razor.open()
+  }
+
   return (
     <main className="min-h-screen bg-gray-50">
+
+      {/* Razorpay script */}
+      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
       {/* Navigation */}
       <nav className="bg-white flex items-center justify-between px-8 py-4 border-b border-gray-100">
@@ -53,12 +89,15 @@ export default function Pricing() {
                 <span className="text-green-500">✓</span> Browse all influencers free
               </li>
             </ul>
-            <button className="w-full border border-purple-600 text-purple-600 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-50">
+            <button
+              onClick={() => handlePayment(499, 100, "Starter")}
+              className="w-full border border-purple-600 text-purple-600 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-50"
+            >
               Buy Starter
             </button>
           </div>
 
-          {/* Growth - highlighted */}
+          {/* Growth */}
           <div className="bg-purple-600 rounded-2xl p-8 relative">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-400 text-white text-xs px-3 py-1 rounded-full font-medium">
               Most popular
@@ -83,7 +122,10 @@ export default function Pricing() {
                 <span className="text-purple-200">✓</span> Credits never expire
               </li>
             </ul>
-            <button className="w-full bg-white text-purple-600 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-50">
+            <button
+              onClick={() => handlePayment(1499, 400, "Growth")}
+              className="w-full bg-white text-purple-600 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-50"
+            >
               Buy Growth
             </button>
           </div>
@@ -110,7 +152,10 @@ export default function Pricing() {
                 <span className="text-green-500">✓</span> API access
               </li>
             </ul>
-            <button className="w-full border border-purple-600 text-purple-600 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-50">
+            <button
+              onClick={() => handlePayment(3999, 1200, "Agency")}
+              className="w-full border border-purple-600 text-purple-600 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-50"
+            >
               Buy Agency
             </button>
           </div>
