@@ -1,6 +1,4 @@
 import Razorpay from "razorpay"
-import { prisma } from "@/lib/prisma"
-import { getServerSession } from "next-auth"
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -8,20 +6,25 @@ const razorpay = new Razorpay({
 })
 
 export async function POST(request) {
-  const body = await request.json()
-  const { amount, credits, plan } = body
+  try {
+    const body = await request.json()
+    const { amount, credits, plan } = body
 
-  const order = await razorpay.orders.create({
-    amount: amount * 100,
-    currency: "INR",
-    receipt: `receipt_${Date.now()}`,
-    notes: { credits, plan },
-  })
+    const order = await razorpay.orders.create({
+      amount: amount * 100,
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+      notes: { credits, plan },
+    })
 
-  return Response.json({
-    orderId: order.id,
-    amount: order.amount,
-    currency: order.currency,
-    keyId: process.env.RAZORPAY_KEY_ID,
-  })
+    return Response.json({
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      keyId: process.env.RAZORPAY_KEY_ID,
+    })
+  } catch (error) {
+    console.error("Payment error:", error)
+    return Response.json({ error: "Payment failed" }, { status: 500 })
+  }
 }
