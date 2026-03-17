@@ -6,7 +6,7 @@ const niches = ["Any", "Food", "Tech", "Fitness", "Finance", "Fashion", "Travel"
 const platforms = ["Any", "Instagram", "YouTube", "LinkedIn", "X (Twitter)"]
 const budgets = ["Under ₹10,000", "₹10,000 – ₹25,000", "₹25,000 – ₹50,000", "₹50,000 – ₹1,00,000", "Above ₹1,00,000", "Flexible"]
 
-const colorMap = {
+const colorMap: Record<string, string> = {
   PS: "bg-purple-500", RK: "bg-orange-500", AN: "bg-green-500",
   VM: "bg-yellow-500", SP: "bg-pink-500", AD: "bg-blue-500",
   MI: "bg-red-500", KS: "bg-indigo-500", DR: "bg-teal-500",

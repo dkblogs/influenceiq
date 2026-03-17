@@ -47,7 +47,7 @@ const faqs = [
 ]
 
 export default function FAQ() {
-  const [open, setOpen] = useState(null)
+  const [open, setOpen] = useState<string | null>(null)
 
   return (
     <main className="min-h-screen bg-white">

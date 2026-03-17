@@ -19,10 +19,10 @@ export default function Campaigns() {
   const [selectedNiche, setSelectedNiche] = useState("All")
   const [selectedPlatform, setSelectedPlatform] = useState("All")
   const [search, setSearch] = useState("")
-  const [applied, setApplied] = useState([])
-  const [credits, setCredits] = useState(null)
+  const [applied, setApplied] = useState<string[]>([])
+  const [credits, setCredits] = useState<number | null>(null)
   const [error, setError] = useState("")
-  const [dbCampaigns, setDbCampaigns] = useState([])
+  const [dbCampaigns, setDbCampaigns] = useState<any[]>([])
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function Campaigns() {
     return matchNiche && matchPlatform && matchSearch
   })
 
-  async function handleApply(campaignId) {
+  async function handleApply(campaignId: string) {
     if (!session) {
       window.location.href = "/login"
       return

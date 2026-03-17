@@ -42,16 +42,16 @@ export default function InfluencerProfile() {
   const loggedIn = status !== "loading" && !!session
   const params = useParams()
   const router = useRouter()
-  const [influencer, setInfluencer] = useState(null)
+  const [influencer, setInfluencer] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [unlocked, setUnlocked] = useState(false)
   const [unlocking, setUnlocking] = useState(false)
   const [error, setError] = useState("")
   const [credits, setCredits] = useState(0)
-  const [aiScores, setAiScores] = useState(null)
+  const [aiScores, setAiScores] = useState<any>(null)
   const [scoring, setScoring] = useState(false)
 
-  const colorMap = {
+  const colorMap: Record<string, string> = {
     PS: "bg-purple-500", RK: "bg-orange-500", AN: "bg-green-500",
     VM: "bg-yellow-500", SP: "bg-pink-500", AD: "bg-blue-500",
     MI: "bg-red-500", KS: "bg-indigo-500", DR: "bg-teal-500",
@@ -87,7 +87,7 @@ export default function InfluencerProfile() {
     if (!res.ok) { setError(data.error); setUnlocking(false); return }
     setUnlocked(true)
     setCredits(data.newCredits)
-    setInfluencer((prev) => ({ ...prev, email: data.email, phone: data.phone }))
+    setInfluencer((prev: any) => ({ ...prev, email: data.email, phone: data.phone }))
     setUnlocking(false)
   }
 

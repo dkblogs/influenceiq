@@ -4,7 +4,7 @@ import { useState } from "react"
 export default function Pricing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  async function handlePayment(amount, credits, plan) {
+  async function handlePayment(amount: number, credits: number, plan: string) {
     const res = await fetch("/api/payment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -19,7 +19,7 @@ export default function Pricing() {
       name: "InfluenceIQ",
       description: `${plan} Plan — ${credits} credits`,
       order_id: data.orderId,
-      handler: async function (response) {
+      handler: async function (response: any) {
         const session = await fetch("/api/auth/session")
         const sessionData = await session.json()
         const userId = sessionData?.user?.id
@@ -49,7 +49,7 @@ export default function Pricing() {
       theme: { color: "#7C3AED" },
     }
 
-    const razor = new window.Razorpay(options)
+    const razor = new (window as any).Razorpay(options)
     razor.open()
   }
 

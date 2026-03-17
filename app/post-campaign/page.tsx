@@ -18,7 +18,7 @@ export default function PostCampaign() {
   const [minFollowers, setMinFollowers] = useState("5K")
   const [location, setLocation] = useState("Pan India")
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!session) {
       router.push("/login")
