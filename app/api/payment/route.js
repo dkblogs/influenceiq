@@ -1,4 +1,6 @@
 import Razorpay from "razorpay"
+import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth"
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -13,10 +15,7 @@ export async function POST(request) {
     amount: amount * 100,
     currency: "INR",
     receipt: `receipt_${Date.now()}`,
-    notes: {
-      credits: credits,
-      plan: plan,
-    },
+    notes: { credits, plan },
   })
 
   return Response.json({

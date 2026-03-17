@@ -1,4 +1,44 @@
+"use client"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+
 export default function Signup() {
+  const router = useRouter()
+  const [role, setRole] = useState("brand")
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setError("")
+    setLoading(true)
+
+    try {
+      const res = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password, role }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error)
+        setLoading(false)
+        return
+      }
+
+      router.push("/login?success=Account created! Please sign in.")
+
+    } catch (err) {
+      setError("Something went wrong. Please try again.")
+      setLoading(false)
+    }
+  }
+
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-md">
@@ -16,84 +56,84 @@ export default function Signup() {
 
         {/* Account type selector */}
         <div className="grid grid-cols-2 gap-3 mb-6">
-          <button className="border-2 border-purple-600 bg-purple-50 rounded-xl p-3 text-center">
+          <button
+            type="button"
+            onClick={() => setRole("brand")}
+            className={`border-2 rounded-xl p-3 text-center transition-colors ${role === "brand" ? "border-purple-600 bg-purple-50" : "border-gray-200 hover:border-purple-300"}`}
+          >
             <div className="text-xl mb-1">🏢</div>
-            <div className="text-sm font-medium text-purple-700">I am a Brand</div>
-            <div className="text-xs text-purple-500 mt-0.5">Find influencers</div>
+            <div className={`text-sm font-medium ${role === "brand" ? "text-purple-700" : "text-gray-700"}`}>I am a Brand</div>
+            <div className={`text-xs mt-0.5 ${role === "brand" ? "text-purple-500" : "text-gray-400"}`}>Find influencers</div>
           </button>
-          <button className="border border-gray-200 rounded-xl p-3 text-center hover:border-purple-300">
+          <button
+            type="button"
+            onClick={() => setRole("influencer")}
+            className={`border-2 rounded-xl p-3 text-center transition-colors ${role === "influencer" ? "border-purple-600 bg-purple-50" : "border-gray-200 hover:border-purple-300"}`}
+          >
             <div className="text-xl mb-1">⭐</div>
-            <div className="text-sm font-medium text-gray-700">I am an Influencer</div>
-            <div className="text-xs text-gray-400 mt-0.5">Get discovered</div>
+            <div className={`text-sm font-medium ${role === "influencer" ? "text-purple-700" : "text-gray-700"}`}>I am an Influencer</div>
+            <div className={`text-xs mt-0.5 ${role === "influencer" ? "text-purple-500" : "text-gray-400"}`}>Get discovered</div>
           </button>
         </div>
 
+        {/* Error */}
+        {error && (
+          <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-4">
+            {error}
+          </div>
+        )}
+
         {/* Form */}
-        <form className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Full name
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
             <input
               type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
               placeholder="Your name"
+              required
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email address
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
             <input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
               placeholder="you@example.com"
+              required
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
               placeholder="Min. 8 characters"
+              required
             />
           </div>
-
           <button
             type="submit"
-            className="w-full bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700"
+            disabled={loading}
+            className="w-full bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create account — free
+            {loading ? "Creating account..." : "Create account — free"}
           </button>
         </form>
 
-        {/* Note */}
         <p className="text-center text-xs text-gray-400 mt-4">
           You get 5 free credits on sign up. No credit card needed.
         </p>
 
-        {/* Divider */}
-        <div className="flex items-center gap-3 my-5">
-          <div className="flex-1 h-px bg-gray-100"></div>
-          <span className="text-xs text-gray-400">or</span>
-          <div className="flex-1 h-px bg-gray-100"></div>
-        </div>
-
-        {/* Social */}
-        <button className="w-full flex items-center justify-center gap-3 border border-gray-200 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
-          <span>G</span> Continue with Google
-        </button>
-
-        {/* Switch to login */}
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{" "}
-          <a href="/login" className="text-purple-600 hover:underline font-medium">
-            Sign in
-          </a>
+          <a href="/login" className="text-purple-600 hover:underline font-medium">Sign in</a>
         </p>
 
       </div>

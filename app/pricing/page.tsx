@@ -16,8 +16,31 @@ export default function Pricing() {
       name: "InfluenceIQ",
       description: `${plan} Plan — ${credits} credits`,
       order_id: data.orderId,
-      handler: function (response) {
-        alert(`Payment successful! ${credits} credits will be added to your account.`)
+      handler: async function (response) {
+        const session = await fetch("/api/auth/session")
+        const sessionData = await session.json()
+        const userId = sessionData?.user?.id
+
+        if (userId) {
+          const result = await fetch("/api/payment-success", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              credits,
+              plan,
+              razorpay_payment_id: response.razorpay_payment_id,
+              userId,
+            }),
+          })
+          const resultData = await result.json()
+          if (resultData.success) {
+            alert(`Payment successful! You now have ${resultData.newCredits} credits.`)
+            window.location.href = "/dashboard"
+          }
+        } else {
+          alert(`Payment successful! Please log in to see your credits.`)
+          window.location.href = "/login"
+        }
       },
       prefill: { name: "", email: "" },
       theme: { color: "#7C3AED" },
@@ -31,7 +54,6 @@ export default function Pricing() {
     <main className="min-h-screen bg-gray-50">
       <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-      {/* Navigation */}
       <nav className="bg-white flex items-center justify-between px-8 py-4 border-b border-gray-100">
         <a href="/" className="flex items-center gap-2">
           <span className="text-2xl">⚡</span>
@@ -45,7 +67,6 @@ export default function Pricing() {
 
       <div className="px-8 py-16 max-w-5xl mx-auto">
 
-        {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-semibold text-gray-900 mb-4">Simple, pay-as-you-go pricing</h1>
           <p className="text-gray-500 text-lg">One credit system for everyone — brands and influencers alike.</p>
@@ -54,8 +75,8 @@ export default function Pricing() {
           </div>
         </div>
 
-        {/* Pricing cards */}
         <div className="grid grid-cols-3 gap-6 mb-16">
+
           <div className="bg-white rounded-2xl border border-gray-100 p-8">
             <div className="text-sm font-medium text-gray-500 mb-2">Starter</div>
             <div className="text-4xl font-semibold text-gray-900 mb-1">₹499</div>
@@ -106,16 +127,13 @@ export default function Pricing() {
               Buy Agency
             </button>
           </div>
+
         </div>
 
-        {/* Two-sided credit table */}
         <div className="bg-white rounded-2xl border border-gray-100 p-8 mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">What each action costs</h2>
           <p className="text-sm text-gray-400 mb-6">One credit system for both brands and influencers.</p>
-
           <div className="grid grid-cols-2 gap-8">
-
-            {/* Brands */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center text-xs font-medium text-blue-600">B</div>
@@ -136,8 +154,6 @@ export default function Pricing() {
                 ))}
               </div>
             </div>
-
-            {/* Influencers */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-6 h-6 bg-purple-100 rounded-md flex items-center justify-center text-xs font-medium text-purple-600">I</div>
@@ -160,15 +176,13 @@ export default function Pricing() {
                 ))}
               </div>
             </div>
-
           </div>
         </div>
 
-        {/* Welcome credits */}
         <div className="bg-purple-50 rounded-2xl p-6 text-center">
           <div className="text-2xl mb-2">🎁</div>
           <div className="font-medium text-gray-900 mb-1">5 free credits for every new account</div>
-          <div className="text-sm text-gray-500 mb-4">Enough to apply to 2 campaigns, get 1 AI report, or see who viewed your profile. No card needed.</div>
+          <div className="text-sm text-gray-500 mb-4">No card needed to get started.</div>
           <a href="/signup" className="inline-block bg-purple-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700">
             Create free account
           </a>
@@ -176,7 +190,6 @@ export default function Pricing() {
 
       </div>
 
-      {/* Footer */}
       <footer className="border-t border-gray-100 px-8 py-8 text-center text-sm text-gray-400">
         InfluenceIQ · India's AI Influencer Marketplace · 2025
       </footer>
