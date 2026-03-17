@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6D28D9"/>
+      <stop offset="100%" style="stop-color:#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.1"/>
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.04"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Subtle grid pattern -->
+  <rect width="1200" height="630" fill="none" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"
+    style="background-image: repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.04) 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.04) 40px);"/>
+
+  <!-- Decorative circles -->
+  <circle cx="1050" cy="100" r="200" fill="#ffffff" fill-opacity="0.04"/>
+  <circle cx="1100" cy="580" r="150" fill="#ffffff" fill-opacity="0.04"/>
+  <circle cx="80" cy="520" r="180" fill="#ffffff" fill-opacity="0.04"/>
+  <circle cx="150" cy="80" r="100" fill="#ffffff" fill-opacity="0.06"/>
+
+  <!-- Score card decoration (right side) -->
+  <rect x="820" y="160" width="280" height="310" rx="20" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1"/>
+  <rect x="850" y="195" width="60" height="60" rx="12" fill="#ffffff" fill-opacity="0.15"/>
+  <text x="880" y="235" font-family="system-ui, sans-serif" font-size="28" text-anchor="middle" fill="#ffffff">PS</text>
+  <text x="930" y="215" font-family="system-ui, sans-serif" font-size="13" font-weight="500" fill="#ffffff" fill-opacity="0.9">Priya Sharma</text>
+  <text x="930" y="235" font-family="system-ui, sans-serif" font-size="11" fill="#ffffff" fill-opacity="0.5">@priyaeats · Food</text>
+  <text x="1060" y="230" font-family="system-ui, sans-serif" font-size="32" font-weight="700" fill="#F9A8D4" text-anchor="middle">91</text>
+  <text x="1060" y="248" font-family="system-ui, sans-serif" font-size="10" fill="#ffffff" fill-opacity="0.5" text-anchor="middle">AI Score</text>
+
+  <!-- Score bars -->
+  <text x="850" y="285" font-family="system-ui, sans-serif" font-size="11" fill="#ffffff" fill-opacity="0.6">Engagement rate</text>
+  <rect x="850" y="292" width="200" height="4" rx="2" fill="#ffffff" fill-opacity="0.15"/>
+  <rect x="850" y="292" width="182" height="4" rx="2" fill="#F9A8D4"/>
+
+  <text x="850" y="318" font-family="system-ui, sans-serif" font-size="11" fill="#ffffff" fill-opacity="0.6">Audience quality</text>
+  <rect x="850" y="325" width="200" height="4" rx="2" fill="#ffffff" fill-opacity="0.15"/>
+  <rect x="850" y="325" width="176" height="4" rx="2" fill="#F9A8D4"/>
+
+  <text x="850" y="351" font-family="system-ui, sans-serif" font-size="11" fill="#ffffff" fill-opacity="0.6">Niche authority</text>
+  <rect x="850" y="358" width="200" height="4" rx="2" fill="#ffffff" fill-opacity="0.15"/>
+  <rect x="850" y="358" width="184" height="4" rx="2" fill="#F9A8D4"/>
+
+  <text x="850" y="384" font-family="system-ui, sans-serif" font-size="11" fill="#ffffff" fill-opacity="0.6">Content consistency</text>
+  <rect x="850" y="391" width="200" height="4" rx="2" fill="#ffffff" fill-opacity="0.15"/>
+  <rect x="850" y="391" width="170" height="4" rx="2" fill="#F9A8D4"/>
+
+  <text x="850" y="417" font-family="system-ui, sans-serif" font-size="11" fill="#ffffff" fill-opacity="0.6">Growth trend</text>
+  <rect x="850" y="424" width="200" height="4" rx="2" fill="#ffffff" fill-opacity="0.15"/>
+  <rect x="850" y="424" width="158" height="4" rx="2" fill="#F9A8D4"/>
+
+  <!-- Main content (left side) -->
+  <!-- Badge -->
+  <rect x="100" y="160" width="310" height="36" rx="18" fill="#ffffff" fill-opacity="0.12"/>
+  <circle cx="124" cy="178" r="6" fill="#4ADE80"/>
+  <text x="140" y="183" font-family="system-ui, sans-serif" font-size="14" fill="#ffffff" fill-opacity="0.9">India's first AI-scored platform</text>
+
+  <!-- Lightning bolt + brand name -->
+  <text x="100" y="275" font-family="system-ui, sans-serif" font-size="72" fill="#FCD34D">⚡</text>
+  <text x="175" y="275" font-family="system-ui, sans-serif" font-size="72" font-weight="700" fill="#ffffff" letter-spacing="-2">Influence</text>
+  <text x="590" y="275" font-family="system-ui, sans-serif" font-size="72" font-weight="700" fill="#F9A8D4" letter-spacing="-2">IQ</text>
+
+  <!-- Tagline -->
+  <text x="100" y="335" font-family="system-ui, sans-serif" font-size="26" fill="#ffffff" fill-opacity="0.75" letter-spacing="0.3">Find the right influencer. Powered by AI.</text>
+
+  <!-- Stat pills -->
+  <rect x="100" y="400" width="158" height="44" rx="12" fill="#ffffff" fill-opacity="0.12"/>
+  <text x="179" y="419" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#ffffff" text-anchor="middle">12,400+</text>
+  <text x="179" y="436" font-family="system-ui, sans-serif" font-size="11" fill="#ffffff" fill-opacity="0.6" text-anchor="middle">Influencers listed</text>
+
+  <rect x="272" y="400" width="140" height="44" rx="12" fill="#ffffff" fill-opacity="0.12"/>
+  <text x="342" y="419" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#F9A8D4" text-anchor="middle">8,920</text>
+  <text x="342" y="436" font-family="system-ui, sans-serif" font-size="11" fill="#ffffff" fill-opacity="0.6" text-anchor="middle">AI verified</text>
+
+  <rect x="426" y="400" width="130" height="44" rx="12" fill="#ffffff" fill-opacity="0.12"/>
+  <text x="491" y="419" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#ffffff" text-anchor="middle">340+</text>
+  <text x="491" y="436" font-family="system-ui, sans-serif" font-size="11" fill="#ffffff" fill-opacity="0.6" text-anchor="middle">Niches covered</text>
+
+  <!-- Bottom URL -->
+  <text x="100" y="540" font-family="system-ui, sans-serif" font-size="16" fill="#ffffff" fill-opacity="0.4">erasekit.vercel.app</text>
+
+  <!-- Bottom right label -->
+  <rect x="870" y="510" width="220" height="36" rx="8" fill="#ffffff" fill-opacity="0.1"/>
+  <text x="980" y="533" font-family="system-ui, sans-serif" font-size="13" fill="#ffffff" fill-opacity="0.7" text-anchor="middle">Free to join · No card needed</text>
+</svg>
