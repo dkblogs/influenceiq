@@ -23,6 +23,7 @@ export default function Campaigns() {
   const [credits, setCredits] = useState(null)
   const [error, setError] = useState("")
   const [dbCampaigns, setDbCampaigns] = useState([])
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -74,12 +75,13 @@ export default function Campaigns() {
 
   return (
     <main className="min-h-screen bg-white">
-      <nav className="flex items-center justify-between px-8 py-4 border-b border-gray-100 sticky top-0 bg-white z-50">
+      <nav className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-gray-100 sticky top-0 bg-white z-50">
         <a href="/" className="flex items-center gap-2">
           <span className="text-2xl">⚡</span>
           <span className="text-xl font-semibold">Influence<span className="text-purple-600">IQ</span></span>
         </a>
-        <div className="flex items-center gap-4">
+        {/* Desktop nav */}
+        <div className="hidden md:flex items-center gap-4">
           <a href="/discover" className="text-sm text-gray-500 hover:text-gray-900">Find Influencers</a>
           <a href="/brands" className="text-sm text-gray-500 hover:text-gray-900">Find Brands</a>
           <a href="/campaigns" className="text-sm text-purple-600 font-medium">Open Campaigns</a>
@@ -90,14 +92,37 @@ export default function Campaigns() {
           )}
           <a href="/post-campaign" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Post Campaign</a>
         </div>
+        {/* Mobile hamburger */}
+        <button
+          className="md:hidden flex flex-col gap-1.5 p-2"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          <span className="block w-5 h-0.5 bg-gray-600"></span>
+          <span className="block w-5 h-0.5 bg-gray-600"></span>
+          <span className="block w-5 h-0.5 bg-gray-600"></span>
+        </button>
       </nav>
 
-      <div className="px-8 py-10 max-w-6xl mx-auto">
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-b border-gray-100 bg-white px-4 py-4 flex flex-col gap-3 z-40">
+          <a href="/discover" className="text-sm text-gray-600 py-2 border-b border-gray-50">Find Influencers</a>
+          <a href="/brands" className="text-sm text-gray-600 py-2 border-b border-gray-50">Find Brands</a>
+          <a href="/campaigns" className="text-sm text-purple-600 font-medium py-2 border-b border-gray-50">Open Campaigns</a>
+          {session && credits !== null && (
+            <div className="text-xs text-purple-600 font-medium py-1">{credits} credits</div>
+          )}
+          <a href="/post-campaign" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center">Post Campaign</a>
+        </div>
+      )}
+
+      <div className="px-4 md:px-8 py-8 md:py-10 max-w-6xl mx-auto">
         <div className="flex items-end justify-between mb-8">
           <div>
             <div className="inline-block bg-orange-50 text-orange-700 text-xs px-3 py-1 rounded-full mb-3">For Influencers</div>
-            <h1 className="text-3xl font-semibold text-gray-900 mb-1">Open Campaigns</h1>
-            <p className="text-gray-500">Brands actively looking for influencers. Apply directly — 2 credits per application.</p>
+            <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-1">Open Campaigns</h1>
+            <p className="text-gray-500 text-sm">Brands actively looking for influencers. Apply directly — 2 credits per application.</p>
           </div>
         </div>
 
@@ -115,7 +140,7 @@ export default function Campaigns() {
             onChange={(e) => setSearch(e.target.value)}
           />
           {applied.length > 0 && (
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 whitespace-nowrap">
               ✓ {applied.length} applied
             </div>
           )}
@@ -126,7 +151,7 @@ export default function Campaigns() {
           <div className="flex gap-2 flex-wrap">
             {niches.map((n) => (
               <button key={n} onClick={() => setSelectedNiche(n)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedNiche === n ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+                className={`px-3 md:px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedNiche === n ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
                 {n}
               </button>
             ))}
@@ -135,10 +160,10 @@ export default function Campaigns() {
 
         <div className="mb-8">
           <div className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">Platform</div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {platforms.map((p) => (
               <button key={p} onClick={() => setSelectedPlatform(p)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedPlatform === p ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+                className={`px-3 md:px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedPlatform === p ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
                 {p}
               </button>
             ))}
@@ -158,27 +183,27 @@ export default function Campaigns() {
         ) : (
           <div className="space-y-4">
             {filtered.map((c) => (
-              <div key={c.id} className="border border-gray-100 rounded-xl p-6 hover:shadow-md transition-all">
+              <div key={c.id} className="border border-gray-100 rounded-xl p-4 md:p-6 hover:shadow-md transition-all">
                 <div className="flex items-start gap-4">
-                  <div className={`w-12 h-12 rounded-xl ${c.brandColor || "bg-purple-500"} flex items-center justify-center text-white font-medium text-sm flex-shrink-0`}>
+                  <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl ${c.brandColor || "bg-purple-500"} flex items-center justify-center text-white font-medium text-sm flex-shrink-0`}>
                     {c.brandInitials || c.brand?.slice(0, 2).toUpperCase() || "BR"}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 gap-1">
                       <div>
                         <div className="font-medium text-gray-900 mb-0.5">{c.title}</div>
                         <div className="text-xs text-gray-400">{c.brand || "Brand"} · {c.location}</div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                      <div className="flex items-center gap-2 sm:flex-shrink-0 sm:ml-4">
                         <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-medium">{c.status}</span>
                         <span className="text-xs text-red-500 font-medium">{c.deadline}</span>
                       </div>
                     </div>
                     <p className="text-sm text-gray-500 mb-4 leading-relaxed">{c.description}</p>
-                    <div className="flex items-center gap-4 mb-4 flex-wrap">
+                    <div className="flex items-center gap-3 mb-4 flex-wrap">
                       <div className="flex items-center gap-1.5 text-xs text-gray-500">💰 {c.budget}</div>
                       <div className="flex items-center gap-1.5 text-xs text-gray-500">📱 {c.platform}</div>
-                      <div className="flex items-center gap-1.5 text-xs text-gray-500">👥 Min. {c.minFollowers} followers</div>
+                      <div className="flex items-center gap-1.5 text-xs text-gray-500">👥 Min. {c.minFollowers}</div>
                       <div className="flex items-center gap-1.5 text-xs text-gray-500">🎯 {c.slots} slots</div>
                       <span className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">{c.niche}</span>
                     </div>
@@ -202,7 +227,7 @@ export default function Campaigns() {
         )}
       </div>
 
-      <footer className="border-t border-gray-100 px-8 py-8 text-center text-sm text-gray-400 mt-8">
+      <footer className="border-t border-gray-100 px-4 md:px-8 py-8 text-center text-sm text-gray-400 mt-8">
         InfluenceIQ · India's AI Influencer Marketplace · 2025
       </footer>
     </main>

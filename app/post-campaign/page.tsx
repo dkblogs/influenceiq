@@ -59,13 +59,13 @@ export default function PostCampaign() {
     <main className="min-h-screen bg-gray-50">
 
       {/* Navigation */}
-      <nav className="bg-white flex items-center justify-between px-8 py-4 border-b border-gray-100">
+      <nav className="bg-white flex items-center justify-between px-4 md:px-8 py-4 border-b border-gray-100">
         <a href="/" className="flex items-center gap-2">
           <span className="text-2xl">⚡</span>
           <span className="text-xl font-semibold">Influence<span className="text-purple-600">IQ</span></span>
         </a>
-        <div className="flex items-center gap-4">
-          <a href="/campaigns" className="text-sm text-gray-500 hover:text-gray-900">← Back to campaigns</a>
+        <div className="flex items-center gap-3">
+          <a href="/campaigns" className="text-sm text-gray-500 hover:text-gray-900">← Back</a>
           {session && (
             <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
               Dashboard
@@ -74,13 +74,13 @@ export default function PostCampaign() {
         </div>
       </nav>
 
-      <div className="px-8 py-12 max-w-2xl mx-auto">
+      <div className="px-4 md:px-8 py-8 md:py-12 max-w-2xl mx-auto">
 
         {/* Header */}
         <div className="mb-8">
           <div className="inline-block bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full mb-3">For Brands</div>
-          <h1 className="text-3xl font-semibold text-gray-900 mb-2">Post a Campaign</h1>
-          <p className="text-gray-500">Reach thousands of influencers actively looking for brand partnerships. Costs 15 credits.</p>
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-2">Post a Campaign</h1>
+          <p className="text-gray-500 text-sm">Reach thousands of influencers actively looking for brand partnerships. Costs 15 credits.</p>
         </div>
 
         {!session ? (
@@ -93,7 +93,7 @@ export default function PostCampaign() {
             </a>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 p-8">
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-8">
 
             {error && (
               <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-6">
@@ -126,7 +126,7 @@ export default function PostCampaign() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Niche</label>
                   <select
@@ -166,7 +166,7 @@ export default function PostCampaign() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Campaign budget</label>
                   <input
@@ -194,7 +194,7 @@ export default function PostCampaign() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Slots available</label>
                   <input
@@ -257,7 +257,7 @@ export default function PostCampaign() {
         )}
       </div>
 
-      <footer className="border-t border-gray-100 px-8 py-8 text-center text-sm text-gray-400 mt-8">
+      <footer className="border-t border-gray-100 px-4 md:px-8 py-8 text-center text-sm text-gray-400 mt-8">
         InfluenceIQ · India's AI Influencer Marketplace · 2025
       </footer>
 

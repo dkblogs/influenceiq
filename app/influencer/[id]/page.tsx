@@ -111,13 +111,13 @@ export default function InfluencerProfile() {
   return (
     <main className="min-h-screen bg-gray-50">
 
-      <nav className="bg-white flex items-center justify-between px-8 py-4 border-b border-gray-100">
+      <nav className="bg-white flex items-center justify-between px-4 md:px-8 py-4 border-b border-gray-100">
         <a href="/" className="flex items-center gap-2">
           <span className="text-2xl">⚡</span>
           <span className="text-xl font-semibold">Influence<span className="text-purple-600">IQ</span></span>
         </a>
-        <div className="flex items-center gap-4">
-          <a href="/discover" className="text-sm text-gray-500 hover:text-gray-900">← Back to discover</a>
+        <div className="flex items-center gap-3">
+          <a href="/discover" className="text-sm text-gray-500 hover:text-gray-900">← Back</a>
           {session && (
             <div className="flex items-center gap-2 bg-purple-50 px-3 py-1.5 rounded-lg">
               <span className="text-xs text-purple-600 font-medium">{credits} credits</span>
@@ -126,54 +126,54 @@ export default function InfluencerProfile() {
         </div>
       </nav>
 
-      <div className="px-8 py-10 max-w-4xl mx-auto">
+      <div className="px-4 md:px-8 py-8 md:py-10 max-w-4xl mx-auto">
 
         {/* Profile header */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-8 mb-6">
-          <div className="flex items-start gap-6">
-            <div className={`w-20 h-20 rounded-2xl ${colorMap[influencer.initials] || "bg-purple-500"} flex items-center justify-center text-white font-semibold text-2xl flex-shrink-0`}>
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-8 mb-6">
+          <div className="flex flex-col sm:flex-row items-start gap-4 md:gap-6">
+            <div className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl ${colorMap[influencer.initials] || "bg-purple-500"} flex items-center justify-center text-white font-semibold text-xl md:text-2xl flex-shrink-0`}>
               {influencer.initials}
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-2xl font-semibold text-gray-900">{influencer.name}</h1>
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <h1 className="text-xl md:text-2xl font-semibold text-gray-900">{influencer.name}</h1>
                 {influencer.verified && (
                   <span className="bg-blue-50 text-blue-600 text-xs px-2 py-0.5 rounded-full font-medium">✓ Verified</span>
                 )}
               </div>
-              <div className="text-gray-400 mb-3">{influencer.handle} · {influencer.location}</div>
-              <div className="flex gap-2 mb-4">
+              <div className="text-gray-400 text-sm mb-3">{influencer.handle} · {influencer.location}</div>
+              <div className="flex gap-2 mb-4 flex-wrap">
                 <span className="text-sm bg-purple-50 text-purple-700 px-3 py-1 rounded-full">{influencer.niche}</span>
                 <span className="text-sm bg-gray-50 text-gray-600 px-3 py-1 rounded-full">{influencer.platform}</span>
               </div>
               <p className="text-gray-500 text-sm leading-relaxed">{influencer.about}</p>
             </div>
-            <div className="text-center flex-shrink-0">
-              <div className="text-4xl font-semibold text-purple-600">{influencer.score}</div>
+            <div className="text-center flex-shrink-0 sm:ml-auto">
+              <div className="text-3xl md:text-4xl font-semibold text-purple-600">{influencer.score}</div>
               <div className="text-xs text-gray-400 mt-1">AI Score</div>
             </div>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-xl border border-gray-100 p-5 text-center">
-            <div className="text-2xl font-semibold text-gray-900">{influencer.followers}</div>
-            <div className="text-sm text-gray-400 mt-1">Followers</div>
+        <div className="grid grid-cols-3 gap-3 md:gap-4 mb-6">
+          <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5 text-center">
+            <div className="text-xl md:text-2xl font-semibold text-gray-900">{influencer.followers}</div>
+            <div className="text-xs md:text-sm text-gray-400 mt-1">Followers</div>
           </div>
-          <div className="bg-white rounded-xl border border-gray-100 p-5 text-center">
-            <div className="text-2xl font-semibold text-gray-900">{influencer.engagement}</div>
-            <div className="text-sm text-gray-400 mt-1">Engagement rate</div>
+          <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5 text-center">
+            <div className="text-xl md:text-2xl font-semibold text-gray-900">{influencer.engagement}</div>
+            <div className="text-xs md:text-sm text-gray-400 mt-1">Engagement</div>
           </div>
-          <div className="bg-white rounded-xl border border-gray-100 p-5 text-center">
-            <div className="text-2xl font-semibold text-gray-900">{influencer.rate}</div>
-            <div className="text-sm text-gray-400 mt-1">Avg. rate per post</div>
+          <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5 text-center">
+            <div className="text-xl md:text-2xl font-semibold text-gray-900">{influencer.rate}</div>
+            <div className="text-xs md:text-sm text-gray-400 mt-1">Avg. rate</div>
           </div>
         </div>
 
         {/* AI Score Breakdown */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-8 mb-6">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-8 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
             <div>
               <h2 className="font-semibold text-gray-900">AI Score Breakdown</h2>
               <p className="text-xs text-gray-400 mt-1">Powered by InfluenceIQ AI · Updated on demand</p>
@@ -181,7 +181,7 @@ export default function InfluencerProfile() {
             <button
               onClick={generateScore}
               disabled={scoring}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50 transition-colors"
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50 transition-colors whitespace-nowrap"
             >
               {scoring ? "Analyzing..." : "Generate AI Score — 3 cr"}
             </button>
@@ -189,7 +189,7 @@ export default function InfluencerProfile() {
 
           {aiScores ? (
             <div>
-              <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 {[
                   { label: "Engagement Rate", value: aiScores.engagement, note: aiScores.engagementNote },
                   { label: "Audience Quality", value: aiScores.audienceQuality, note: aiScores.audienceQualityNote },
@@ -231,7 +231,7 @@ export default function InfluencerProfile() {
         </div>
 
         {/* Contact section */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-8">
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-8">
           <h2 className="font-semibold text-gray-900 mb-2">Contact details</h2>
 
           {unlocked ? (
@@ -264,7 +264,7 @@ export default function InfluencerProfile() {
                   {error}
                 </div>
               )}
-              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl mb-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-gray-50 rounded-xl mb-4">
                 <div className="flex-1">
                   <div className="text-sm font-medium text-gray-700">Email address</div>
                   <div className="text-sm text-gray-400">••••••••••@••••••.com</div>

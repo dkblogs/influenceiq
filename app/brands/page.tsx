@@ -19,6 +19,7 @@ export default function Brands() {
   const [selectedIndustry, setSelectedIndustry] = useState("All")
   const [selectedSize, setSelectedSize] = useState("All")
   const [search, setSearch] = useState("")
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const filtered = allBrands.filter((b) => {
     const matchIndustry = selectedIndustry === "All" || b.industry === selectedIndustry
@@ -33,26 +34,47 @@ export default function Brands() {
     <main className="min-h-screen bg-white">
 
       {/* Navigation */}
-      <nav className="flex items-center justify-between px-8 py-4 border-b border-gray-100 sticky top-0 bg-white z-50">
+      <nav className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-gray-100 sticky top-0 bg-white z-50">
         <a href="/" className="flex items-center gap-2">
           <span className="text-2xl">⚡</span>
           <span className="text-xl font-semibold">Influence<span className="text-purple-600">IQ</span></span>
         </a>
-        <div className="flex items-center gap-4">
+        {/* Desktop nav */}
+        <div className="hidden md:flex items-center gap-4">
           <a href="/discover" className="text-sm text-gray-500 hover:text-gray-900">Find Influencers</a>
           <a href="/brands" className="text-sm text-purple-600 font-medium">Find Brands</a>
           <a href="/campaigns" className="text-sm text-gray-500 hover:text-gray-900">Open Campaigns</a>
           <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Get Started</a>
         </div>
+        {/* Mobile hamburger */}
+        <button
+          className="md:hidden flex flex-col gap-1.5 p-2"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          <span className="block w-5 h-0.5 bg-gray-600"></span>
+          <span className="block w-5 h-0.5 bg-gray-600"></span>
+          <span className="block w-5 h-0.5 bg-gray-600"></span>
+        </button>
       </nav>
 
-      <div className="px-8 py-10 max-w-6xl mx-auto">
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-b border-gray-100 bg-white px-4 py-4 flex flex-col gap-3">
+          <a href="/discover" className="text-sm text-gray-600 py-2 border-b border-gray-50">Find Influencers</a>
+          <a href="/brands" className="text-sm text-purple-600 font-medium py-2 border-b border-gray-50">Find Brands</a>
+          <a href="/campaigns" className="text-sm text-gray-600 py-2 border-b border-gray-50">Open Campaigns</a>
+          <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center">Get Started</a>
+        </div>
+      )}
+
+      <div className="px-4 md:px-8 py-8 md:py-10 max-w-6xl mx-auto">
 
         {/* Header */}
         <div className="mb-8">
           <div className="inline-block bg-purple-50 text-purple-700 text-xs px-3 py-1 rounded-full mb-3">For Influencers</div>
-          <h1 className="text-3xl font-semibold text-gray-900 mb-1">Discover Brands</h1>
-          <p className="text-gray-500">Browse brands actively looking for influencer partnerships. Send them a collaboration request directly.</p>
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-1">Discover Brands</h1>
+          <p className="text-gray-500 text-sm">Browse brands actively looking for influencer partnerships. Send them a collaboration request directly.</p>
         </div>
 
         {/* Search */}
@@ -73,7 +95,7 @@ export default function Brands() {
               <button
                 key={ind}
                 onClick={() => setSelectedIndustry(ind)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                className={`px-3 md:px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   selectedIndustry === ind
                     ? "bg-purple-600 text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -88,12 +110,12 @@ export default function Brands() {
         {/* Size filters */}
         <div className="mb-8">
           <div className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">Company size</div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {sizes.map((s) => (
               <button
                 key={s}
                 onClick={() => setSelectedSize(s)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                className={`px-3 md:px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   selectedSize === s
                     ? "bg-gray-900 text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -119,7 +141,7 @@ export default function Brands() {
             <div className="text-sm">Try a different industry or size</div>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((brand) => (
               <div key={brand.name} className="border border-gray-100 rounded-xl p-5 hover:shadow-md transition-all hover:-translate-y-0.5">
 
@@ -128,7 +150,7 @@ export default function Brands() {
                   <div className={`w-12 h-12 rounded-xl ${brand.color} flex items-center justify-center text-white font-medium text-sm flex-shrink-0`}>
                     {brand.initials}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="font-medium text-gray-900">{brand.name}</div>
                     <div className="text-xs text-gray-400">{brand.industry} · {brand.location}</div>
                     <div className="flex gap-1 mt-1">
@@ -183,7 +205,7 @@ export default function Brands() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 px-8 py-8 text-center text-sm text-gray-400 mt-8">
+      <footer className="border-t border-gray-100 px-4 md:px-8 py-8 text-center text-sm text-gray-400 mt-8">
         InfluenceIQ · India's AI Influencer Marketplace · 2025
       </footer>
 

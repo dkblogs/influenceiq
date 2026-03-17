@@ -7,6 +7,7 @@ export default function Dashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [credits, setCredits] = useState(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -39,14 +40,15 @@ export default function Dashboard() {
     <main className="min-h-screen bg-gray-50">
 
       {/* Navigation */}
-      <nav className="bg-white flex items-center justify-between px-8 py-4 border-b border-gray-100">
+      <nav className="bg-white flex items-center justify-between px-4 md:px-8 py-4 border-b border-gray-100">
         <a href="/" className="flex items-center gap-2">
           <span className="text-2xl">⚡</span>
           <span className="text-xl font-semibold">
             Influence<span className="text-purple-600">IQ</span>
           </span>
         </a>
-        <div className="flex items-center gap-4">
+        {/* Desktop nav */}
+        <div className="hidden md:flex items-center gap-4">
           <a href="/discover" className="text-sm text-gray-500 hover:text-gray-900">Find Influencers</a>
           <a href="/brands" className="text-sm text-gray-500 hover:text-gray-900">Find Brands</a>
           <a href="/campaigns" className="text-sm text-gray-500 hover:text-gray-900">Campaigns</a>
@@ -63,13 +65,43 @@ export default function Dashboard() {
             Sign out
           </button>
         </div>
+        {/* Mobile right side */}
+        <div className="flex md:hidden items-center gap-3">
+          <div className="bg-purple-50 px-2 py-1 rounded-lg">
+            <span className="text-xs text-purple-600 font-medium">{credits} cr</span>
+          </div>
+          <button
+            className="flex flex-col gap-1.5 p-2"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className="block w-5 h-0.5 bg-gray-600"></span>
+            <span className="block w-5 h-0.5 bg-gray-600"></span>
+            <span className="block w-5 h-0.5 bg-gray-600"></span>
+          </button>
+        </div>
       </nav>
 
-      <div className="px-8 py-8 max-w-6xl mx-auto">
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-b border-gray-100 bg-white px-4 py-4 flex flex-col gap-3">
+          <a href="/discover" className="text-sm text-gray-600 py-2 border-b border-gray-50">Find Influencers</a>
+          <a href="/brands" className="text-sm text-gray-600 py-2 border-b border-gray-50">Find Brands</a>
+          <a href="/campaigns" className="text-sm text-gray-600 py-2 border-b border-gray-50">Campaigns</a>
+          <button
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="text-sm text-red-500 py-2 text-left"
+          >
+            Sign out
+          </button>
+        </div>
+      )}
+
+      <div className="px-4 md:px-8 py-6 md:py-8 max-w-6xl mx-auto">
 
         {/* Welcome */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-gray-900">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
             Welcome back, {user.name} 👋
           </h1>
           <p className="text-gray-500 text-sm mt-1">
@@ -78,38 +110,38 @@ export default function Dashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl p-5 border border-gray-100">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+          <div className="bg-white rounded-xl p-4 md:p-5 border border-gray-100">
             <div className="text-sm text-gray-500 mb-1">Credits remaining</div>
             <div className="text-2xl font-semibold text-purple-600">{credits}</div>
             <div className="text-xs text-gray-400 mt-1">Never expire</div>
           </div>
-          <div className="bg-white rounded-xl p-5 border border-gray-100">
+          <div className="bg-white rounded-xl p-4 md:p-5 border border-gray-100">
             <div className="text-sm text-gray-500 mb-1">Influencers unlocked</div>
             <div className="text-2xl font-semibold text-gray-900">0</div>
-            <div className="text-xs text-gray-400 mt-1">Unlock for 5 credits each</div>
+            <div className="text-xs text-gray-400 mt-1">Unlock for 5 credits</div>
           </div>
-          <div className="bg-white rounded-xl p-5 border border-gray-100">
+          <div className="bg-white rounded-xl p-4 md:p-5 border border-gray-100">
             <div className="text-sm text-gray-500 mb-1">Proposals sent</div>
             <div className="text-2xl font-semibold text-gray-900">0</div>
-            <div className="text-xs text-gray-400 mt-1">Send for 10 credits each</div>
+            <div className="text-xs text-gray-400 mt-1">Send for 10 credits</div>
           </div>
-          <div className="bg-white rounded-xl p-5 border border-gray-100">
+          <div className="bg-white rounded-xl p-4 md:p-5 border border-gray-100">
             <div className="text-sm text-gray-500 mb-1">AI reports</div>
             <div className="text-2xl font-semibold text-gray-900">0</div>
             <div className="text-xs text-gray-400 mt-1">Get one for 3 credits</div>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* Get started */}
-          <div className="col-span-2 bg-white rounded-xl border border-gray-100 p-6">
+          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 p-6">
             <h2 className="font-medium text-gray-900 mb-4">Get started</h2>
             <div className="space-y-3">
               <div className="flex items-center gap-4 p-3 rounded-lg border border-gray-100 hover:bg-gray-50">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-lg">🔍</div>
-                <div className="flex-1">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-lg flex-shrink-0">🔍</div>
+                <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-gray-900">
                     {user.role === "brand" ? "Browse influencers" : "Browse brands"}
                   </div>
@@ -117,25 +149,25 @@ export default function Dashboard() {
                     {user.role === "brand" ? "Search by niche, platform, location — free" : "Find brands looking for your niche — free"}
                   </div>
                 </div>
-                <a href={user.role === "brand" ? "/discover" : "/brands"} className="text-xs text-purple-600 font-medium">Browse →</a>
+                <a href={user.role === "brand" ? "/discover" : "/brands"} className="text-xs text-purple-600 font-medium whitespace-nowrap">Browse →</a>
               </div>
               <div className="flex items-center gap-4 p-3 rounded-lg border border-gray-100 hover:bg-gray-50">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-lg">📋</div>
-                <div className="flex-1">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-lg flex-shrink-0">📋</div>
+                <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-gray-900">Open campaigns</div>
                   <div className="text-xs text-gray-400">
                     {user.role === "brand" ? "Post a campaign — 15 credits" : "Apply to campaigns — 2 credits each"}
                   </div>
                 </div>
-                <a href="/campaigns" className="text-xs text-purple-600 font-medium">View →</a>
+                <a href="/campaigns" className="text-xs text-purple-600 font-medium whitespace-nowrap">View →</a>
               </div>
               <div className="flex items-center gap-4 p-3 rounded-lg border border-gray-100 hover:bg-gray-50">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-lg">💳</div>
-                <div className="flex-1">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-lg flex-shrink-0">💳</div>
+                <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-gray-900">Buy more credits</div>
                   <div className="text-xs text-gray-400">Starter ₹499 · Growth ₹1,499 · Agency ₹3,999</div>
                 </div>
-                <a href="/pricing" className="text-xs text-purple-600 font-medium">Buy →</a>
+                <a href="/pricing" className="text-xs text-purple-600 font-medium whitespace-nowrap">Buy →</a>
               </div>
             </div>
           </div>

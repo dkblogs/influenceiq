@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
 
-function CountUp({ target, suffix = "" }) {
+function CountUp({ target, suffix = "" }: { target: number; suffix?: string }) {
   const [count, setCount] = useState(0)
   const ref = useRef(null)
   const started = useRef(false)
@@ -59,6 +59,7 @@ export default function Home() {
   const [email, setEmail] = useState("")
   const [subscribed, setSubscribed] = useState(false)
   const [heroVisible, setHeroVisible] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     setTimeout(() => setHeroVisible(true), 100)
@@ -68,12 +69,13 @@ export default function Home() {
     <main className="min-h-screen bg-white">
 
       {/* Navigation */}
-      <nav className="flex items-center justify-between px-8 py-4 border-b border-gray-100 sticky top-0 bg-white z-50">
+      <nav className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-gray-100 sticky top-0 bg-white z-50">
         <div className="flex items-center gap-2">
           <span className="text-2xl">⚡</span>
           <span className="text-xl font-semibold">Influence<span className="text-purple-600">IQ</span></span>
         </div>
-        <div className="flex items-center gap-6">
+        {/* Desktop nav */}
+        <div className="hidden md:flex items-center gap-6">
           <a href="/discover" className="text-sm text-gray-500 hover:text-gray-900">Find Influencers</a>
           <a href="/brands" className="text-sm text-gray-500 hover:text-gray-900">Find Brands</a>
           <a href="/campaigns" className="text-sm text-gray-500 hover:text-gray-900">Open Campaigns</a>
@@ -82,23 +84,48 @@ export default function Home() {
           <a href="/login" className="text-sm border border-gray-200 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50">Log in</a>
           <a href="/signup" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Get started free</a>
         </div>
+        {/* Mobile hamburger */}
+        <button
+          className="md:hidden flex flex-col gap-1.5 p-2"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          <span className={`block w-5 h-0.5 bg-gray-600 transition-all ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`}></span>
+          <span className={`block w-5 h-0.5 bg-gray-600 transition-all ${mobileMenuOpen ? "opacity-0" : ""}`}></span>
+          <span className={`block w-5 h-0.5 bg-gray-600 transition-all ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`}></span>
+        </button>
       </nav>
 
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-b border-gray-100 bg-white px-4 py-4 flex flex-col gap-3 z-40">
+          <a href="/discover" className="text-sm text-gray-600 py-2 border-b border-gray-50">Find Influencers</a>
+          <a href="/brands" className="text-sm text-gray-600 py-2 border-b border-gray-50">Find Brands</a>
+          <a href="/campaigns" className="text-sm text-gray-600 py-2 border-b border-gray-50">Open Campaigns</a>
+          <a href="/how-it-works" className="text-sm text-gray-600 py-2 border-b border-gray-50">How it works</a>
+          <a href="/pricing" className="text-sm text-gray-600 py-2 border-b border-gray-50">Pricing</a>
+          <div className="flex gap-3 pt-2">
+            <a href="/login" className="flex-1 text-sm border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-center hover:bg-gray-50">Log in</a>
+            <a href="/signup" className="flex-1 text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center hover:bg-purple-700">Get started</a>
+          </div>
+        </div>
+      )}
+
       {/* Hero */}
-      <section className={`text-center px-8 py-24 max-w-4xl mx-auto transition-all duration-700 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+      <section className={`text-center px-4 md:px-8 py-12 md:py-24 max-w-4xl mx-auto transition-all duration-700 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
         <div className="inline-flex items-center gap-2 bg-purple-50 text-purple-700 text-sm px-4 py-1.5 rounded-full mb-6">
           <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
           India's first AI-scored influencer marketplace
         </div>
-        <h1 className="text-5xl font-semibold text-gray-900 leading-tight mb-6 tracking-tight">
+        <h1 className="text-3xl md:text-5xl font-semibold text-gray-900 leading-tight mb-6 tracking-tight">
           Find the right influencer.<br />
           <span className="text-purple-600">Powered by AI.</span>
         </h1>
-        <p className="text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-lg md:text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed">
           Discover, verify, and hire micro-influencers across Instagram, YouTube,
           Facebook, LinkedIn and X. Pay only for what you use.
         </p>
-        <div className="flex justify-center gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mb-6">
           <a href="/discover" className="bg-purple-600 text-white px-8 py-3 rounded-lg text-base font-medium hover:bg-purple-700 transition-colors">
             Find Influencers — free
           </a>
@@ -110,9 +137,9 @@ export default function Home() {
       </section>
 
       {/* Brand logos */}
-      <section className="border-y border-gray-100 py-8 px-8 overflow-hidden">
+      <section className="border-y border-gray-100 py-8 px-4 md:px-8 overflow-hidden">
         <p className="text-center text-xs text-gray-400 uppercase tracking-widest mb-6">Trusted by brands across India</p>
-        <div className="flex gap-8 justify-center flex-wrap">
+        <div className="flex gap-6 md:gap-8 justify-center flex-wrap">
           {brands.map((brand) => (
             <div key={brand} className="text-sm font-medium text-gray-300 hover:text-gray-500 transition-colors cursor-default">
               {brand}
@@ -122,27 +149,27 @@ export default function Home() {
       </section>
 
       {/* Live stats */}
-      <section className="grid grid-cols-4 gap-6 px-8 py-16 max-w-4xl mx-auto">
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-6 px-4 md:px-8 py-12 md:py-16 max-w-4xl mx-auto">
         <div className="text-center">
-          <div className="text-4xl font-semibold text-gray-900 mb-1">
+          <div className="text-3xl md:text-4xl font-semibold text-gray-900 mb-1">
             <CountUp target={12400} suffix="+" />
           </div>
           <div className="text-sm text-gray-400">Influencers listed</div>
         </div>
         <div className="text-center">
-          <div className="text-4xl font-semibold text-purple-600 mb-1">
+          <div className="text-3xl md:text-4xl font-semibold text-purple-600 mb-1">
             <CountUp target={8920} />
           </div>
           <div className="text-sm text-gray-400">AI verified</div>
         </div>
         <div className="text-center">
-          <div className="text-4xl font-semibold text-gray-900 mb-1">
+          <div className="text-3xl md:text-4xl font-semibold text-gray-900 mb-1">
             <CountUp target={340} suffix="+" />
           </div>
           <div className="text-sm text-gray-400">Niches covered</div>
         </div>
         <div className="text-center">
-          <div className="text-4xl font-semibold text-gray-900 mb-1">
+          <div className="text-3xl md:text-4xl font-semibold text-gray-900 mb-1">
             <CountUp target={5} />
           </div>
           <div className="text-sm text-gray-400">Platforms</div>
@@ -150,16 +177,16 @@ export default function Home() {
       </section>
 
       {/* Featured influencers */}
-      <section className="bg-gray-50 px-8 py-16">
+      <section className="bg-gray-50 px-4 md:px-8 py-12 md:py-16">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-end justify-between mb-8">
             <div>
               <h2 className="text-2xl font-semibold text-gray-900">Featured influencers</h2>
               <p className="text-gray-500 text-sm mt-1">Top AI-scored creators ready for brand partnerships</p>
             </div>
-            <a href="/discover" className="text-sm text-purple-600 font-medium hover:underline">View all →</a>
+            <a href="/discover" className="text-sm text-purple-600 font-medium hover:underline whitespace-nowrap ml-4">View all →</a>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {influencers.map((inf) => (
               <div key={inf.handle} className="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md transition-all hover:-translate-y-0.5">
                 <div className="flex items-center justify-between mb-4">
@@ -177,7 +204,7 @@ export default function Home() {
                     <div className="text-xs text-gray-400">AI Score</div>
                   </div>
                 </div>
-                <div className="flex gap-2 mb-3">
+                <div className="flex gap-2 mb-3 flex-wrap">
                   <span className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">{inf.niche}</span>
                   <span className="text-xs bg-gray-50 text-gray-500 px-2 py-0.5 rounded-full">{inf.platform}</span>
                   <span className="text-xs bg-gray-50 text-gray-500 px-2 py-0.5 rounded-full">{inf.followers}</span>
@@ -192,8 +219,8 @@ export default function Home() {
       </section>
 
       {/* AI Score Demo */}
-      <section className="px-8 py-16 max-w-4xl mx-auto">
-        <div className="grid grid-cols-2 gap-12 items-center">
+      <section className="px-4 md:px-8 py-12 md:py-16 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
           <div>
             <div className="inline-block bg-purple-50 text-purple-700 text-xs px-3 py-1 rounded-full mb-4">AI Scoring Engine</div>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Every influencer scored on 6 real signals</h2>
@@ -242,11 +269,11 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="bg-gray-50 px-8 py-16">
+      <section className="bg-gray-50 px-4 md:px-8 py-12 md:py-16">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl font-semibold text-gray-900 text-center mb-2">What people are saying</h2>
           <p className="text-gray-500 text-center text-sm mb-10">From brands and influencers across India</p>
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {testimonials.map((t) => (
               <div key={t.name} className="bg-white rounded-xl border border-gray-100 p-6">
                 <div className="flex items-center justify-between mb-4">
@@ -271,7 +298,7 @@ export default function Home() {
       </section>
 
       {/* Newsletter */}
-      <section className="px-8 py-16 max-w-2xl mx-auto text-center">
+      <section className="px-4 md:px-8 py-12 md:py-16 max-w-2xl mx-auto text-center">
         <h2 className="text-2xl font-semibold text-gray-900 mb-2">Stay in the loop</h2>
         <p className="text-gray-500 text-sm mb-6">Get influencer marketing tips, platform updates, and new creator spotlights. No spam.</p>
         {subscribed ? (
@@ -279,7 +306,7 @@ export default function Home() {
             You are subscribed! We will be in touch.
           </div>
         ) : (
-          <div className="flex gap-3 max-w-md mx-auto">
+          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
             <input
               type="email"
               value={email}
@@ -298,9 +325,9 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 px-8 py-12">
-        <div className="max-w-5xl mx-auto grid grid-cols-4 gap-8 mb-8">
-          <div>
+      <footer className="border-t border-gray-100 px-4 md:px-8 py-12">
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+          <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <span className="text-xl">⚡</span>
               <span className="font-semibold">Influence<span className="text-purple-600">IQ</span></span>
