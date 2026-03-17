@@ -13,6 +13,8 @@ export default function InfluencerProfile() {
   const [unlocking, setUnlocking] = useState(false)
   const [error, setError] = useState("")
   const [credits, setCredits] = useState(0)
+  const [aiScores, setAiScores] = useState(null)
+  const [scoring, setScoring] = useState(false)
 
   const colorMap = {
     PS: "bg-purple-500", RK: "bg-orange-500", AN: "bg-green-500",
@@ -22,7 +24,11 @@ export default function InfluencerProfile() {
 
   useEffect(() => {
     fetchInfluencer()
-    if (session?.user?.credits) setCredits(session.user.credits)
+    if (session?.user?.id) {
+      fetch(`/api/user-credits?userId=${session.user.id}`)
+        .then(res => res.json())
+        .then(data => setCredits(data.credits))
+    }
   }, [params.id, session])
 
   async function fetchInfluencer() {
@@ -34,20 +40,14 @@ export default function InfluencerProfile() {
   }
 
   async function handleUnlock() {
-    if (!session) {
-      router.push("/login")
-      return
-    }
+    if (!session) { router.push("/login"); return }
     setUnlocking(true)
     setError("")
 
     const res = await fetch("/api/unlock-contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        influencerId: params.id,
-        userId: session.user.id,
-      }),
+      body: JSON.stringify({ influencerId: params.id, userId: session.user.id }),
     })
 
     const data = await res.json()
@@ -62,8 +62,34 @@ export default function InfluencerProfile() {
     setCredits(data.newCredits)
     setInfluencer((prev) => ({ ...prev, email: data.email, phone: data.phone }))
     setUnlocking(false)
-    await fetch("/api/auth/session?update")
-    window.location.reload()
+  }
+
+  async function generateScore() {
+    if (!session) { router.push("/login"); return }
+    setScoring(true)
+
+    if (credits < 3) {
+      alert("You need 3 credits to generate an AI score.")
+      setScoring(false)
+      return
+    }
+
+    const res = await fetch("/api/ai-score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ influencerId: params.id }),
+    })
+
+    const data = await res.json()
+
+    if (data.success) {
+      setAiScores(data.scores)
+      setCredits((prev) => prev - 3)
+    } else {
+      alert("Failed to generate score. Please try again.")
+    }
+
+    setScoring(false)
   }
 
   if (loading) {
@@ -85,7 +111,6 @@ export default function InfluencerProfile() {
   return (
     <main className="min-h-screen bg-gray-50">
 
-      {/* Navigation */}
       <nav className="bg-white flex items-center justify-between px-8 py-4 border-b border-gray-100">
         <a href="/" className="flex items-center gap-2">
           <span className="text-2xl">⚡</span>
@@ -130,6 +155,7 @@ export default function InfluencerProfile() {
           </div>
         </div>
 
+        {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-xl border border-gray-100 p-5 text-center">
             <div className="text-2xl font-semibold text-gray-900">{influencer.followers}</div>
@@ -143,6 +169,65 @@ export default function InfluencerProfile() {
             <div className="text-2xl font-semibold text-gray-900">{influencer.rate}</div>
             <div className="text-sm text-gray-400 mt-1">Avg. rate per post</div>
           </div>
+        </div>
+
+        {/* AI Score Breakdown */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-8 mb-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="font-semibold text-gray-900">AI Score Breakdown</h2>
+              <p className="text-xs text-gray-400 mt-1">Powered by InfluenceIQ AI · Updated on demand</p>
+            </div>
+            <button
+              onClick={generateScore}
+              disabled={scoring}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50 transition-colors"
+            >
+              {scoring ? "Analyzing..." : "Generate AI Score — 3 cr"}
+            </button>
+          </div>
+
+          {aiScores ? (
+            <div>
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                {[
+                  { label: "Engagement Rate", value: aiScores.engagement, note: aiScores.engagementNote },
+                  { label: "Audience Quality", value: aiScores.audienceQuality, note: aiScores.audienceQualityNote },
+                  { label: "Content Consistency", value: aiScores.contentConsistency, note: aiScores.contentConsistencyNote },
+                  { label: "Niche Authority", value: aiScores.nicheAuthority, note: aiScores.nicheAuthorityNote },
+                  { label: "Growth Trend", value: aiScores.growthTrend, note: aiScores.growthTrendNote },
+                  { label: "Brand Safety", value: aiScores.brandSafety, note: aiScores.brandSafetyNote },
+                ].map((item) => (
+                  <div key={item.label} className="bg-gray-50 rounded-xl p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium text-gray-700">{item.label}</span>
+                      <span className="text-sm font-semibold text-purple-600">{item.value}</span>
+                    </div>
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden mb-2">
+                      <div
+                        className="h-full bg-purple-500 rounded-full transition-all duration-1000"
+                        style={{ width: `${item.value}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-400">{item.note}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-purple-50 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg font-semibold text-purple-600">{aiScores.overallScore}</span>
+                  <span className="text-sm text-gray-500">Overall AI Score</span>
+                </div>
+                <p className="text-sm text-gray-600">{aiScores.summary}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-400">
+              <div className="text-4xl mb-3">⚡</div>
+              <div className="font-medium text-gray-600 mb-1">No AI score generated yet</div>
+              <div className="text-sm">Click Generate AI Score to get a detailed breakdown — costs 3 credits</div>
+            </div>
+          )}
         </div>
 
         {/* Contact section */}
@@ -174,13 +259,11 @@ export default function InfluencerProfile() {
               <p className="text-sm text-gray-500 mb-4">
                 Unlock this influencer's email and phone number to contact them directly.
               </p>
-
               {error && (
                 <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-4">
                   {error}
                 </div>
               )}
-
               <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl mb-4">
                 <div className="flex-1">
                   <div className="text-sm font-medium text-gray-700">Email address</div>
@@ -191,7 +274,6 @@ export default function InfluencerProfile() {
                   <div className="text-sm text-gray-400">+91 ••••• •••••</div>
                 </div>
               </div>
-
               <button
                 onClick={handleUnlock}
                 disabled={unlocking}

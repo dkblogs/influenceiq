@@ -129,7 +129,7 @@ export default function Discover() {
         ) : (
           <div className="grid grid-cols-3 gap-6">
             {influencers.map((inf) => (
-              <div key={inf.id} className="border border-gray-100 rounded-xl p-5 hover:shadow-md transition-all hover:-translate-y-0.5">
+              <div key={inf.id} onClick={() => window.location.href = `/influencer/${inf.id}`} className="border border-gray-100 rounded-xl p-5 hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className={`w-12 h-12 rounded-full ${colorMap[inf.initials] || "bg-purple-500"} flex items-center justify-center text-white font-medium`}>
