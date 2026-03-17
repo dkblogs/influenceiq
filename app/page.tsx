@@ -75,9 +75,10 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-6">
           <a href="/discover" className="text-sm text-gray-500 hover:text-gray-900">Find Influencers</a>
+          <a href="/brands" className="text-sm text-gray-500 hover:text-gray-900">Find Brands</a>
+          <a href="/campaigns" className="text-sm text-gray-500 hover:text-gray-900">Open Campaigns</a>
           <a href="/how-it-works" className="text-sm text-gray-500 hover:text-gray-900">How it works</a>
           <a href="/pricing" className="text-sm text-gray-500 hover:text-gray-900">Pricing</a>
-          <a href="/join" className="text-sm text-gray-500 hover:text-gray-900">For Influencers</a>
           <a href="/login" className="text-sm border border-gray-200 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50">Log in</a>
           <a href="/signup" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Get started free</a>
         </div>
@@ -310,6 +311,8 @@ export default function Home() {
             <div className="text-sm font-medium text-gray-900 mb-3">Platform</div>
             <div className="space-y-2">
               <a href="/discover" className="block text-sm text-gray-400 hover:text-gray-600">Find Influencers</a>
+              <a href="/brands" className="block text-sm text-gray-400 hover:text-gray-600">Find Brands</a>
+              <a href="/campaigns" className="block text-sm text-gray-400 hover:text-gray-600">Open Campaigns</a>
               <a href="/join" className="block text-sm text-gray-400 hover:text-gray-600">Join as Influencer</a>
               <a href="/pricing" className="block text-sm text-gray-400 hover:text-gray-600">Pricing</a>
             </div>

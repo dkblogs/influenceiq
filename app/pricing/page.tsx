@@ -19,13 +19,8 @@ export default function Pricing() {
       handler: function (response) {
         alert(`Payment successful! ${credits} credits will be added to your account.`)
       },
-      prefill: {
-        name: "",
-        email: "",
-      },
-      theme: {
-        color: "#7C3AED",
-      },
+      prefill: { name: "", email: "" },
+      theme: { color: "#7C3AED" },
     }
 
     const razor = new window.Razorpay(options)
@@ -34,17 +29,13 @@ export default function Pricing() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-
-      {/* Razorpay script */}
       <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
       {/* Navigation */}
       <nav className="bg-white flex items-center justify-between px-8 py-4 border-b border-gray-100">
         <a href="/" className="flex items-center gap-2">
           <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold">
-            Influence<span className="text-purple-600">IQ</span>
-          </span>
+          <span className="text-xl font-semibold">Influence<span className="text-purple-600">IQ</span></span>
         </a>
         <div className="flex items-center gap-4">
           <a href="/discover" className="text-sm text-gray-500 hover:text-gray-900">Find Influencers</a>
@@ -56,12 +47,8 @@ export default function Pricing() {
 
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-semibold text-gray-900 mb-4">
-            Simple, pay-as-you-go pricing
-          </h1>
-          <p className="text-gray-500 text-lg">
-            Buy credits once. Use them whenever. They never expire.
-          </p>
+          <h1 className="text-4xl font-semibold text-gray-900 mb-4">Simple, pay-as-you-go pricing</h1>
+          <p className="text-gray-500 text-lg">One credit system for everyone — brands and influencers alike.</p>
           <div className="inline-block bg-green-50 text-green-700 text-sm px-4 py-1 rounded-full mt-4">
             Every new account gets 5 free credits — no card needed
           </div>
@@ -69,142 +56,131 @@ export default function Pricing() {
 
         {/* Pricing cards */}
         <div className="grid grid-cols-3 gap-6 mb-16">
-
-          {/* Starter */}
           <div className="bg-white rounded-2xl border border-gray-100 p-8">
             <div className="text-sm font-medium text-gray-500 mb-2">Starter</div>
             <div className="text-4xl font-semibold text-gray-900 mb-1">₹499</div>
             <div className="text-sm text-gray-400 mb-6">100 credits</div>
             <ul className="space-y-3 mb-8">
-              <li className="flex items-center gap-2 text-sm text-gray-600">
-                <span className="text-green-500">✓</span> Unlock 20 influencer contacts
-              </li>
-              <li className="flex items-center gap-2 text-sm text-gray-600">
-                <span className="text-green-500">✓</span> Get 5 full AI reports
-              </li>
-              <li className="flex items-center gap-2 text-sm text-gray-600">
-                <span className="text-green-500">✓</span> Send 10 proposals
-              </li>
-              <li className="flex items-center gap-2 text-sm text-gray-600">
-                <span className="text-green-500">✓</span> Browse all influencers free
-              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-600"><span className="text-green-500">✓</span>Unlock 20 influencer contacts</li>
+              <li className="flex items-center gap-2 text-sm text-gray-600"><span className="text-green-500">✓</span>5 AI reports</li>
+              <li className="flex items-center gap-2 text-sm text-gray-600"><span className="text-green-500">✓</span>10 collaboration requests</li>
+              <li className="flex items-center gap-2 text-sm text-gray-600"><span className="text-green-500">✓</span>Post 6 open campaigns</li>
+              <li className="flex items-center gap-2 text-sm text-gray-600"><span className="text-green-500">✓</span>50 campaign applications</li>
             </ul>
-            <button
-              onClick={() => handlePayment(499, 100, "Starter")}
-              className="w-full border border-purple-600 text-purple-600 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-50"
-            >
+            <button onClick={() => handlePayment(499, 100, "Starter")} className="w-full border border-purple-600 text-purple-600 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-50">
               Buy Starter
             </button>
           </div>
 
-          {/* Growth */}
           <div className="bg-purple-600 rounded-2xl p-8 relative">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-400 text-white text-xs px-3 py-1 rounded-full font-medium">
-              Most popular
-            </div>
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-400 text-white text-xs px-3 py-1 rounded-full font-medium">Most popular</div>
             <div className="text-sm font-medium text-purple-200 mb-2">Growth</div>
             <div className="text-4xl font-semibold text-white mb-1">₹1,499</div>
             <div className="text-sm text-purple-300 mb-6">400 credits</div>
             <ul className="space-y-3 mb-8">
-              <li className="flex items-center gap-2 text-sm text-purple-100">
-                <span className="text-purple-200">✓</span> Unlock 80 influencer contacts
-              </li>
-              <li className="flex items-center gap-2 text-sm text-purple-100">
-                <span className="text-purple-200">✓</span> Get 20 full AI reports
-              </li>
-              <li className="flex items-center gap-2 text-sm text-purple-100">
-                <span className="text-purple-200">✓</span> Send 40 proposals
-              </li>
-              <li className="flex items-center gap-2 text-sm text-purple-100">
-                <span className="text-purple-200">✓</span> Priority support
-              </li>
-              <li className="flex items-center gap-2 text-sm text-purple-100">
-                <span className="text-purple-200">✓</span> Credits never expire
-              </li>
+              <li className="flex items-center gap-2 text-sm text-purple-100"><span className="text-purple-200">✓</span>Unlock 80 influencer contacts</li>
+              <li className="flex items-center gap-2 text-sm text-purple-100"><span className="text-purple-200">✓</span>20 AI reports</li>
+              <li className="flex items-center gap-2 text-sm text-purple-100"><span className="text-purple-200">✓</span>40 collaboration requests</li>
+              <li className="flex items-center gap-2 text-sm text-purple-100"><span className="text-purple-200">✓</span>Post 26 open campaigns</li>
+              <li className="flex items-center gap-2 text-sm text-purple-100"><span className="text-purple-200">✓</span>200 campaign applications</li>
+              <li className="flex items-center gap-2 text-sm text-purple-100"><span className="text-purple-200">✓</span>Priority support</li>
             </ul>
-            <button
-              onClick={() => handlePayment(1499, 400, "Growth")}
-              className="w-full bg-white text-purple-600 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-50"
-            >
+            <button onClick={() => handlePayment(1499, 400, "Growth")} className="w-full bg-white text-purple-600 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-50">
               Buy Growth
             </button>
           </div>
 
-          {/* Agency */}
           <div className="bg-white rounded-2xl border border-gray-100 p-8">
             <div className="text-sm font-medium text-gray-500 mb-2">Agency</div>
             <div className="text-4xl font-semibold text-gray-900 mb-1">₹3,999</div>
             <div className="text-sm text-gray-400 mb-6">1,200 credits</div>
             <ul className="space-y-3 mb-8">
-              <li className="flex items-center gap-2 text-sm text-gray-600">
-                <span className="text-green-500">✓</span> Unlock 240 influencer contacts
-              </li>
-              <li className="flex items-center gap-2 text-sm text-gray-600">
-                <span className="text-green-500">✓</span> Get 60 full AI reports
-              </li>
-              <li className="flex items-center gap-2 text-sm text-gray-600">
-                <span className="text-green-500">✓</span> Send 120 proposals
-              </li>
-              <li className="flex items-center gap-2 text-sm text-gray-600">
-                <span className="text-green-500">✓</span> CSV export
-              </li>
-              <li className="flex items-center gap-2 text-sm text-gray-600">
-                <span className="text-green-500">✓</span> API access
-              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-600"><span className="text-green-500">✓</span>Unlock 240 influencer contacts</li>
+              <li className="flex items-center gap-2 text-sm text-gray-600"><span className="text-green-500">✓</span>60 AI reports</li>
+              <li className="flex items-center gap-2 text-sm text-gray-600"><span className="text-green-500">✓</span>120 collaboration requests</li>
+              <li className="flex items-center gap-2 text-sm text-gray-600"><span className="text-green-500">✓</span>Post 80 open campaigns</li>
+              <li className="flex items-center gap-2 text-sm text-gray-600"><span className="text-green-500">✓</span>600 campaign applications</li>
+              <li className="flex items-center gap-2 text-sm text-gray-600"><span className="text-green-500">✓</span>CSV export + API access</li>
             </ul>
-            <button
-              onClick={() => handlePayment(3999, 1200, "Agency")}
-              className="w-full border border-purple-600 text-purple-600 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-50"
-            >
+            <button onClick={() => handlePayment(3999, 1200, "Agency")} className="w-full border border-purple-600 text-purple-600 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-50">
               Buy Agency
             </button>
           </div>
-
         </div>
 
-        {/* Credit table */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">What each action costs</h2>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between py-3 border-b border-gray-50">
-              <div>
-                <div className="text-sm font-medium text-gray-900">Unlock influencer contact</div>
-                <div className="text-xs text-gray-400">Get full name, email, and phone number</div>
+        {/* Two-sided credit table */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-8 mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">What each action costs</h2>
+          <p className="text-sm text-gray-400 mb-6">One credit system for both brands and influencers.</p>
+
+          <div className="grid grid-cols-2 gap-8">
+
+            {/* Brands */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center text-xs font-medium text-blue-600">B</div>
+                <span className="font-medium text-gray-900 text-sm">For Brands</span>
               </div>
-              <div className="text-sm font-semibold text-purple-600">5 credits</div>
-            </div>
-            <div className="flex items-center justify-between py-3 border-b border-gray-50">
-              <div>
-                <div className="text-sm font-medium text-gray-900">Full AI scoring report</div>
-                <div className="text-xs text-gray-400">Engagement, fake followers, audience demographics</div>
+              <div className="space-y-3">
+                {[
+                  ["Browse and search influencers", "Free"],
+                  ["Unlock influencer contact details", "5 credits"],
+                  ["Full AI scoring report", "3 credits"],
+                  ["Send collaboration request", "10 credits"],
+                  ["Post an open campaign", "15 credits"],
+                ].map(([action, cost]) => (
+                  <div key={action} className="flex justify-between items-center py-2 border-b border-gray-50">
+                    <span className="text-sm text-gray-600">{action}</span>
+                    <span className={`text-sm font-medium ${cost === "Free" ? "text-green-600" : "text-purple-600"}`}>{cost}</span>
+                  </div>
+                ))}
               </div>
-              <div className="text-sm font-semibold text-purple-600">3 credits</div>
             </div>
-            <div className="flex items-center justify-between py-3 border-b border-gray-50">
-              <div>
-                <div className="text-sm font-medium text-gray-900">Send campaign proposal</div>
-                <div className="text-xs text-gray-400">Direct brief to influencer inbox</div>
+
+            {/* Influencers */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-6 h-6 bg-purple-100 rounded-md flex items-center justify-center text-xs font-medium text-purple-600">I</div>
+                <span className="font-medium text-gray-900 text-sm">For Influencers</span>
               </div>
-              <div className="text-sm font-semibold text-purple-600">10 credits</div>
-            </div>
-            <div className="flex items-center justify-between py-3 border-b border-gray-50">
-              <div>
-                <div className="text-sm font-medium text-gray-900">Verified badge for influencers</div>
-                <div className="text-xs text-gray-400">Stand out — 3x more brand views</div>
+              <div className="space-y-3">
+                {[
+                  ["List your profile", "Free"],
+                  ["Browse and discover brands", "Free"],
+                  ["Receive collaboration requests", "Free"],
+                  ["Send collaboration request to brand", "10 credits"],
+                  ["See who viewed your profile", "5 credits"],
+                  ["Apply to open brand campaign", "2 credits"],
+                  ["Get verified badge", "20 credits"],
+                ].map(([action, cost]) => (
+                  <div key={action} className="flex justify-between items-center py-2 border-b border-gray-50">
+                    <span className="text-sm text-gray-600">{action}</span>
+                    <span className={`text-sm font-medium ${cost === "Free" ? "text-green-600" : "text-purple-600"}`}>{cost}</span>
+                  </div>
+                ))}
               </div>
-              <div className="text-sm font-semibold text-purple-600">20 credits</div>
             </div>
-            <div className="flex items-center justify-between py-3">
-              <div>
-                <div className="text-sm font-medium text-gray-900">Browse and search influencers</div>
-                <div className="text-xs text-gray-400">Unlimited searching and filtering</div>
-              </div>
-              <div className="text-sm font-semibold text-green-600">Free</div>
-            </div>
+
           </div>
         </div>
 
+        {/* Welcome credits */}
+        <div className="bg-purple-50 rounded-2xl p-6 text-center">
+          <div className="text-2xl mb-2">🎁</div>
+          <div className="font-medium text-gray-900 mb-1">5 free credits for every new account</div>
+          <div className="text-sm text-gray-500 mb-4">Enough to apply to 2 campaigns, get 1 AI report, or see who viewed your profile. No card needed.</div>
+          <a href="/signup" className="inline-block bg-purple-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700">
+            Create free account
+          </a>
+        </div>
+
       </div>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-100 px-8 py-8 text-center text-sm text-gray-400">
+        InfluenceIQ · India's AI Influencer Marketplace · 2025
+      </footer>
+
     </main>
   )
 }
