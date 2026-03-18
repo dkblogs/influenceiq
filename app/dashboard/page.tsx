@@ -194,6 +194,7 @@ export default function Dashboard() {
       fetch(`/api/influencers?userId=${u.id}`)
         .then(res => res.json())
         .then(data => {
+          console.log("Influencer profile lookup for userId:", u.id, "result:", data.influencers)
           const inf = (data.influencers || [])[0] || null
           setMyInfluencerProfile(inf)
           if (inf?.id) {

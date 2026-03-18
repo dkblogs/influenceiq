@@ -28,21 +28,24 @@ export async function POST(request) {
     }
 
     const body = await request.json()
-    const { influencerId, brandName, campaignTitle, description, deliverables, results, mediaUrl, completedAt } = body
+    const { brandName, campaignTitle, description, deliverables, results, mediaUrl, completedAt } = body
 
-    if (!influencerId || !brandName || !campaignTitle) {
-      return Response.json({ error: "influencerId, brandName, and campaignTitle are required" }, { status: 400 })
+    if (!brandName || !campaignTitle) {
+      return Response.json({ error: "brandName and campaignTitle are required" }, { status: 400 })
     }
 
-    // Verify the session user owns this influencer profile
-    const influencer = await prisma.influencer.findUnique({ where: { id: influencerId } })
-    if (!influencer || influencer.userId !== session.user.id) {
-      return Response.json({ error: "Forbidden" }, { status: 403 })
+    // Look up the influencer profile owned by this session user
+    const influencer = await prisma.influencer.findFirst({
+      where: { userId: session.user.id },
+    })
+    console.log("Portfolio POST - session.user.id:", session.user.id, "influencer found:", influencer?.id ?? null)
+    if (!influencer) {
+      return Response.json({ error: "No influencer profile linked to your account" }, { status: 403 })
     }
 
     const item = await prisma.portfolioItem.create({
       data: {
-        influencerId,
+        influencerId: influencer.id,
         brandName,
         campaignTitle,
         description: description || null,

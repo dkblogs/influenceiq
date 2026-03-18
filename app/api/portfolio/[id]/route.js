@@ -5,10 +5,19 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 async function getOwnerCheck(itemId, session) {
   const item = await prisma.portfolioItem.findUnique({
     where: { id: itemId },
-    include: { influencer: { select: { userId: true } } },
+    include: { influencer: { select: { userId: true, id: true } } },
   })
   if (!item) return { error: "Not found", status: 404 }
-  if (item.influencer.userId !== session.user.id) return { error: "Forbidden", status: 403 }
+
+  // Also accept ownership if the session user's influencer profile matches via findFirst
+  const sessionInfluencer = await prisma.influencer.findFirst({
+    where: { userId: session.user.id },
+    select: { id: true },
+  })
+  const ownsViaUserId = item.influencer.userId === session.user.id
+  const ownsViaProfile = sessionInfluencer?.id === item.influencer.id
+  if (!ownsViaUserId && !ownsViaProfile) return { error: "Forbidden", status: 403 }
+
   return { item }
 }
 
