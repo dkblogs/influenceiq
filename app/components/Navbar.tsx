@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useSession, signOut } from "next-auth/react"
 import { usePathname } from "next/navigation"
 
@@ -7,38 +7,56 @@ export default function Navbar() {
   const { data: session, status } = useSession()
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [credits, setCredits] = useState<number | null>(null)
-  const [brandVerified, setBrandVerified] = useState(false)
-
   const user = session?.user as any
+  const [credits, setCredits] = useState<number | null>(user?.credits ?? null)
+  const [brandVerified, setBrandVerified] = useState(false)
+  const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const loggedIn = status !== "loading" && !!session
   const role = user?.role
 
   useEffect(() => {
-    if (session?.user?.id) {
-      fetch(`/api/user-credits?userId=${(session.user as any).id}`)
+    if (!user?.id) return
+
+    function fetchCredits() {
+      fetch(`/api/user-credits?userId=${user.id}`)
         .then((r) => r.json())
         .then((d) => {
           if (typeof d.credits === "number") setCredits(d.credits)
           setBrandVerified(d.brandVerified ?? false)
         })
+        .catch(() => {})
     }
-  }, [session?.user?.id])
 
-  function link(href: string, label: string, extraClass = "") {
+    fetchCredits()
+
+    // retry once after 3s if credits still null
+    retryRef.current = setTimeout(() => {
+      setCredits((prev) => {
+        if (prev === null) fetchCredits()
+        return prev
+      })
+    }, 3000)
+
+    return () => {
+      if (retryRef.current) clearTimeout(retryRef.current)
+    }
+  }, [user?.id])
+
+  function link(href: string, label: string) {
     const isActive = pathname === href
     return (
       <a
         key={href}
         href={href}
-        className={`text-sm transition-colors ${isActive ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8] hover:text-[#F8FAFC]"} ${extraClass}`}
+        className={`text-sm transition-colors whitespace-nowrap ${isActive ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8] hover:text-[#F8FAFC]"}`}
       >
         {label}
       </a>
     )
   }
 
-  const centerLinks: { href: string; label: string }[] = loggedIn
+  const navLinks: { href: string; label: string }[] = loggedIn
     ? role === "brand"
       ? [
           { href: "/discover", label: "Discover" },
@@ -71,20 +89,23 @@ export default function Navbar() {
           </span>
         </a>
 
-        {/* Desktop center links */}
+        {/* Desktop: all links + actions on the right */}
         <div className="hidden md:flex items-center gap-5">
-          {centerLinks.map((l) => link(l.href, l.label))}
-        </div>
+          {navLinks.map((l) => link(l.href, l.label))}
 
-        {/* Desktop right */}
-        <div className="hidden md:flex items-center gap-3 ml-auto">
           {loggedIn ? (
             <>
-              <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-full">
+              {/* Separator */}
+              <span className="w-px h-4 bg-[#1E1E2E]" />
+
+              {/* Credits badge */}
+              <div className="flex items-center bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-full">
                 <span className="text-xs text-purple-400 font-medium">
                   {credits !== null ? `${credits} credits` : "…"}
                 </span>
               </div>
+
+              {/* Verified / Get Verified (brand only) */}
               {role === "brand" && (
                 brandVerified ? (
                   <span className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-full">
@@ -99,6 +120,7 @@ export default function Navbar() {
                   </a>
                 )
               )}
+
               {link("/dashboard", "Dashboard")}
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
@@ -109,6 +131,7 @@ export default function Navbar() {
             </>
           ) : (
             <>
+              <span className="w-px h-4 bg-[#1E1E2E]" />
               {link("/login", "Log in")}
               <a
                 href="/signup"
@@ -135,7 +158,7 @@ export default function Navbar() {
       {/* Mobile dropdown */}
       {mobileOpen && (
         <div className="md:hidden sticky top-[65px] z-40 border-b border-[#1E1E2E] bg-[#0A0A0F] px-4 py-4 flex flex-col gap-1">
-          {centerLinks.map((l) => (
+          {navLinks.map((l) => (
             <a
               key={l.href}
               href={l.href}
