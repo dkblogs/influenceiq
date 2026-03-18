@@ -3,7 +3,9 @@
     "allow": [
       "Bash(grep -r \"responsive\\\\|@media\\\\|sm:\\\\|md:\\\\|lg:\" /c/Users/admin/Desktop/influenceiq/app/*.tsx /c/Users/admin/Desktop/influenceiq/app/*/*.tsx)",
       "Bash(node -e \"require\\(''''sharp''''\\)\")",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npx prisma:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

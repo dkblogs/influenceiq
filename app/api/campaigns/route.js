@@ -2,8 +2,13 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET(request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const brandId = searchParams.get("brandId")
+
+    const where = brandId ? { brandId } : { status: "Open" }
+
     const campaigns = await prisma.campaign.findMany({
-      where: { status: "Open" },
+      where,
       orderBy: { createdAt: "desc" },
       include: {
         _count: { select: { applications: true } },

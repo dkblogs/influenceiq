@@ -129,3 +129,19 @@ model CollaborationRequest {
   status       String   @default("pending")
   createdAt    DateTime @default(now())
 }
+
+model CampaignReview {
+  id           String   @id @default(cuid())
+  campaignId   String
+  influencerId String
+  brandId      String
+  rating       Int
+  review       String
+  campaignName String
+  campaignDesc String
+  namePublic   Boolean  @default(true)
+  reviewPublic Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  @@unique([campaignId, influencerId, brandId])
+}

@@ -41,6 +41,9 @@ export default function InfluencerProfile() {
   const [credits, setCredits] = useState(0)
   const [aiScores, setAiScores] = useState<any>(null)
   const [scoring, setScoring] = useState(false)
+  const [reviews, setReviews] = useState<any[]>([])
+  const [reviewsTotal, setReviewsTotal] = useState(0)
+  const [reviewsAvg, setReviewsAvg] = useState(0)
 
   const colorMap: Record<string, string> = {
     PS: "bg-purple-500", RK: "bg-orange-500", AN: "bg-green-500",
@@ -50,6 +53,15 @@ export default function InfluencerProfile() {
 
   useEffect(() => {
     fetchInfluencer()
+    if (params.id) {
+      fetch(`/api/campaign-reviews?influencerId=${params.id}`)
+        .then(res => res.json())
+        .then(data => {
+          setReviews(data.reviews || [])
+          setReviewsTotal(data.total || 0)
+          setReviewsAvg(data.avgRating || 0)
+        })
+    }
     if (session?.user?.id) {
       fetch(`/api/user-credits?userId=${session.user.id}`)
         .then(res => res.json())
@@ -353,6 +365,58 @@ export default function InfluencerProfile() {
             )}
           </div>
         )}
+
+        {/* Campaign History - visible to all */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-8 mt-6">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="font-semibold text-gray-900">Campaign History</h2>
+            <span className="text-xs text-gray-400">{reviewsTotal} campaign{reviewsTotal !== 1 ? "s" : ""}</span>
+          </div>
+
+          {/* Summary row */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex gap-0.5">
+              {[1,2,3,4,5].map((star) => (
+                <span key={star} className={`text-lg ${star <= Math.round(reviewsAvg) ? "text-yellow-400" : "text-gray-200"}`}>★</span>
+              ))}
+            </div>
+            <span className="text-sm font-medium text-gray-700">
+              {reviewsAvg > 0 ? reviewsAvg.toFixed(1) : "—"}
+            </span>
+            <span className="text-sm text-gray-400">avg across {reviewsTotal} review{reviewsTotal !== 1 ? "s" : ""}</span>
+          </div>
+
+          {reviews.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">
+              <div className="text-3xl mb-2">📋</div>
+              <div className="text-sm">No campaign reviews yet</div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((r) => (
+                <div key={r.id} className="border border-gray-100 rounded-xl p-4">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div>
+                      <div className="font-medium text-gray-900 text-sm">{r.campaignName}</div>
+                      {r.campaignDesc && (
+                        <div className="text-xs text-gray-400 mt-0.5">{r.campaignDesc}</div>
+                      )}
+                    </div>
+                    <div className="flex gap-0.5 flex-shrink-0">
+                      {[1,2,3,4,5].map((star) => (
+                        <span key={star} className={`text-sm ${star <= r.rating ? "text-yellow-400" : "text-gray-200"}`}>★</span>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600">{r.review}</p>
+                  <div className="text-xs text-gray-400 mt-2">
+                    {new Date(r.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
       </div>
     </main>

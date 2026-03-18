@@ -3,11 +3,175 @@ import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
+function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const [hovered, setHovered] = useState(0)
+  return (
+    <div className="flex gap-1">
+      {[1,2,3,4,5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          className={`text-2xl transition-colors ${star <= (hovered || value) ? "text-yellow-400" : "text-gray-200"}`}
+          onMouseEnter={() => setHovered(star)}
+          onMouseLeave={() => setHovered(0)}
+          onClick={() => onChange(star)}
+        >★</button>
+      ))}
+    </div>
+  )
+}
+
+function ReviewModal({ campaign, onClose, onSubmit }: {
+  campaign: any
+  onClose: () => void
+  onSubmit: (data: any) => void
+}) {
+  const [influencerSearch, setInfluencerSearch] = useState("")
+  const [influencerResults, setInfluencerResults] = useState<any[]>([])
+  const [selectedInfluencer, setSelectedInfluencer] = useState<any>(null)
+  const [rating, setRating] = useState(0)
+  const [review, setReview] = useState("")
+  const [namePublic, setNamePublic] = useState(true)
+  const [reviewPublic, setReviewPublic] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState("")
+
+  async function searchInfluencers(q: string) {
+    if (q.length < 2) { setInfluencerResults([]); return }
+    const res = await fetch(`/api/influencers?search=${encodeURIComponent(q)}`)
+    const data = await res.json()
+    setInfluencerResults((data.influencers || []).slice(0, 5))
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!selectedInfluencer) { setError("Please select an influencer"); return }
+    if (!rating) { setError("Please select a star rating"); return }
+    setSubmitting(true)
+    setError("")
+    await onSubmit({
+      campaignId: campaign.id,
+      influencerId: selectedInfluencer.id,
+      rating,
+      review,
+      campaignName: campaign.title,
+      campaignDesc: campaign.description,
+      namePublic,
+      reviewPublic,
+    })
+    setSubmitting(false)
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="font-semibold text-gray-900">Rate Influencer</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+        </div>
+        <div className="text-xs text-gray-400 mb-4 bg-gray-50 px-3 py-2 rounded-lg">{campaign.title}</div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Influencer search */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Influencer</label>
+            {selectedInfluencer ? (
+              <div className="flex items-center justify-between bg-purple-50 px-3 py-2 rounded-lg">
+                <span className="text-sm text-purple-700 font-medium">{selectedInfluencer.name}</span>
+                <button type="button" className="text-xs text-gray-400 hover:text-gray-600" onClick={() => setSelectedInfluencer(null)}>Change</button>
+              </div>
+            ) : (
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search influencer name..."
+                  value={influencerSearch}
+                  onChange={(e) => { setInfluencerSearch(e.target.value); searchInfluencers(e.target.value) }}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+                />
+                {influencerResults.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg mt-1 shadow-lg z-10">
+                    {influencerResults.map((inf) => (
+                      <button
+                        key={inf.id}
+                        type="button"
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+                        onClick={() => { setSelectedInfluencer(inf); setInfluencerResults([]); setInfluencerSearch("") }}
+                      >
+                        <span className="font-medium text-gray-900">{inf.name}</span>
+                        <span className="text-gray-400 text-xs">{inf.niche}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Star rating */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+            <StarPicker value={rating} onChange={setRating} />
+          </div>
+
+          {/* Review */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Review <span className="text-gray-400 font-normal">(optional)</span></label>
+            <textarea
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
+              placeholder="Describe the collaboration..."
+              rows={3}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none"
+            />
+          </div>
+
+          {/* Toggles */}
+          <div className="space-y-2">
+            <label className="flex items-center justify-between cursor-pointer">
+              <span className="text-sm text-gray-600">Make campaign name public</span>
+              <div
+                className={`w-10 h-5 rounded-full transition-colors relative ${namePublic ? "bg-purple-600" : "bg-gray-200"}`}
+                onClick={() => setNamePublic(!namePublic)}
+              >
+                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${namePublic ? "translate-x-5" : "translate-x-0.5"}`} />
+              </div>
+            </label>
+            <label className="flex items-center justify-between cursor-pointer">
+              <span className="text-sm text-gray-600">Make review public</span>
+              <div
+                className={`w-10 h-5 rounded-full transition-colors relative ${reviewPublic ? "bg-purple-600" : "bg-gray-200"}`}
+                onClick={() => setReviewPublic(!reviewPublic)}
+              >
+                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${reviewPublic ? "translate-x-5" : "translate-x-0.5"}`} />
+              </div>
+            </label>
+          </div>
+
+          {error && <div className="text-red-600 text-sm">{error}</div>}
+
+          <div className="flex gap-3 pt-1">
+            <button type="button" onClick={onClose} className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-lg text-sm hover:bg-gray-50">
+              Cancel
+            </button>
+            <button type="submit" disabled={submitting} className="flex-1 bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50">
+              {submitting ? "Submitting..." : "Submit Review"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export default function Dashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [credits, setCredits] = useState(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [brandCampaigns, setBrandCampaigns] = useState<any[]>([])
+  const [reviewModal, setReviewModal] = useState<any>(null)
+  const [reviewSuccess, setReviewSuccess] = useState("")
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -20,8 +184,29 @@ export default function Dashboard() {
       fetch(`/api/user-credits?userId=${session.user.id}`)
         .then(res => res.json())
         .then(data => setCredits(data.credits))
+      const u = session.user as any
+      if (u.role === "brand") {
+        fetch(`/api/campaigns?brandId=${session.user.id}`)
+          .then(res => res.json())
+          .then(data => setBrandCampaigns(data.campaigns || []))
+      }
     }
   }, [session])
+
+  async function handleReviewSubmit(data: any) {
+    const res = await fetch("/api/campaign-reviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...data, brandId: (session?.user as any)?.id }),
+    })
+    const result = await res.json()
+    if (!res.ok) {
+      alert(result.error || "Failed to submit review")
+    } else {
+      setReviewSuccess(`Review submitted for ${reviewModal?.title}`)
+      setReviewModal(null)
+    }
+  }
 
   if (status === "loading" || credits === null) {
     return (
@@ -240,7 +425,54 @@ export default function Dashboard() {
           </div>
 
         </div>
+
+        {/* Rate Influencers — brands only */}
+        {(session?.user as any)?.role === "brand" && (
+          <div className="mt-6 bg-white rounded-xl border border-gray-100 p-6">
+            <h2 className="font-medium text-gray-900 mb-1">Rate Influencers</h2>
+            <p className="text-xs text-gray-400 mb-4">Leave a review for influencers you've worked with</p>
+
+            {reviewSuccess && (
+              <div className="bg-green-50 text-green-700 text-sm px-4 py-3 rounded-lg mb-4">{reviewSuccess}</div>
+            )}
+
+            {brandCampaigns.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                <div className="text-3xl mb-2">📋</div>
+                <div className="text-sm">No campaigns yet. <a href="/campaigns" className="text-purple-600 hover:underline">Post a campaign</a> to start working with influencers.</div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {brandCampaigns.map((campaign) => (
+                  <div key={campaign.id} className="flex items-center justify-between gap-4 p-3 border border-gray-100 rounded-lg">
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-gray-900 truncate">{campaign.title}</div>
+                      <div className="text-xs text-gray-400">{campaign.niche} · {campaign.platform} · {campaign.status}</div>
+                    </div>
+                    <button
+                      onClick={() => { setReviewSuccess(""); setReviewModal(campaign) }}
+                      className="flex-shrink-0 text-xs bg-purple-600 text-white px-3 py-1.5 rounded-lg hover:bg-purple-700 transition-colors"
+                    >
+                      Rate Influencer
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
+
+      {/* Review modal */}
+      {reviewModal && (
+        <ReviewModal
+          campaign={reviewModal}
+          onClose={() => setReviewModal(null)}
+          onSubmit={handleReviewSubmit}
+        />
+      )}
+
     </main>
   )
 }
