@@ -12,7 +12,7 @@ export default function Navbar() {
   const [brandVerified, setBrandVerified] = useState(false)
   const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const loggedIn = status !== "loading" && !!session
+  const loggedIn = status === "authenticated"
   const role = user?.role
 
   useEffect(() => {

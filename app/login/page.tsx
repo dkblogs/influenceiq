@@ -1,12 +1,11 @@
 "use client"
 import { useState } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
 import Navbar from "@/app/components/Navbar"
 
 function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const success = searchParams.get("success")
   const [email, setEmail] = useState("")
@@ -31,7 +30,7 @@ function LoginForm() {
       return
     }
 
-    router.push("/dashboard")
+    window.location.href = "/dashboard"
   }
 
   return (
