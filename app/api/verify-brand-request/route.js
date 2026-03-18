@@ -7,8 +7,8 @@ export async function POST(request) {
   try {
     const { userId, brandName, email, gst, website, linkedin, description, docsLink } = await request.json()
 
-    if (!gst || !website || !description) {
-      return Response.json({ error: "GST number, website, and description are required" }, { status: 400 })
+    if (!gst || !description) {
+      return Response.json({ error: "GST number and description are required" }, { status: 400 })
     }
 
     // Log the request as a credit transaction (amount 0, no credits deducted)
@@ -48,7 +48,7 @@ export async function POST(request) {
       </tr>
       <tr style="border-bottom:1px solid #f3f4f6;">
         <td style="padding:12px 16px;font-size:13px;color:#6b7280;white-space:nowrap;">Website</td>
-        <td style="padding:12px 16px;font-size:13px;"><a href="${website}" style="color:#7c3aed;">${website}</a></td>
+        <td style="padding:12px 16px;font-size:13px;">${website ? `<a href="${website}" style="color:#7c3aed;">${website}</a>` : "—"}</td>
       </tr>
       <tr style="border-bottom:1px solid #f3f4f6;">
         <td style="padding:12px 16px;font-size:13px;color:#6b7280;white-space:nowrap;">LinkedIn</td>

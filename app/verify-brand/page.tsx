@@ -35,7 +35,6 @@ export default function VerifyBrand() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.gst.trim()) { setError("GST number is required"); return }
-    if (!form.website.trim()) { setError("Business website is required"); return }
     if (!form.description.trim()) { setError("Business description is required"); return }
     setSubmitting(true)
     setError("")
@@ -128,7 +127,7 @@ export default function VerifyBrand() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Business website URL <span className="text-red-400">*</span></label>
+                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Business website URL <span className="text-[#64748B] font-normal">(optional)</span></label>
                 <input
                   type="url"
                   placeholder="https://yourbrand.com"
