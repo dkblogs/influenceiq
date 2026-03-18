@@ -144,7 +144,7 @@ function ReviewModal({ campaign, onClose, onSubmit }: {
 export default function Dashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [credits, setCredits] = useState(null)
+  const [credits, setCredits] = useState<number | null>(null)
   const [brandVerified, setBrandVerified] = useState<boolean | null>(null)
   const [brandCampaigns, setBrandCampaigns] = useState<any[]>([])
   const [reviewModal, setReviewModal] = useState<any>(null)
@@ -161,7 +161,7 @@ export default function Dashboard() {
       fetch(`/api/user-credits?userId=${session.user.id}`)
         .then(res => res.json())
         .then(data => {
-          setCredits(data.credits)
+          if (data.credits !== undefined) setCredits(data.credits)
           setBrandVerified(data.brandVerified ?? false)
         })
       const u = session.user as any
@@ -171,7 +171,7 @@ export default function Dashboard() {
           .then(data => setBrandCampaigns(data.campaigns || []))
       }
     }
-  }, [session])
+  }, [session?.user?.id])
 
   async function handleReviewSubmit(data: any) {
     const res = await fetch("/api/campaign-reviews", {
@@ -237,7 +237,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
           <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
             <div className="text-sm text-[#94A3B8] mb-1">Credits remaining</div>
-            <div className="text-2xl font-bold text-purple-400">{credits}</div>
+            <div className="text-2xl font-bold text-purple-400">{credits ?? "…"}</div>
             <div className="text-xs text-[#64748B] mt-1">Never expire</div>
           </div>
           <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
@@ -319,7 +319,7 @@ export default function Dashboard() {
           <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6">
             <h2 className="font-medium text-[#F8FAFC] mb-4">Your credits</h2>
             <div className="text-center py-4">
-              <div className="text-5xl font-bold text-purple-400 mb-1">{credits}</div>
+              <div className="text-5xl font-bold text-purple-400 mb-1">{credits ?? "…"}</div>
               <div className="text-sm text-[#64748B] mb-6">credits remaining</div>
               <a href="/pricing" className="block w-full bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 text-center transition-colors shadow-lg shadow-purple-500/20">
                 Buy credits
