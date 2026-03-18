@@ -53,6 +53,35 @@ export async function POST(request) {
       },
     })
 
+    if (role === "influencer") {
+      const parts = name.trim().split(" ")
+      const initials = parts.length >= 2
+        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+        : name.slice(0, 2).toUpperCase()
+      const handle = `@${email.split("@")[0].replace(/[^a-z0-9]/gi, "_")}`
+      try {
+        await prisma.influencer.create({
+          data: {
+            userId: user.id,
+            name,
+            email,
+            handle,
+            niche: "Other",
+            platform: "Instagram",
+            followers: "0",
+            engagement: "0%",
+            score: 0,
+            rate: "₹0/post",
+            initials,
+            location: "",
+          },
+        })
+      } catch (e) {
+        // Non-fatal: influencer can set up profile via /join
+        console.warn("Auto-create influencer row failed:", e.message)
+      }
+    }
+
     const template = welcomeEmail({ name, role: user.role })
     sendEmail({ to: email, subject: template.subject, html: template.html })
 
