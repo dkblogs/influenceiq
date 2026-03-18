@@ -149,7 +149,7 @@ export default function Discover() {
             {influencers.map((inf: any) => (
               <div
                 key={inf.id}
-                onClick={() => { window.location.href = loggedIn ? `/influencer/${inf.id}` : "/login" }}
+                onClick={() => { window.location.href = `/influencer/${inf.id}` }}
                 className="bg-white rounded-xl border border-gray-100 p-4 cursor-pointer hover:shadow-sm transition-shadow overflow-hidden"
               >
                 {loggedIn ? (
@@ -246,11 +246,11 @@ export default function Discover() {
 
                     {/* Button */}
                     <a
-                      href="/login"
+                      href={`/influencer/${inf.id}`}
                       onClick={e => e.stopPropagation()}
                       className="block w-full text-center bg-purple-600 text-white py-2 rounded-lg text-xs font-medium"
                     >
-                      Sign in to view
+                      View profile
                     </a>
                   </div>
                 )}
