@@ -23,29 +23,24 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions)
-    console.log("1. Session:", session?.user?.id)
     if (!session?.user?.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const body = await request.json()
-    console.log("4. Request body:", body)
     const { brandName, campaignTitle, description, deliverables, results, mediaUrl, completedAt } = body
 
     if (!brandName || !campaignTitle) {
       return Response.json({ error: "brandName and campaignTitle are required" }, { status: 400 })
     }
 
-    console.log("2. Looking up influencer for userId:", session.user.id)
     const influencer = await prisma.influencer.findFirst({
       where: { userId: session.user.id },
     })
-    console.log("3. Influencer found:", influencer)
     if (!influencer) {
       return Response.json({ error: "No influencer profile linked to your account" }, { status: 403 })
     }
 
-    console.log("5. Creating portfolio item with influencerId:", influencer?.id)
     const item = await prisma.portfolioItem.create({
       data: {
         influencerId: influencer.id,
