@@ -8,11 +8,15 @@ export async function GET(request) {
     const search = searchParams.get("search")
     const userId = searchParams.get("userId")
 
-    const where = {}
-
+    // Fast path: return just this user's linked influencer profile
     if (userId) {
-      where.userId = userId
+      const influencer = await prisma.influencer.findFirst({
+        where: { userId },
+      })
+      return Response.json({ influencers: influencer ? [influencer] : [] })
     }
+
+    const where = {}
 
     if (niche && niche !== "All") {
       where.niche = niche

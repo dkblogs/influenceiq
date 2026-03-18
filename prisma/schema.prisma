@@ -20,6 +20,7 @@ model User {
   createdAt        DateTime  @default(now())
   sessions         Session[]
   accounts         Account[]
+  influencers      Influencer[]
 }
 
 model Account {
@@ -80,6 +81,7 @@ model Influencer {
   phone        String?
   verified         Boolean  @default(false)
   userId           String?
+  user             User?    @relation(fields: [userId], references: [id])
   followersPublic  Boolean  @default(true)
   createdAt        DateTime @default(now())
   portfolioItems   PortfolioItem[]
