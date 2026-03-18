@@ -52,9 +52,9 @@ const handler = NextAuth({
     async session({ session, token }) {
       if (token) {
         session.user = session.user ?? {}
-        session.user.id = (token.id ?? token.sub)
-        session.user.role = token.role
-        session.user.credits = token.credits
+        session.user.id = token.id ?? token.sub ?? ""
+        session.user.role = token.role ?? "brand"
+        session.user.brandVerified = token.brandVerified ?? false
       }
       return session
     },

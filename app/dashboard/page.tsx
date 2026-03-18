@@ -159,6 +159,7 @@ export default function Dashboard() {
   useEffect(() => {
     async function loadCredits() {
       if (!session?.user?.id) return
+      console.log("Loading credits for userId:", session?.user?.id)
       try {
         const res = await fetch(`/api/user-credits?userId=${(session.user as any).id}`)
         const data = await res.json()

@@ -14,7 +14,6 @@ export async function GET(request) {
       select: {
         credits: true,
         role: true,
-        brandVerified: true,
       },
     })
 
@@ -25,7 +24,6 @@ export async function GET(request) {
     return Response.json({
       credits: user.credits,
       role: user.role,
-      brandVerified: user.brandVerified ?? false,
     })
 
   } catch (error) {
