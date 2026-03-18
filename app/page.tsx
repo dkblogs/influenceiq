@@ -69,6 +69,8 @@ const scoreFactors = [
 export default function Home() {
   const { data: session, status } = useSession()
   const loggedIn = status !== "loading" && !!session
+  const user = session?.user as any
+  const role = user?.role
   const [aiDemo, setAiDemo] = useState(false)
   const [email, setEmail] = useState("")
   const [subscribed, setSubscribed] = useState(false)
@@ -109,14 +111,38 @@ export default function Home() {
             Facebook, LinkedIn and X. Pay only for what you use.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mb-6">
-            <a href="/discover" className="bg-purple-600 text-white px-8 py-3 rounded-lg text-base font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/25">
-              Find Influencers — free
-            </a>
-            <a href="/join" className="border border-[#1E1E2E] text-[#94A3B8] px-8 py-3 rounded-lg text-base hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors">
-              Join as Influencer
-            </a>
+            {!loggedIn && (
+              <>
+                <a href="/discover" className="bg-purple-600 text-white px-8 py-3 rounded-lg text-base font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/25">
+                  Find Influencers — free
+                </a>
+                <a href="/join" className="border border-[#1E1E2E] text-[#94A3B8] px-8 py-3 rounded-lg text-base hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors">
+                  Join as Influencer
+                </a>
+              </>
+            )}
+            {loggedIn && role === "brand" && (
+              <>
+                <a href="/discover" className="bg-purple-600 text-white px-8 py-3 rounded-lg text-base font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/25">
+                  Find Influencers
+                </a>
+                <a href="/post-campaign" className="border border-[#1E1E2E] text-[#94A3B8] px-8 py-3 rounded-lg text-base hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors">
+                  Post a Campaign
+                </a>
+              </>
+            )}
+            {loggedIn && role !== "brand" && (
+              <>
+                <a href="/brands" className="bg-purple-600 text-white px-8 py-3 rounded-lg text-base font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/25">
+                  Browse Brands
+                </a>
+                <a href="/campaigns" className="border border-[#1E1E2E] text-[#94A3B8] px-8 py-3 rounded-lg text-base hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors">
+                  View Campaigns
+                </a>
+              </>
+            )}
           </div>
-          <p className="text-sm text-[#64748B]">5 free credits on signup · No card needed · Cancel anytime</p>
+          {!loggedIn && <p className="text-sm text-[#64748B]">5 free credits on signup · No card needed · Cancel anytime</p>}
         </div>
       </section>
 

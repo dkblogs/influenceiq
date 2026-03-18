@@ -80,18 +80,24 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-3">
           {loggedIn ? (
             <>
-              {credits !== null && (
-                <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-full">
-                  <span className="text-xs text-purple-400 font-medium">{credits} credits</span>
-                </div>
-              )}
-              {role === "brand" && !brandVerified && (
-                <a
-                  href="/verify-brand"
-                  className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-full hover:bg-blue-500/20 transition-colors"
-                >
-                  ✓ Get Verified
-                </a>
+              <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-full">
+                <span className="text-xs text-purple-400 font-medium">
+                  {credits !== null ? `${credits} credits` : "…"}
+                </span>
+              </div>
+              {role === "brand" && (
+                brandVerified ? (
+                  <span className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-full">
+                    ✓ Verified
+                  </span>
+                ) : (
+                  <a
+                    href="/verify-brand"
+                    className="text-xs bg-[#1E1E2E] text-[#64748B] border border-[#1E1E2E] px-3 py-1.5 rounded-full hover:border-blue-500/30 hover:text-blue-400 transition-colors"
+                  >
+                    Get Verified
+                  </a>
+                )
               )}
               {link("/dashboard", "Dashboard")}
               <button
@@ -140,15 +146,17 @@ export default function Navbar() {
           ))}
           {loggedIn ? (
             <>
-              {credits !== null && (
-                <div className="text-xs text-purple-400 font-medium py-2.5 border-b border-[#1E1E2E]">
-                  {credits} credits
-                </div>
-              )}
-              {role === "brand" && !brandVerified && (
-                <a href="/verify-brand" className="text-sm text-blue-400 py-2.5 border-b border-[#1E1E2E]">
-                  ✓ Get Verified
-                </a>
+              <div className="text-xs text-purple-400 font-medium py-2.5 border-b border-[#1E1E2E]">
+                {credits !== null ? `${credits} credits` : "…"}
+              </div>
+              {role === "brand" && (
+                brandVerified ? (
+                  <span className="text-sm text-blue-400 py-2.5 border-b border-[#1E1E2E]">✓ Verified</span>
+                ) : (
+                  <a href="/verify-brand" className="text-sm text-[#64748B] py-2.5 border-b border-[#1E1E2E]">
+                    Get Verified
+                  </a>
+                )
               )}
               <a href="/dashboard" className="text-sm text-[#94A3B8] py-2.5 border-b border-[#1E1E2E]">
                 Dashboard
