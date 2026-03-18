@@ -155,7 +155,9 @@ export default function Discover() {
                           <span className="font-medium text-[#F8FAFC] text-sm truncate">{inf.name}</span>
                           {inf.verified && <span className="text-cyan-400 text-xs flex-shrink-0">✓</span>}
                         </div>
-                        <p className="text-xs text-[#64748B] truncate">{inf.handle} · {inf.location}</p>
+                        <p className="text-xs text-[#64748B] truncate">
+                          <span className="blur-sm select-none">••••••••</span> · {inf.location}
+                        </p>
                       </div>
                       <div className="text-right flex-shrink-0">
                         <p className="text-base font-semibold text-purple-400">{inf.score}</p>
