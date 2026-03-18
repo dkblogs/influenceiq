@@ -285,7 +285,7 @@ export default function Dashboard() {
           ) : (
             <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-sm text-amber-400">
               <span className="text-base">⚠️</span>
-              <span>Your brand is not verified yet. Verification builds trust with influencers. <a href="mailto:support@influenceiq.in" className="underline hover:text-amber-300 transition-colors">Contact us to get verified.</a></span>
+              <span>Your brand is not verified yet. Verification builds trust with influencers. <a href="/contact" className="text-amber-400 underline hover:text-amber-300">Contact us</a> to get verified.</span>
             </div>
           )
         )}
