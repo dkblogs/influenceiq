@@ -1,22 +1,22 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 
-export default function Signup() {
+function SignupForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [role, setRole] = useState("brand")
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (searchParams.get("role") === "influencer") {
       setRole("influencer")
     }
   }, [])
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -149,5 +149,13 @@ export default function Signup() {
 
       </div>
     </main>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0A0A0F]" />}>
+      <SignupForm />
+    </Suspense>
   )
 }
