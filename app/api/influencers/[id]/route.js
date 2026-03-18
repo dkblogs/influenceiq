@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET(request, context) {
   try {
-    const id = context.params.id
+    const { id } = await context.params
 
     const influencer = await prisma.influencer.findFirst({
       where: { id },
@@ -28,7 +28,7 @@ export async function GET(request, context) {
 
 export async function PATCH(request, context) {
   try {
-    const id = context.params.id
+    const { id } = await context.params
     const { followersPublic, requestingUserId } = await request.json()
 
     // Verify ownership
