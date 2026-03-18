@@ -4,8 +4,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
 export async function POST() {
   const session = await getServerSession(authOptions)
-  if (session?.user?.role !== "admin") {
-    return Response.json({ error: "Forbidden" }, { status: 403 })
+  if (!session?.user?.id) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   const influencerUsers = await prisma.user.findMany({
