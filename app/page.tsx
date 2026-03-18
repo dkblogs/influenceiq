@@ -99,7 +99,7 @@ export default function Home() {
           <a href="/discover" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Influencers</a>
           <a href="/brands" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Brands</a>
           <a href="/campaigns" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Open Campaigns</a>
-          <a href="/how-it-works" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">How it works</a>
+          <a href="/leaderboard" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Leaderboard</a>
           <a href="/pricing" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Pricing</a>
           {loggedIn ? (
             <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Dashboard</a>
@@ -430,6 +430,7 @@ export default function Home() {
               <a href="/discover" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Find Influencers</a>
               <a href="/brands" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Find Brands</a>
               <a href="/campaigns" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Open Campaigns</a>
+              <a href="/leaderboard" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Leaderboard</a>
               <a href="/join" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Join as Influencer</a>
               <a href="/pricing" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Pricing</a>
             </div>

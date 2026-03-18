@@ -213,6 +213,7 @@ export default function Dashboard() {
           <a href="/discover" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Influencers</a>
           <a href="/brands" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Brands</a>
           <a href="/campaigns" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Campaigns</a>
+          <a href="/leaderboard" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Leaderboard</a>
           <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-lg">
             <span className="text-xs text-purple-400 font-medium">{credits} credits</span>
           </div>
