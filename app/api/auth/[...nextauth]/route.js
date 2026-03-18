@@ -49,7 +49,7 @@ const handler = NextAuth({
       return token
     },
     async session({ session, token }) {
-      if (token) {
+      if (token && session.user) {
         session.user.id = token.id
         session.user.role = token.role
         session.user.credits = token.credits
