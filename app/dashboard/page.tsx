@@ -332,30 +332,30 @@ export default function Dashboard() {
                   <>
                     <div className="flex justify-between text-xs">
                       <span className="text-[#64748B]">Unlock contacts</span>
-                      <span className="text-[#F8FAFC] font-medium">{Math.floor(credits / 5)}x</span>
+                      <span className="text-[#F8FAFC] font-medium">{Math.floor((credits || 0) / 5)}x</span>
                     </div>
                     <div className="flex justify-between text-xs">
                       <span className="text-[#64748B]">AI reports</span>
-                      <span className="text-[#F8FAFC] font-medium">{Math.floor(credits / 3)}x</span>
+                      <span className="text-[#F8FAFC] font-medium">{Math.floor((credits || 0) / 3)}x</span>
                     </div>
                     <div className="flex justify-between text-xs">
                       <span className="text-[#64748B]">Proposals</span>
-                      <span className="text-[#F8FAFC] font-medium">{Math.floor(credits / 10)}x</span>
+                      <span className="text-[#F8FAFC] font-medium">{Math.floor((credits || 0) / 10)}x</span>
                     </div>
                   </>
                 ) : (
                   <>
                     <div className="flex justify-between text-xs">
                       <span className="text-[#64748B]">Campaign applications</span>
-                      <span className="text-[#F8FAFC] font-medium">{Math.floor(credits / 2)}x</span>
+                      <span className="text-[#F8FAFC] font-medium">{Math.floor((credits || 0) / 2)}x</span>
                     </div>
                     <div className="flex justify-between text-xs">
                       <span className="text-[#64748B]">Send requests</span>
-                      <span className="text-[#F8FAFC] font-medium">{Math.floor(credits / 10)}x</span>
+                      <span className="text-[#F8FAFC] font-medium">{Math.floor((credits || 0) / 10)}x</span>
                     </div>
                     <div className="flex justify-between text-xs">
                       <span className="text-[#64748B]">Profile views</span>
-                      <span className="text-[#F8FAFC] font-medium">{Math.floor(credits / 5)}x</span>
+                      <span className="text-[#F8FAFC] font-medium">{Math.floor((credits || 0) / 5)}x</span>
                     </div>
                   </>
                 )}

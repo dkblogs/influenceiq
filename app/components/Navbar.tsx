@@ -16,14 +16,14 @@ export default function Navbar() {
 
   useEffect(() => {
     if (session?.user?.id) {
-      fetch(`/api/user-credits?userId=${session.user.id}`)
+      fetch(`/api/user-credits?userId=${(session.user as any).id}`)
         .then((r) => r.json())
         .then((d) => {
           if (typeof d.credits === "number") setCredits(d.credits)
           setBrandVerified(d.brandVerified ?? false)
         })
     }
-  }, [session])
+  }, [session?.user?.id])
 
   function link(href: string, label: string, extraClass = "") {
     const isActive = pathname === href
@@ -77,7 +77,7 @@ export default function Navbar() {
         </div>
 
         {/* Desktop right */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3 ml-auto">
           {loggedIn ? (
             <>
               <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-full">
