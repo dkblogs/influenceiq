@@ -1,121 +1,211 @@
-export default function Contact() {
-  return (
-    <main className="min-h-screen bg-gray-50">
+"use client"
+import { useState } from "react"
+import { useSession } from "next-auth/react"
 
-      {/* Navigation */}
-      <nav className="bg-white flex items-center justify-between px-8 py-4 border-b border-gray-100">
+const SUBJECTS = [
+  "General inquiry",
+  "Technical issue",
+  "Partnership",
+  "Report a problem",
+  "Billing issue",
+  "Other",
+]
+
+export default function Contact() {
+  const { data: session, status } = useSession()
+  const user = session?.user as any
+  const loggedIn = status !== "loading" && !!session
+
+  const [subject, setSubject] = useState(SUBJECTS[0])
+  const [message, setMessage] = useState("")
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [submitting, setSubmitting] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState("")
+
+  const inputClass = "w-full px-4 py-2.5 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500 transition-colors"
+  const readonlyClass = "w-full px-4 py-2.5 bg-[#0D0D1A] border border-[#1E1E2E] rounded-lg text-sm text-[#64748B] cursor-not-allowed"
+  const selectClass = "w-full px-4 py-2.5 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500 transition-colors"
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    const finalName = loggedIn ? user?.name : name
+    const finalEmail = loggedIn ? user?.email : email
+    if (!finalName || !finalEmail || !message.trim()) {
+      setError("Please fill in all required fields")
+      return
+    }
+    setSubmitting(true)
+    setError("")
+    const res = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: user?.id || null,
+        name: finalName,
+        email: finalEmail,
+        subject,
+        message,
+      }),
+    })
+    const data = await res.json()
+    if (!res.ok) { setError(data.error || "Something went wrong"); setSubmitting(false); return }
+    setSuccess(true)
+    setSubmitting(false)
+  }
+
+  return (
+    <main className="min-h-screen bg-[#0A0A0F]">
+
+      {/* Nav */}
+      <nav className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-[#1E1E2E] sticky top-0 bg-[#0A0A0F]/80 backdrop-blur-md z-50">
         <a href="/" className="flex items-center gap-2">
           <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold">
-            Influence<span className="text-purple-600">IQ</span>
-          </span>
+          <span className="text-xl font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
         </a>
         <div className="flex items-center gap-4">
-          <a href="/discover" className="text-sm text-gray-500 hover:text-gray-900">Find Influencers</a>
-          <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Get Started</a>
+          <a href="/discover" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Influencers</a>
+          {loggedIn
+            ? <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Dashboard</a>
+            : <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Get Started</a>
+          }
         </div>
       </nav>
 
-      <div className="px-8 py-16 max-w-5xl mx-auto">
+      <div className="px-4 md:px-8 py-10 md:py-16 max-w-5xl mx-auto">
 
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-semibold text-gray-900 mb-4">Get in touch</h1>
-          <p className="text-gray-500 text-lg">We are here to help. Reach out anytime.</p>
+        <div className="text-center mb-10 md:mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#F8FAFC] mb-3">
+            {loggedIn ? `Hi ${user?.name?.split(" ")[0]}, how can we help?` : "Get in touch"}
+          </h1>
+          <p className="text-[#94A3B8] text-base">We reply within 24 hours on working days.</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {/* Contact form */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-8">
-            <h2 className="font-medium text-gray-900 mb-6">Send us a message</h2>
-            <form className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
-                  placeholder="Your name"
-                />
+          {/* Form */}
+          <div className="lg:col-span-2">
+            {success ? (
+              <div className="bg-[#12121A] border border-[#1E1E2E] rounded-2xl p-8 text-center">
+                <div className="text-5xl mb-4">✅</div>
+                <h2 className="text-xl font-bold text-[#F8FAFC] mb-2">Message sent!</h2>
+                <p className="text-[#94A3B8] text-sm mb-6 leading-relaxed">
+                  Thanks for reaching out. We'll get back to you at <span className="text-[#F8FAFC]">{loggedIn ? user?.email : email}</span> within 24 hours.
+                </p>
+                <a href="/" className="inline-block bg-purple-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">
+                  Back to home
+                </a>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
-                <input
-                  type="email"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
-                  placeholder="you@example.com"
-                />
+            ) : (
+              <div className="bg-[#12121A] border border-[#1E1E2E] rounded-2xl p-6">
+                <h2 className="font-semibold text-[#F8FAFC] mb-5">Send us a message</h2>
+                <form onSubmit={handleSubmit} className="space-y-4">
+
+                  {loggedIn ? (
+                    /* Logged-in: pre-filled read-only name + email */
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Name</label>
+                        <input type="text" value={user?.name || ""} readOnly className={readonlyClass} />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Email</label>
+                        <input type="email" value={user?.email || ""} readOnly className={readonlyClass} />
+                      </div>
+                    </div>
+                  ) : (
+                    /* Guest: editable name + email */
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Full name <span className="text-red-400">*</span></label>
+                        <input
+                          type="text"
+                          placeholder="Your name"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Email address <span className="text-red-400">*</span></label>
+                        <input
+                          type="email"
+                          placeholder="you@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className={inputClass}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Subject</label>
+                    <select value={subject} onChange={(e) => setSubject(e.target.value)} className={selectClass}>
+                      {SUBJECTS.map((s) => <option key={s}>{s}</option>)}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Message <span className="text-red-400">*</span></label>
+                    <textarea
+                      placeholder="How can we help you?"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      rows={5}
+                      className={`${inputClass} resize-none`}
+                    />
+                  </div>
+
+                  {error && (
+                    <div className="bg-red-500/10 text-red-400 text-sm px-4 py-3 rounded-lg border border-red-500/20">{error}</div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full bg-purple-600 text-white py-3 rounded-lg text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors shadow-lg shadow-purple-500/20"
+                  >
+                    {submitting ? "Sending..." : "Send message"}
+                  </button>
+                </form>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">I am a</label>
-                <select className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400 text-gray-600">
-                  <option>Brand / Business</option>
-                  <option>Influencer / Creator</option>
-                  <option>Agency</option>
-                  <option>Other</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                <select className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400 text-gray-600">
-                  <option>General enquiry</option>
-                  <option>Payment issue</option>
-                  <option>Account problem</option>
-                  <option>Partnership</option>
-                  <option>Report an influencer</option>
-                  <option>Other</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                <textarea
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400 h-32 resize-none"
-                  placeholder="How can we help you?"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700"
-              >
-                Send message
-              </button>
-            </form>
+            )}
           </div>
 
-          {/* Contact info */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl border border-gray-100 p-6">
+          {/* Contact info sidebar */}
+          <div className="space-y-4">
+            <div className="bg-[#12121A] border border-[#1E1E2E] rounded-2xl p-5">
               <div className="text-2xl mb-3">📧</div>
-              <div className="font-medium text-gray-900 mb-1">Email us</div>
-              <div className="text-sm text-gray-500 mb-2">We reply within 24 hours on working days.</div>
-              <a href="mailto:hello@influenceiq.in" className="text-sm text-purple-600 font-medium">
+              <div className="font-medium text-[#F8FAFC] mb-1">Email us directly</div>
+              <div className="text-sm text-[#64748B] mb-2">We reply within 24 hours on working days.</div>
+              <a href="mailto:hello@influenceiq.in" className="text-sm text-purple-400 font-medium hover:text-purple-300 transition-colors">
                 hello@influenceiq.in
               </a>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-100 p-6">
+            <div className="bg-[#12121A] border border-[#1E1E2E] rounded-2xl p-5">
               <div className="text-2xl mb-3">💬</div>
-              <div className="font-medium text-gray-900 mb-1">Live chat</div>
-              <div className="text-sm text-gray-500 mb-2">Available Monday to Saturday, 10am to 6pm IST.</div>
-              <button className="text-sm text-purple-600 font-medium">Start a chat →</button>
+              <div className="font-medium text-[#F8FAFC] mb-1">Support hours</div>
+              <div className="text-sm text-[#64748B]">Monday to Saturday<br />10am – 6pm IST</div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-100 p-6">
-              <div className="text-2xl mb-3">🏢</div>
-              <div className="font-medium text-gray-900 mb-1">Office</div>
-              <div className="text-sm text-gray-500">
-                InfluenceIQ<br />
-                India
-              </div>
+            <div className="bg-[#12121A] border border-[#1E1E2E] rounded-2xl p-5">
+              <div className="text-2xl mb-3">🔵</div>
+              <div className="font-medium text-[#F8FAFC] mb-1">Brand verification</div>
+              <div className="text-sm text-[#64748B] mb-3">Get a verified badge on your brand profile and campaigns.</div>
+              <a href="/verify-brand" className="text-sm text-blue-400 font-medium hover:text-blue-300 transition-colors">
+                Apply for verification →
+              </a>
             </div>
 
-            <div className="bg-purple-50 rounded-2xl p-6">
-              <div className="font-medium text-purple-900 mb-2">For influencers</div>
-              <div className="text-sm text-purple-700 mb-3">
-                Want to list your profile or have questions about getting verified?
-              </div>
-              <a href="/join" className="text-sm text-purple-600 font-medium">
-                Visit the influencer page →
+            <div className="bg-purple-500/5 border border-purple-500/20 rounded-2xl p-5">
+              <div className="font-medium text-[#F8FAFC] mb-1">For influencers</div>
+              <div className="text-sm text-[#94A3B8] mb-3">Want to list your profile or have questions about getting discovered?</div>
+              <a href="/discover" className="text-sm text-purple-400 font-medium hover:text-purple-300 transition-colors">
+                Explore the platform →
               </a>
             </div>
           </div>
@@ -123,11 +213,9 @@ export default function Contact() {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-100 px-8 py-8 text-center text-sm text-gray-400 mt-8">
+      <footer className="border-t border-[#1E1E2E] px-4 md:px-8 py-8 text-center text-sm text-[#64748B] mt-8">
         InfluenceIQ · India's AI Influencer Marketplace · 2025
       </footer>
-
     </main>
   )
 }

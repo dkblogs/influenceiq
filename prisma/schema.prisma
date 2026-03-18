@@ -133,6 +133,17 @@ model CollaborationRequest {
   createdAt    DateTime @default(now())
 }
 
+model ContactMessage {
+  id        String   @id @default(cuid())
+  userId    String?
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    String   @default("unread")
+  createdAt DateTime @default(now())
+}
+
 model CampaignReview {
   id           String   @id @default(cuid())
   campaignId   String

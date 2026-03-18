@@ -221,6 +221,11 @@ export default function Dashboard() {
           <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-lg">
             <span className="text-xs text-purple-400 font-medium">{credits} credits</span>
           </div>
+          {user.role === "brand" && !brandVerified && (
+            <a href="/verify-brand" className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg hover:bg-blue-500/20 transition-colors">
+              ✓ Get Verified
+            </a>
+          )}
           <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
             {initial}
           </div>
@@ -285,7 +290,7 @@ export default function Dashboard() {
           ) : (
             <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-sm text-amber-400">
               <span className="text-base">⚠️</span>
-              <span>Your brand is not verified yet. Verification builds trust with influencers. <a href="/contact" className="text-amber-400 underline hover:text-amber-300">Contact us</a> to get verified.</span>
+              <span>Your brand is not verified yet. Verification builds trust with influencers. <a href="/verify-brand" className="text-amber-400 underline hover:text-amber-300">Apply for verification →</a></span>
             </div>
           )
         )}

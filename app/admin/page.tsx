@@ -11,6 +11,7 @@ export default function Admin() {
   const [influencers, setInfluencers] = useState<any[]>([])
   const [transactions, setTransactions] = useState<any[]>([])
   const [campaigns, setCampaigns] = useState<any[]>([])
+  const [messages, setMessages] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -32,22 +33,25 @@ export default function Admin() {
   async function fetchAllData() {
     setLoading(true)
     try {
-      const [usersRes, influencersRes, transactionsRes, campaignsRes] = await Promise.all([
+      const [usersRes, influencersRes, transactionsRes, campaignsRes, messagesRes] = await Promise.all([
         fetch("/api/admin/users"),
         fetch("/api/admin/influencers"),
         fetch("/api/admin/transactions"),
         fetch("/api/admin/campaigns"),
+        fetch("/api/admin/messages"),
       ])
 
       const usersData = await usersRes.json()
       const influencersData = await influencersRes.json()
       const transactionsData = await transactionsRes.json()
       const campaignsData = await campaignsRes.json()
+      const messagesData = await messagesRes.json()
 
       setUsers(usersData.users || [])
       setInfluencers(influencersData.influencers || [])
       setTransactions(transactionsData.transactions || [])
       setCampaigns(campaignsData.campaigns || [])
+      setMessages(messagesData.messages || [])
 
       const creditsSpent = (transactionsData.transactions || [])
         .filter((t: any) => t.amount < 0)
@@ -91,6 +95,15 @@ export default function Admin() {
       body: JSON.stringify({ id }),
     })
     fetchAllData()
+  }
+
+  async function markMessageRead(id: string) {
+    await fetch("/api/admin/messages", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status: "read" }),
+    })
+    setMessages((prev) => prev.map((m) => m.id === id ? { ...m, status: "read" } : m))
   }
 
   if (loading) {
@@ -143,7 +156,7 @@ export default function Admin() {
         </div>
 
         <div className="flex gap-2 mb-6 border-b border-[#1E1E2E]">
-          {["overview", "users", "influencers", "campaigns", "transactions"].map((tab) => (
+          {["overview", "users", "influencers", "campaigns", "transactions", "messages"].map((tab) => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 text-sm font-medium capitalize border-b-2 mb-[-1px] transition-colors ${activeTab === tab ? "border-purple-500 text-purple-400" : "border-transparent text-[#64748B] hover:text-[#94A3B8]"}`}>
               {tab}
@@ -302,6 +315,63 @@ export default function Admin() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {activeTab === "messages" && (
+          <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] overflow-x-auto">
+            {messages.length === 0 ? (
+              <div className="text-center py-12 text-[#64748B] text-sm">No messages yet.</div>
+            ) : (
+              <table className="w-full text-sm min-w-[700px]">
+                <thead>
+                  <tr className="border-b border-[#1E1E2E] bg-[#0D0D1A]">
+                    <th className="text-left px-6 py-3 font-medium text-[#64748B]">From</th>
+                    <th className="text-left px-6 py-3 font-medium text-[#64748B]">Subject</th>
+                    <th className="text-left px-6 py-3 font-medium text-[#64748B]">Preview</th>
+                    <th className="text-left px-6 py-3 font-medium text-[#64748B]">Status</th>
+                    <th className="text-left px-6 py-3 font-medium text-[#64748B]">Date</th>
+                    <th className="text-left px-6 py-3 font-medium text-[#64748B]">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {messages.map((m: any, i: number) => (
+                    <tr key={m.id} className={`border-b border-[#1E1E2E] ${i % 2 === 0 ? "bg-[#12121A]" : "bg-[#0D0D1A]"} ${m.status === "unread" ? "border-l-2 border-l-purple-500" : ""}`}>
+                      <td className="px-6 py-3">
+                        <div className="font-medium text-[#F8FAFC] text-sm">{m.name}</div>
+                        <div className="text-xs text-[#64748B]">{m.email}</div>
+                        {m.userId && (
+                          <button
+                            onClick={() => setActiveTab("users")}
+                            className="text-xs text-purple-400 hover:underline mt-0.5"
+                          >
+                            View user →
+                          </button>
+                        )}
+                      </td>
+                      <td className="px-6 py-3 text-[#94A3B8] max-w-[160px] truncate">{m.subject}</td>
+                      <td className="px-6 py-3 text-[#64748B] max-w-[200px] truncate text-xs">{m.message}</td>
+                      <td className="px-6 py-3">
+                        <span className={`text-xs px-2 py-0.5 rounded-full border ${m.status === "unread" ? "bg-purple-500/10 text-purple-400 border-purple-500/20" : "bg-[#1E1E2E] text-[#64748B] border-[#1E1E2E]"}`}>
+                          {m.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-3 text-[#64748B] text-xs whitespace-nowrap">{new Date(m.createdAt).toLocaleDateString()}</td>
+                      <td className="px-6 py-3">
+                        {m.status === "unread" && (
+                          <button
+                            onClick={() => markMessageRead(m.id)}
+                            className="text-xs text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
+                          >
+                            Mark read
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         )}
 
