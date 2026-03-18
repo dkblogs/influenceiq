@@ -188,13 +188,7 @@ export default function Dashboard() {
     }
   }
 
-  if (status === "loading" || credits === null) {
-    return (
-      <main className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
-        <div className="text-[#64748B] text-sm">Loading...</div>
-      </main>
-    )
-  }
+  if (status === "loading") return null
 
   if (!session) return null
 
