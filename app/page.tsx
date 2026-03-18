@@ -32,14 +32,20 @@ function CountUp({ target, suffix = "" }: { target: number; suffix?: string }) {
   return <span ref={ref}>{count.toLocaleString()}{suffix}</span>
 }
 
-const influencers = [
-  { name: "Priya Sharma", handle: "@priyaeats", niche: "Food", platform: "Instagram", followers: "84K", score: 91, initials: "PS", color: "bg-purple-500" },
-  { name: "Rohit Kumar", handle: "@rohittech", niche: "Tech", platform: "YouTube", followers: "210K", score: 87, initials: "RK", color: "bg-orange-500" },
-  { name: "Ananya Nair", handle: "@ananyafits", niche: "Fitness", platform: "Instagram", followers: "42K", score: 79, initials: "AN", color: "bg-green-500" },
-  { name: "Vikram Mehta", handle: "@vikramfinance", niche: "Finance", platform: "LinkedIn", followers: "38K", score: 84, initials: "VM", color: "bg-yellow-500" },
-  { name: "Sneha Patel", handle: "@snehastyle", niche: "Fashion", platform: "Instagram", followers: "95K", score: 88, initials: "SP", color: "bg-pink-500" },
-  { name: "Arjun Das", handle: "@arjuntravels", niche: "Travel", platform: "YouTube", followers: "156K", score: 82, initials: "AD", color: "bg-blue-500" },
-]
+const colorMap: Record<string, string> = {
+  PS: "bg-purple-500", RK: "bg-orange-500", AN: "bg-green-500",
+  VM: "bg-yellow-500", SP: "bg-pink-500", AD: "bg-blue-500",
+  MI: "bg-red-500", KS: "bg-indigo-500", DR: "bg-teal-500",
+}
+
+function getInitials(name: string) {
+  const parts = name?.trim().split(" ")
+  return parts?.length >= 2 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : (name?.slice(0, 2).toUpperCase() || "??")
+}
+
+function getColor(initials: string) {
+  return colorMap[initials] || "bg-gray-500"
+}
 
 const testimonials = [
   { name: "Ravi Gupta", role: "Marketing Head, FreshKart", type: "Brand", text: "We wasted months trying to find genuine food influencers. InfluenceIQ found us 8 verified creators in 20 minutes. The AI score saved us from three accounts with fake followers.", avatar: "RG", color: "bg-orange-500" },
@@ -67,9 +73,16 @@ export default function Home() {
   const [subscribed, setSubscribed] = useState(false)
   const [heroVisible, setHeroVisible] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [featuredInfluencers, setFeaturedInfluencers] = useState<any[]>([])
 
   useEffect(() => {
     setTimeout(() => setHeroVisible(true), 100)
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/influencers')
+      .then(res => res.json())
+      .then(data => setFeaturedInfluencers((data.influencers || []).slice(0, 6)))
   }, [])
 
   return (
@@ -206,57 +219,86 @@ export default function Home() {
             <a href="/discover" className="text-sm text-purple-600 font-medium hover:underline whitespace-nowrap ml-4">View all →</a>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {influencers.map((inf) => (
-              <div key={inf.handle} className="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md transition-all hover:-translate-y-0.5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full ${inf.color} flex items-center justify-center text-white text-sm font-medium`}>
-                      {inf.initials}
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900 text-sm">
-                        {loggedIn ? inf.name : firstName(inf.name)}
+            {featuredInfluencers.length === 0
+              ? Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="bg-white rounded-xl border border-gray-100 p-5 animate-pulse">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gray-200" />
+                        <div className="space-y-1.5">
+                          <div className="h-3 w-24 bg-gray-200 rounded" />
+                          <div className="h-2.5 w-16 bg-gray-100 rounded" />
+                        </div>
                       </div>
-                      {loggedIn ? (
-                        <div className="text-xs text-gray-400">{inf.handle}</div>
-                      ) : (
-                        <div className="text-xs text-gray-300 select-none blur-sm">{inf.handle}</div>
-                      )}
+                      <div className="space-y-1 text-right">
+                        <div className="h-5 w-8 bg-gray-200 rounded" />
+                        <div className="h-2.5 w-12 bg-gray-100 rounded" />
+                      </div>
                     </div>
+                    <div className="flex gap-2 mb-3">
+                      <div className="h-5 w-14 bg-gray-100 rounded-full" />
+                      <div className="h-5 w-16 bg-gray-100 rounded-full" />
+                      <div className="h-5 w-10 bg-gray-100 rounded-full" />
+                    </div>
+                    <div className="h-8 bg-gray-100 rounded-lg" />
                   </div>
-                  <div className="text-center">
-                    {loggedIn ? (
-                      <>
-                        <div className="text-lg font-semibold text-purple-600">{inf.score}</div>
-                        <div className="text-xs text-gray-400">AI Score</div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="text-lg text-gray-300">🔒</div>
-                        <div className="text-xs text-gray-400">AI Score</div>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div className="flex gap-2 mb-3 flex-wrap">
-                  <span className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">{inf.niche}</span>
-                  <span className="text-xs bg-gray-50 text-gray-500 px-2 py-0.5 rounded-full">{inf.platform}</span>
-                  {loggedIn ? (
-                    <span className="text-xs bg-gray-50 text-gray-500 px-2 py-0.5 rounded-full">{inf.followers}</span>
-                  ) : (
-                    <span className="text-xs bg-gray-50 text-gray-300 px-2 py-0.5 rounded-full blur-sm select-none">{inf.followers}</span>
-                  )}
-                </div>
-                {!loggedIn && (
-                  <div className="text-xs text-center text-gray-400 mb-2">
-                    🔒 <a href="/login" className="text-purple-600 hover:underline">Sign in to see full details</a>
-                  </div>
-                )}
-                <a href={loggedIn ? "/discover" : "/login"} className="block w-full text-center bg-purple-50 text-purple-700 py-2 rounded-lg text-xs font-medium hover:bg-purple-100 transition-colors">
-                  {loggedIn ? "View profile →" : "Sign in to view →"}
-                </a>
-              </div>
-            ))}
+                ))
+              : featuredInfluencers.map((inf) => {
+                  const initials = getInitials(inf.name)
+                  const color = getColor(initials)
+                  return (
+                    <div key={inf.id} className="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer" onClick={() => window.location.href = `/influencer/${inf.id}`}>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full ${color} flex items-center justify-center text-white text-sm font-medium`}>
+                            {initials}
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900 text-sm">
+                              {loggedIn ? inf.name : firstName(inf.name)}
+                            </div>
+                            {loggedIn ? (
+                              <div className="text-xs text-gray-400">{inf.handle}</div>
+                            ) : (
+                              <div className="text-xs text-gray-300 select-none blur-sm">{inf.handle}</div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          {loggedIn ? (
+                            <>
+                              <div className="text-lg font-semibold text-purple-600">{inf.score}</div>
+                              <div className="text-xs text-gray-400">AI Score</div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="text-lg text-gray-300">🔒</div>
+                              <div className="text-xs text-gray-400">AI Score</div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2 mb-3 flex-wrap">
+                        <span className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">{inf.niche}</span>
+                        <span className="text-xs bg-gray-50 text-gray-500 px-2 py-0.5 rounded-full">{inf.platform}</span>
+                        {loggedIn ? (
+                          <span className="text-xs bg-gray-50 text-gray-500 px-2 py-0.5 rounded-full">{inf.followers}</span>
+                        ) : (
+                          <span className="text-xs bg-gray-50 text-gray-300 px-2 py-0.5 rounded-full blur-sm select-none">{inf.followers}</span>
+                        )}
+                      </div>
+                      {!loggedIn && (
+                        <div className="text-xs text-center text-gray-400 mb-2">
+                          🔒 <a href="/login" className="text-purple-600 hover:underline">Sign in to see full details</a>
+                        </div>
+                      )}
+                      <a href={loggedIn ? `/influencer/${inf.id}` : "/login"} className="block w-full text-center bg-purple-50 text-purple-700 py-2 rounded-lg text-xs font-medium hover:bg-purple-100 transition-colors">
+                        {loggedIn ? "View profile →" : "Sign in to view →"}
+                      </a>
+                    </div>
+                  )
+                })
+            }
           </div>
         </div>
       </section>
