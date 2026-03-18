@@ -143,7 +143,6 @@ function ReviewModal({ campaign, onClose, onSubmit }: {
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
-  console.log("Session user:", session?.user)
   const router = useRouter()
   const [credits, setCredits] = useState<number | null>(null)
   const [brandVerified, setBrandVerified] = useState<boolean | null>(null)
@@ -163,7 +162,6 @@ export default function Dashboard() {
       try {
         const res = await fetch(`/api/user-credits?userId=${(session.user as any).id}`)
         const data = await res.json()
-        console.log("Credits loaded:", data)
         if (typeof data.credits === "number") {
           setCredits(data.credits)
         }

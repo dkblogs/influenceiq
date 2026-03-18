@@ -13,8 +13,8 @@ export async function GET(request) {
       where: { id: userId },
       select: {
         credits: true,
-        brandVerified: true,
         role: true,
+        brandVerified: true,
       },
     })
 
@@ -24,8 +24,8 @@ export async function GET(request) {
 
     return Response.json({
       credits: user.credits,
-      brandVerified: user.brandVerified,
       role: user.role,
+      brandVerified: user.brandVerified ?? false,
     })
 
   } catch (error) {
