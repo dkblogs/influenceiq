@@ -18,10 +18,10 @@ export async function POST(request) {
     }
 
     const body = await request.json()
-    const { name, niche, platform, bio, location, followers, engagementRate, handle, email, phone, pricePerPost } = body
+    const { name, niche, platform, bio, location, followers, engagementRate, handle, email, phone, pricePerPost, instagramHandle, youtubeHandle } = body
 
-    if (!name || !handle) {
-      return Response.json({ error: "Name and handle are required" }, { status: 400 })
+    if (!name) {
+      return Response.json({ error: "Name is required" }, { status: 400 })
     }
 
     // Derive initials from name
@@ -34,7 +34,7 @@ export async function POST(request) {
       data: {
         userId: session.user.id,
         name,
-        handle: handle.startsWith("@") ? handle : `@${handle}`,
+        handle: handle ? (handle.startsWith("@") ? handle : `@${handle}`) : `@${(email || name || "user").split("@")[0].replace(/[^a-z0-9]/gi, "_")}`,
         location: location || "",
         niche: niche || "Other",
         platform: platform || "Instagram",
@@ -46,6 +46,8 @@ export async function POST(request) {
         about: bio || null,
         email: email || null,
         phone: phone || null,
+        instagramHandle: instagramHandle ? (instagramHandle.startsWith("@") ? instagramHandle : `@${instagramHandle}`) : null,
+        youtubeHandle: youtubeHandle ? (youtubeHandle.startsWith("@") ? youtubeHandle : `@${youtubeHandle}`) : null,
       },
     })
 

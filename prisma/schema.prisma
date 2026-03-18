@@ -79,6 +79,8 @@ model Influencer {
   about        String?
   email        String?
   phone        String?
+  instagramHandle  String?
+  youtubeHandle    String?
   verified         Boolean  @default(false)
   userId           String?
   user             User?    @relation(fields: [userId], references: [id])

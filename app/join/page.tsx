@@ -11,7 +11,8 @@ export default function Join() {
 
   const [form, setForm] = useState({
     name: "",
-    handle: "",
+    instagramHandle: "",
+    youtubeHandle: "",
     location: "",
     platform: "",
     niche: "",
@@ -39,24 +40,20 @@ export default function Join() {
     }
   }, [status, user?.role])
 
-  // Pre-fill name and email from session
+  // Pre-fill name from session
   useEffect(() => {
-    if (user?.name || user?.email) {
-      setForm(p => ({
-        ...p,
-        name: p.name || user.name || "",
-        handle: p.handle || (user.email ? `@${user.email.split("@")[0].replace(/[^a-z0-9]/gi, "_")}` : ""),
-      }))
+    if (user?.name) {
+      setForm(p => ({ ...p, name: p.name || user.name || "" }))
     }
-  }, [user?.name, user?.email])
+  }, [user?.name])
 
   function set(field: string, value: string) {
     setForm(p => ({ ...p, [field]: value }))
   }
 
   async function handleFetchProfile() {
-    if (!form.handle || !form.platform) {
-      setError("Enter your handle and select a platform first")
+    if (!form.instagramHandle && !form.youtubeHandle) {
+      setError("Enter at least one handle (Instagram or YouTube) before auto-filling")
       return
     }
     setFetchingProfile(true)
@@ -66,7 +63,10 @@ export default function Join() {
       const res = await fetch("/api/scrape-profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ handle: form.handle, platform: form.platform.toLowerCase().replace(" (twitter)", "").replace("x ", "x") }),
+        body: JSON.stringify({
+          instagramHandle: form.instagramHandle || undefined,
+          youtubeHandle: form.youtubeHandle || undefined,
+        }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -172,43 +172,53 @@ export default function Join() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
 
+            <div>
+              <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Full name <span className="text-red-400">*</span></label>
+              <input required type="text" value={form.name} onChange={e => set("name", e.target.value)}
+                className={inputClass} placeholder="Your name" />
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Full name <span className="text-red-400">*</span></label>
-                <input required type="text" value={form.name} onChange={e => set("name", e.target.value)}
-                  className={inputClass} placeholder="Your name" />
+                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Instagram Handle</label>
+                <input type="text" value={form.instagramHandle} onChange={e => set("instagramHandle", e.target.value)}
+                  className={inputClass} placeholder="@instagram_username" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Handle / Username <span className="text-red-400">*</span></label>
-                <div className="flex gap-2">
-                  <input required type="text" value={form.handle} onChange={e => set("handle", e.target.value)}
-                    className={inputClass} placeholder="@yourhandle" />
-                  <button
-                    type="button"
-                    onClick={handleFetchProfile}
-                    disabled={fetchingProfile || !form.handle || !form.platform}
-                    className="flex-shrink-0 px-3 py-2 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-500 disabled:opacity-40 transition-colors whitespace-nowrap"
-                    title="Auto-fill from your profile"
-                  >
-                    {fetchingProfile ? "..." : "Auto-fill"}
-                  </button>
-                </div>
-                {fetchingProfile && (
-                  <p className="text-xs text-purple-400 mt-1.5 flex items-center gap-1.5">
-                    <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-                    </svg>
-                    Fetching your profile data...
-                  </p>
-                )}
-                {fetchStatus === "success" && !fetchingProfile && (
-                  <p className="text-xs text-[#10B981] mt-1.5">Profile data fetched successfully!</p>
-                )}
-                {fetchStatus === "error" && !fetchingProfile && (
-                  <p className="text-xs text-red-400 mt-1.5">Could not fetch profile — please fill manually</p>
-                )}
+                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">YouTube Channel</label>
+                <input type="text" value={form.youtubeHandle} onChange={e => set("youtubeHandle", e.target.value)}
+                  className={inputClass} placeholder="@youtube_channel" />
               </div>
+            </div>
+
+            <div>
+              <button
+                type="button"
+                onClick={handleFetchProfile}
+                disabled={fetchingProfile || (!form.instagramHandle && !form.youtubeHandle)}
+                className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-500 disabled:opacity-40 transition-colors"
+              >
+                {fetchingProfile ? "Fetching..." : "Auto-fill from profile"}
+              </button>
+              {fetchingProfile && (
+                <p className="text-xs text-purple-400 mt-1.5 flex items-center gap-1.5">
+                  <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                  </svg>
+                  {form.instagramHandle && form.youtubeHandle
+                    ? "Fetching Instagram & YouTube profiles..."
+                    : form.instagramHandle
+                    ? "Fetching Instagram profile..."
+                    : "Fetching YouTube channel..."}
+                </p>
+              )}
+              {fetchStatus === "success" && !fetchingProfile && (
+                <p className="text-xs text-[#10B981] mt-1.5">Profile data fetched successfully!</p>
+              )}
+              {fetchStatus === "error" && !fetchingProfile && (
+                <p className="text-xs text-red-400 mt-1.5">Could not fetch profile — please fill manually</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -20,89 +20,97 @@ async function pollRun(runId) {
     if (status === "FAILED" || status === "ABORTED" || status === "TIMED-OUT") {
       throw new Error(`Apify run ${status}`)
     }
-    // RUNNING or READY — keep polling
+  }
+}
+
+async function scrapeInstagram(handle) {
+  const clean = handle.replace(/^@/, "")
+  const runRes = await fetch(
+    "https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${APIFY_TOKEN}` },
+      body: JSON.stringify({ usernames: [clean] }),
+    }
+  )
+  const run = await runRes.json()
+  if (!run?.data?.id) throw new Error("Failed to start Instagram Apify run")
+  const dataset = await pollRun(run.data.id)
+  const p = dataset?.[0]
+  if (!p) throw new Error("No Instagram profile data returned")
+  return {
+    followers: p.followersCount ?? null,
+    bio: p.biography ?? null,
+    postsCount: p.postsCount ?? null,
+    profileImage: p.profilePicUrl ?? null,
+    fullName: p.fullName ?? null,
+    verified: p.verified ?? false,
+    engagement: null,
+  }
+}
+
+async function scrapeYouTube(handle) {
+  const clean = handle.replace(/^@/, "")
+  const runRes = await fetch(
+    "https://api.apify.com/v2/acts/streamers~youtube-channel-scraper/runs",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${APIFY_TOKEN}` },
+      body: JSON.stringify({ startUrls: [{ url: `https://www.youtube.com/@${clean}` }] }),
+    }
+  )
+  const run = await runRes.json()
+  if (!run?.data?.id) throw new Error("Failed to start YouTube Apify run")
+  const dataset = await pollRun(run.data.id)
+  const p = dataset?.[0]
+  if (!p) throw new Error("No YouTube profile data returned")
+  return {
+    followers: p.numberOfSubscribers ?? p.subscriberCount ?? null,
+    bio: p.description ?? null,
+    postsCount: p.numberOfVideos ?? null,
+    profileImage: p.thumbnailUrl ?? null,
+    fullName: p.channelName ?? p.title ?? null,
+    verified: p.isVerified ?? false,
+    engagement: null,
   }
 }
 
 export async function POST(request) {
   try {
-    const { handle, platform } = await request.json()
+    const { instagramHandle, youtubeHandle } = await request.json()
 
-    if (!handle || !platform) {
-      return Response.json({ error: "Missing handle or platform" }, { status: 400 })
+    if (!instagramHandle && !youtubeHandle) {
+      return Response.json({ error: "Provide at least one handle (instagramHandle or youtubeHandle)" }, { status: 400 })
     }
 
-    const cleanHandle = handle.replace(/^@/, "")
+    let result = {}
 
-    if (platform === "instagram") {
-      const runRes = await fetch(
-        "https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${APIFY_TOKEN}`,
-          },
-          body: JSON.stringify({ usernames: [cleanHandle] }),
-        }
-      )
-      const run = await runRes.json()
-      if (!run?.data?.id) {
-        return Response.json({ error: "Failed to start Apify run" }, { status: 500 })
-      }
-
-      const dataset = await pollRun(run.data.id)
-      const profile = dataset?.[0]
-      if (!profile) {
-        return Response.json({ error: "No profile data returned" }, { status: 404 })
-      }
-
-      return Response.json({
-        followers: profile.followersCount ?? null,
-        bio: profile.biography ?? null,
-        postsCount: profile.postsCount ?? null,
-        profileImage: profile.profilePicUrl ?? null,
-        fullName: profile.fullName ?? null,
-        verified: profile.verified ?? false,
+    if (instagramHandle && youtubeHandle) {
+      // Both — scrape Instagram first, fill missing fields from YouTube
+      const [igData, ytData] = await Promise.allSettled([
+        scrapeInstagram(instagramHandle),
+        scrapeYouTube(youtubeHandle),
+      ])
+      const ig = igData.status === "fulfilled" ? igData.value : {}
+      const yt = ytData.status === "fulfilled" ? ytData.value : {}
+      result = {
+        followers: ig.followers ?? yt.followers ?? null,
+        bio: ig.bio ?? yt.bio ?? null,
+        postsCount: ig.postsCount ?? yt.postsCount ?? null,
+        profileImage: ig.profileImage ?? yt.profileImage ?? null,
+        fullName: ig.fullName ?? yt.fullName ?? null,
+        verified: ig.verified || yt.verified || false,
         engagement: null,
-      })
+        instagramFollowers: ig.followers ?? null,
+        youtubeFollowers: yt.followers ?? null,
+      }
+    } else if (instagramHandle) {
+      result = await scrapeInstagram(instagramHandle)
+    } else {
+      result = await scrapeYouTube(youtubeHandle)
     }
 
-    if (platform === "youtube") {
-      const runRes = await fetch(
-        "https://api.apify.com/v2/acts/streamers~youtube-channel-scraper/runs",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${APIFY_TOKEN}`,
-          },
-          body: JSON.stringify({ startUrls: [{ url: `https://www.youtube.com/@${cleanHandle}` }] }),
-        }
-      )
-      const run = await runRes.json()
-      if (!run?.data?.id) {
-        return Response.json({ error: "Failed to start Apify run" }, { status: 500 })
-      }
-
-      const dataset = await pollRun(run.data.id)
-      const profile = dataset?.[0]
-      if (!profile) {
-        return Response.json({ error: "No profile data returned" }, { status: 404 })
-      }
-
-      return Response.json({
-        followers: profile.numberOfSubscribers ?? profile.subscriberCount ?? null,
-        bio: profile.description ?? null,
-        postsCount: profile.numberOfVideos ?? null,
-        profileImage: profile.thumbnailUrl ?? null,
-        fullName: profile.channelName ?? profile.title ?? null,
-        verified: profile.isVerified ?? false,
-        engagement: null,
-      })
-    }
-
-    return Response.json({ error: "Unsupported platform" }, { status: 400 })
+    return Response.json(result)
 
   } catch (error) {
     console.error("scrape-profile error:", error.message)

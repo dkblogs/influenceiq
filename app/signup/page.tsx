@@ -9,6 +9,8 @@ function SignupForm() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [instagramHandle, setInstagramHandle] = useState("")
+  const [youtubeHandle, setYoutubeHandle] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -27,7 +29,7 @@ function SignupForm() {
       const res = await fetch("/api/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role }),
+        body: JSON.stringify({ name, email, password, role, instagramHandle: instagramHandle || undefined, youtubeHandle: youtubeHandle || undefined }),
       })
 
       const data = await res.json()
@@ -129,6 +131,30 @@ function SignupForm() {
               required
             />
           </div>
+          {role === "influencer" && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-[#94A3B8] mb-1">Instagram Handle <span className="text-[#64748B] font-normal">(optional)</span></label>
+                <input
+                  type="text"
+                  value={instagramHandle}
+                  onChange={(e) => setInstagramHandle(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm focus:outline-none focus:border-purple-500 bg-[#0A0A0F] text-[#F8FAFC] placeholder-[#64748B]"
+                  placeholder="@instagram_username"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#94A3B8] mb-1">YouTube Channel <span className="text-[#64748B] font-normal">(optional)</span></label>
+                <input
+                  type="text"
+                  value={youtubeHandle}
+                  onChange={(e) => setYoutubeHandle(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm focus:outline-none focus:border-purple-500 bg-[#0A0A0F] text-[#F8FAFC] placeholder-[#64748B]"
+                  placeholder="@youtube_channel"
+                />
+              </div>
+            </div>
+          )}
           <button
             type="submit"
             disabled={loading}

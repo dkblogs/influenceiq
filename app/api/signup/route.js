@@ -6,7 +6,7 @@ const bcrypt = require("bcryptjs")
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { name, email, password, role } = body
+    const { name, email, password, role, instagramHandle, youtubeHandle } = body
 
     if (!name || !email || !password) {
       return Response.json(
@@ -74,6 +74,8 @@ export async function POST(request) {
             rate: "₹0/post",
             initials,
             location: "",
+            instagramHandle: instagramHandle ? (instagramHandle.startsWith("@") ? instagramHandle : `@${instagramHandle}`) : null,
+            youtubeHandle: youtubeHandle ? (youtubeHandle.startsWith("@") ? youtubeHandle : `@${youtubeHandle}`) : null,
           },
         })
       } catch (e) {
