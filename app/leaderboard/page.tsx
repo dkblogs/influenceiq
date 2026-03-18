@@ -54,7 +54,7 @@ export default function Leaderboard() {
     if (selectedNiche !== "All") params.set("niche", selectedNiche)
     const res = await fetch(`/api/influencers?${params}`)
     const data = await res.json()
-    const sorted = (data.influencers || []).sort((a: any, b: any) => b.score - a.score).slice(0, 10)
+    const sorted = [...(data.influencers || [])].sort((a: any, b: any) => b.score - a.score).slice(0, 10)
     setInfluencers(sorted)
     setLoading(false)
   }
@@ -191,8 +191,9 @@ export default function Leaderboard() {
                 <p className="text-xs text-[#64748B] uppercase tracking-widest font-medium mb-4">Top 3 this week</p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {/* Reorder for visual podium: 2nd left, 1st center, 3rd right on desktop */}
-                  {[top3[1], top3[0], top3[2]].filter(Boolean).map((inf, visualIdx) => {
-                    const rank = inf === top3[0] ? 1 : inf === top3[1] ? 2 : 3
+                  {([{ inf: top3[1], rank: 2 }, { inf: top3[0], rank: 1 }, { inf: top3[2], rank: 3 }] as const)
+                    .filter(item => item.inf != null)
+                    .map(({ inf, rank }) => {
                     const initials = getInitials(inf.name)
                     const color = getColor(initials)
                     const isFirst = rank === 1
