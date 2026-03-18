@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
+import Navbar from "@/app/components/Navbar"
 
 const niches = ["All", "Food", "Tech", "Fitness", "Finance", "Fashion", "Travel", "Gaming"]
 const platforms = ["All", "Instagram", "YouTube", "LinkedIn"]
@@ -44,17 +45,7 @@ export default function Discover() {
   return (
     <main className="min-h-screen bg-[#0A0A0F]">
 
-      {/* Nav */}
-      <nav className="bg-[#0A0A0F]/80 backdrop-blur-md border-b border-[#1E1E2E] sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
-        <a href="/" className="flex items-center gap-2">
-          <span className="text-xl">⚡</span>
-          <span className="font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
-        </a>
-        {loggedIn
-          ? <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Dashboard</a>
-          : <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Sign in</a>
-        }
-      </nav>
+      <Navbar />
 
       <div className="px-4 py-6 max-w-6xl mx-auto">
 

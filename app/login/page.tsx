@@ -3,6 +3,7 @@ import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Suspense } from "react"
+import Navbar from "@/app/components/Navbar"
 
 function LoginForm() {
   const router = useRouter()
@@ -34,7 +35,9 @@ function LoginForm() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0A0A0F] flex items-center justify-center px-4">
+    <main className="min-h-screen bg-[#0A0A0F]">
+      <Navbar />
+      <div className="flex items-center justify-center px-4 py-12">
       <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-8 w-full max-w-md shadow-2xl shadow-black/50">
 
         <div className="text-center mb-8">
@@ -96,6 +99,7 @@ function LoginForm() {
           <a href="/signup" className="text-purple-400 hover:underline font-medium">Sign up free</a>
         </p>
 
+      </div>
       </div>
     </main>
   )

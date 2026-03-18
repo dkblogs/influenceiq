@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
+import Navbar from "@/app/components/Navbar"
 
 const hardcodedCampaigns = [
   { id: "seed-1", brand: "FreshKart", brandInitials: "FK", brandColor: "bg-orange-500", title: "Summer grocery launch campaign", description: "Looking for food and lifestyle influencers to promote our new summer grocery collection. Must create 2 Instagram reels and 3 stories.", niche: "Food", platform: "Instagram", budget: "₹15,000", deadline: "15 days left", applicants: 12, slots: 3, location: "Pan India", minFollowers: "10K", status: "Open" },
@@ -23,7 +24,6 @@ export default function Campaigns() {
   const [credits, setCredits] = useState<number | null>(null)
   const [error, setError] = useState("")
   const [dbCampaigns, setDbCampaigns] = useState<any[]>([])
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -75,47 +75,7 @@ export default function Campaigns() {
 
   return (
     <main className="min-h-screen bg-[#0A0A0F]">
-      <nav className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-[#1E1E2E] sticky top-0 bg-[#0A0A0F]/80 backdrop-blur-md z-50">
-        <a href="/" className="flex items-center gap-2">
-          <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
-        </a>
-        {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-4">
-          <a href="/discover" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Influencers</a>
-          <a href="/brands" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Brands</a>
-          <a href="/campaigns" className="text-sm text-purple-400 font-medium">Open Campaigns</a>
-          {session && credits !== null && (
-            <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-lg">
-              <span className="text-xs text-purple-400 font-medium">{credits} credits</span>
-            </div>
-          )}
-          <a href="/post-campaign" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Post Campaign</a>
-        </div>
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden flex flex-col gap-1.5 p-2"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
-          <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
-          <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
-        </button>
-      </nav>
-
-      {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-b border-[#1E1E2E] bg-[#0A0A0F] px-4 py-4 flex flex-col gap-3 z-40">
-          <a href="/discover" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Find Influencers</a>
-          <a href="/brands" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Find Brands</a>
-          <a href="/campaigns" className="text-sm text-purple-400 font-medium py-2 border-b border-[#1E1E2E]">Open Campaigns</a>
-          {session && credits !== null && (
-            <div className="text-xs text-purple-400 font-medium py-1">{credits} credits</div>
-          )}
-          <a href="/post-campaign" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center hover:bg-purple-500">Post Campaign</a>
-        </div>
-      )}
+      <Navbar />
 
       <div className="px-4 md:px-8 py-8 md:py-10 max-w-6xl mx-auto">
         <div className="flex items-end justify-between mb-8">

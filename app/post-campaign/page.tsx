@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Navbar from "@/app/components/Navbar"
 
 export default function PostCampaign() {
   const { data: session } = useSession()
@@ -62,21 +63,7 @@ export default function PostCampaign() {
   return (
     <main className="min-h-screen bg-[#0A0A0F]">
 
-      {/* Navigation */}
-      <nav className="bg-[#0A0A0F]/80 backdrop-blur-md flex items-center justify-between px-4 md:px-8 py-4 border-b border-[#1E1E2E]">
-        <a href="/" className="flex items-center gap-2">
-          <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
-        </a>
-        <div className="flex items-center gap-3">
-          <a href="/campaigns" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">← Back</a>
-          {session && (
-            <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">
-              Dashboard
-            </a>
-          )}
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="px-4 md:px-8 py-8 md:py-12 max-w-2xl mx-auto">
 

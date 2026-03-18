@@ -1,9 +1,7 @@
 "use client"
-import { useState } from "react"
+import Navbar from "@/app/components/Navbar"
 
 export default function Pricing() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
   async function handlePayment(amount: number, credits: number, plan: string) {
     const res = await fetch("/api/payment", {
       method: "POST",
@@ -57,35 +55,7 @@ export default function Pricing() {
     <main className="min-h-screen bg-[#0A0A0F]">
       <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-      <nav className="bg-[#0A0A0F]/80 backdrop-blur-md flex items-center justify-between px-4 md:px-8 py-4 border-b border-[#1E1E2E]">
-        <a href="/" className="flex items-center gap-2">
-          <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
-        </a>
-        {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-4">
-          <a href="/discover" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Influencers</a>
-          <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Get Started</a>
-        </div>
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden flex flex-col gap-1.5 p-2"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
-          <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
-          <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
-        </button>
-      </nav>
-
-      {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-b border-[#1E1E2E] bg-[#0A0A0F] px-4 py-4 flex flex-col gap-3">
-          <a href="/discover" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Find Influencers</a>
-          <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center hover:bg-purple-500">Get Started</a>
-        </div>
-      )}
+      <Navbar />
 
       <div className="px-4 md:px-8 py-12 md:py-16 max-w-5xl mx-auto">
 

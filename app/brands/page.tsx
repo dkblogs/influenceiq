@@ -1,5 +1,6 @@
 "use client"
 import { useState } from "react"
+import Navbar from "@/app/components/Navbar"
 
 const allBrands = [
   { name: "FreshKart", industry: "Food & Grocery", location: "Mumbai", size: "Startup", budget: "₹10K–50K", platforms: ["Instagram", "YouTube"], looking: ["Food", "Lifestyle"], initials: "FK", color: "bg-orange-500", about: "Online grocery delivery startup expanding to 10 new cities.", verified: true },
@@ -19,7 +20,6 @@ export default function Brands() {
   const [selectedIndustry, setSelectedIndustry] = useState("All")
   const [selectedSize, setSelectedSize] = useState("All")
   const [search, setSearch] = useState("")
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const filtered = allBrands.filter((b) => {
     const matchIndustry = selectedIndustry === "All" || b.industry === selectedIndustry
@@ -33,40 +33,7 @@ export default function Brands() {
   return (
     <main className="min-h-screen bg-[#0A0A0F]">
 
-      {/* Navigation */}
-      <nav className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-[#1E1E2E] sticky top-0 bg-[#0A0A0F]/80 backdrop-blur-md z-50">
-        <a href="/" className="flex items-center gap-2">
-          <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
-        </a>
-        {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-4">
-          <a href="/discover" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Influencers</a>
-          <a href="/brands" className="text-sm text-purple-400 font-medium">Find Brands</a>
-          <a href="/campaigns" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Open Campaigns</a>
-          <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Get Started</a>
-        </div>
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden flex flex-col gap-1.5 p-2"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
-          <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
-          <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
-        </button>
-      </nav>
-
-      {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-b border-[#1E1E2E] bg-[#0A0A0F] px-4 py-4 flex flex-col gap-3">
-          <a href="/discover" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Find Influencers</a>
-          <a href="/brands" className="text-sm text-purple-400 font-medium py-2 border-b border-[#1E1E2E]">Find Brands</a>
-          <a href="/campaigns" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Open Campaigns</a>
-          <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center hover:bg-purple-500">Get Started</a>
-        </div>
-      )}
+      <Navbar />
 
       <div className="px-4 md:px-8 py-8 md:py-10 max-w-6xl mx-auto">
 

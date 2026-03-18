@@ -1,20 +1,10 @@
+import Navbar from "@/app/components/Navbar"
+
 export default function Privacy() {
   return (
     <main className="min-h-screen bg-white">
 
-      {/* Navigation */}
-      <nav className="flex items-center justify-between px-8 py-4 border-b border-gray-100">
-        <a href="/" className="flex items-center gap-2">
-          <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold">
-            Influence<span className="text-purple-600">IQ</span>
-          </span>
-        </a>
-        <div className="flex items-center gap-4">
-          <a href="/discover" className="text-sm text-gray-500 hover:text-gray-900">Find Influencers</a>
-          <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Get Started</a>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="px-8 py-16 max-w-3xl mx-auto">
 

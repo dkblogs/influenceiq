@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import { useSession } from "next-auth/react"
+import Navbar from "@/app/components/Navbar"
 
 const SUBJECTS = [
   "General inquiry",
@@ -58,20 +59,7 @@ export default function Contact() {
   return (
     <main className="min-h-screen bg-[#0A0A0F]">
 
-      {/* Nav */}
-      <nav className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-[#1E1E2E] sticky top-0 bg-[#0A0A0F]/80 backdrop-blur-md z-50">
-        <a href="/" className="flex items-center gap-2">
-          <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
-        </a>
-        <div className="flex items-center gap-4">
-          <a href="/discover" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Influencers</a>
-          {loggedIn
-            ? <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Dashboard</a>
-            : <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Get Started</a>
-          }
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="px-4 md:px-8 py-10 md:py-16 max-w-5xl mx-auto">
 

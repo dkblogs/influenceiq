@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
+import Navbar from "@/app/components/Navbar"
 
 const niches = ["All", "Food", "Tech", "Fitness", "Finance", "Fashion", "Travel", "Gaming"]
 
@@ -42,7 +43,6 @@ export default function Leaderboard() {
   const [influencers, setInfluencers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState<string | null>(null)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     fetchInfluencers()
@@ -74,46 +74,7 @@ export default function Leaderboard() {
   return (
     <main className="min-h-screen bg-[#0A0A0F]">
 
-      {/* Nav */}
-      <nav className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-[#1E1E2E] sticky top-0 bg-[#0A0A0F]/80 backdrop-blur-md z-50">
-        <a href="/" className="flex items-center gap-2">
-          <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
-        </a>
-        <div className="hidden md:flex items-center gap-6">
-          <a href="/discover" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Influencers</a>
-          <a href="/leaderboard" className="text-sm text-purple-400 font-medium">Leaderboard</a>
-          <a href="/campaigns" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Campaigns</a>
-          <a href="/pricing" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Pricing</a>
-          {loggedIn ? (
-            <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Dashboard</a>
-          ) : (
-            <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Sign in</a>
-          )}
-        </div>
-        <button
-          className="md:hidden flex flex-col gap-1.5 p-2"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          <span className={`block w-5 h-0.5 bg-[#94A3B8] transition-all ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`} />
-          <span className={`block w-5 h-0.5 bg-[#94A3B8] transition-all ${mobileMenuOpen ? "opacity-0" : ""}`} />
-          <span className={`block w-5 h-0.5 bg-[#94A3B8] transition-all ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
-        </button>
-      </nav>
-
-      {mobileMenuOpen && (
-        <div className="md:hidden border-b border-[#1E1E2E] bg-[#0A0A0F] px-4 py-4 flex flex-col gap-3">
-          <a href="/discover" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Find Influencers</a>
-          <a href="/leaderboard" className="text-sm text-purple-400 font-medium py-2 border-b border-[#1E1E2E]">Leaderboard</a>
-          <a href="/campaigns" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Campaigns</a>
-          <a href="/pricing" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Pricing</a>
-          {loggedIn
-            ? <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center">Dashboard</a>
-            : <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center">Sign in</a>
-          }
-        </div>
-      )}
+      <Navbar />
 
       {/* Hero */}
       <section className="relative px-4 md:px-8 py-12 md:py-16 text-center max-w-4xl mx-auto">

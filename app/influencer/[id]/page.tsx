@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useParams, useRouter } from "next/navigation"
+import Navbar from "@/app/components/Navbar"
 
 function firstName(name: string) {
   return name?.split(" ")[0] || name
@@ -161,22 +162,7 @@ export default function InfluencerProfile() {
   return (
     <main className="min-h-screen bg-[#0A0A0F]">
 
-      <nav className="bg-[#0A0A0F]/80 backdrop-blur-md flex items-center justify-between px-4 md:px-8 py-4 border-b border-[#1E1E2E]">
-        <a href="/" className="flex items-center gap-2">
-          <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
-        </a>
-        <div className="flex items-center gap-3">
-          <a href="/discover" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">← Back</a>
-          {loggedIn ? (
-            <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-lg">
-              <span className="text-xs text-purple-400 font-medium">{credits} credits</span>
-            </div>
-          ) : (
-            <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Sign in</a>
-          )}
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Owner settings panel */}
       {isOwner && (

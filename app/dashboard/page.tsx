@@ -1,5 +1,6 @@
 "use client"
-import { useSession, signOut } from "next-auth/react"
+import { useSession } from "next-auth/react"
+import Navbar from "@/app/components/Navbar"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
@@ -145,7 +146,6 @@ export default function Dashboard() {
   const router = useRouter()
   const [credits, setCredits] = useState(null)
   const [brandVerified, setBrandVerified] = useState<boolean | null>(null)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [brandCampaigns, setBrandCampaigns] = useState<any[]>([])
   const [reviewModal, setReviewModal] = useState<any>(null)
   const [reviewSuccess, setReviewSuccess] = useState("")
@@ -204,69 +204,7 @@ export default function Dashboard() {
   return (
     <main className="min-h-screen bg-[#0A0A0F]">
 
-      {/* Navigation */}
-      <nav className="bg-[#0A0A0F]/80 backdrop-blur-md flex items-center justify-between px-4 md:px-8 py-4 border-b border-[#1E1E2E]">
-        <a href="/" className="flex items-center gap-2">
-          <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold text-[#F8FAFC]">
-            Influence<span className="text-purple-400">IQ</span>
-          </span>
-        </a>
-        {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-4">
-          <a href="/discover" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Influencers</a>
-          <a href="/brands" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Brands</a>
-          <a href="/campaigns" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Campaigns</a>
-          <a href="/leaderboard" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Leaderboard</a>
-          <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-lg">
-            <span className="text-xs text-purple-400 font-medium">{credits} credits</span>
-          </div>
-          {user.role === "brand" && !brandVerified && (
-            <a href="/verify-brand" className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg hover:bg-blue-500/20 transition-colors">
-              ✓ Get Verified
-            </a>
-          )}
-          <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-            {initial}
-          </div>
-          <button
-            onClick={() => signOut({ callbackUrl: "/" })}
-            className="text-sm text-[#64748B] hover:text-[#94A3B8] transition-colors"
-          >
-            Sign out
-          </button>
-        </div>
-        {/* Mobile right side */}
-        <div className="flex md:hidden items-center gap-3">
-          <div className="bg-purple-500/10 border border-purple-500/20 px-2 py-1 rounded-lg">
-            <span className="text-xs text-purple-400 font-medium">{credits} cr</span>
-          </div>
-          <button
-            className="flex flex-col gap-1.5 p-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
-            <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
-            <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-b border-[#1E1E2E] bg-[#0A0A0F] px-4 py-4 flex flex-col gap-3">
-          <a href="/discover" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Find Influencers</a>
-          <a href="/brands" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Find Brands</a>
-          <a href="/campaigns" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Campaigns</a>
-          <button
-            onClick={() => signOut({ callbackUrl: "/" })}
-            className="text-sm text-red-400 py-2 text-left"
-          >
-            Sign out
-          </button>
-        </div>
-      )}
+      <Navbar />
 
       <div className="px-4 md:px-8 py-6 md:py-8 max-w-6xl mx-auto">
 

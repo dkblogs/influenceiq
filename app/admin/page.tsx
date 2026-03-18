@@ -2,9 +2,10 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Navbar from "@/app/components/Navbar"
 
 export default function Admin() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("overview")
   const [users, setUsers] = useState<any[]>([])
@@ -116,19 +117,7 @@ export default function Admin() {
 
   return (
     <main className="min-h-screen bg-[#0A0A0F]">
-      <nav className="bg-[#0A0A0F]/80 backdrop-blur-md flex items-center justify-between px-8 py-4 border-b border-[#1E1E2E]">
-        <div className="flex items-center gap-3">
-          <a href="/" className="flex items-center gap-2">
-            <span className="text-2xl">⚡</span>
-            <span className="text-xl font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
-          </a>
-          <span className="text-xs bg-red-500/10 text-red-400 px-2 py-0.5 rounded-full font-medium border border-red-500/20">Admin</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-[#64748B]">{session?.user?.email}</span>
-          <a href="/dashboard" className="text-sm text-purple-400 hover:underline">Dashboard →</a>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="px-8 py-8 max-w-7xl mx-auto">
         <div className="mb-8">

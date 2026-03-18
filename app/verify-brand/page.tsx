@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Navbar from "@/app/components/Navbar"
 
 export default function VerifyBrand() {
   const { data: session } = useSession()
@@ -71,14 +72,7 @@ export default function VerifyBrand() {
   return (
     <main className="min-h-screen bg-[#0A0A0F]">
 
-      {/* Nav */}
-      <nav className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-[#1E1E2E] sticky top-0 bg-[#0A0A0F]/80 backdrop-blur-md z-50">
-        <a href="/" className="flex items-center gap-2">
-          <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
-        </a>
-        <a href="/dashboard" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">← Dashboard</a>
-      </nav>
+      <Navbar />
 
       <div className="px-4 md:px-8 py-10 max-w-5xl mx-auto">
 

@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
 import { useSession } from "next-auth/react"
+import Navbar from "@/app/components/Navbar"
 
 function firstName(name: string) {
   return name?.split(" ")[0] || name
@@ -72,7 +73,6 @@ export default function Home() {
   const [email, setEmail] = useState("")
   const [subscribed, setSubscribed] = useState(false)
   const [heroVisible, setHeroVisible] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [featuredInfluencers, setFeaturedInfluencers] = useState<any[]>([])
 
   useEffect(() => {
@@ -88,60 +88,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#0A0A0F]">
 
-      {/* Navigation */}
-      <nav className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-[#1E1E2E] sticky top-0 bg-[#0A0A0F]/80 backdrop-blur-md z-50">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
-        </div>
-        {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-6">
-          <a href="/discover" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Influencers</a>
-          <a href="/brands" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Brands</a>
-          <a href="/campaigns" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Open Campaigns</a>
-          <a href="/leaderboard" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Leaderboard</a>
-          <a href="/pricing" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Pricing</a>
-          {loggedIn ? (
-            <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Dashboard</a>
-          ) : (
-            <>
-              <a href="/login" className="text-sm border border-[#1E1E2E] text-[#94A3B8] px-4 py-2 rounded-lg hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors">Log in</a>
-              <a href="/signup" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Get started free</a>
-            </>
-          )}
-        </div>
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden flex flex-col gap-1.5 p-2"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          <span className={`block w-5 h-0.5 bg-[#94A3B8] transition-all ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`}></span>
-          <span className={`block w-5 h-0.5 bg-[#94A3B8] transition-all ${mobileMenuOpen ? "opacity-0" : ""}`}></span>
-          <span className={`block w-5 h-0.5 bg-[#94A3B8] transition-all ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`}></span>
-        </button>
-      </nav>
-
-      {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-b border-[#1E1E2E] bg-[#0A0A0F] px-4 py-4 flex flex-col gap-3 z-40">
-          <a href="/discover" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Find Influencers</a>
-          <a href="/brands" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Find Brands</a>
-          <a href="/campaigns" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Open Campaigns</a>
-          <a href="/how-it-works" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">How it works</a>
-          <a href="/pricing" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Pricing</a>
-          <div className="flex gap-3 pt-2">
-            {loggedIn ? (
-              <a href="/dashboard" className="flex-1 text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center hover:bg-purple-500">Dashboard</a>
-            ) : (
-              <>
-                <a href="/login" className="flex-1 text-sm border border-[#1E1E2E] text-[#94A3B8] px-4 py-2 rounded-lg text-center hover:bg-[#1E1E2E]">Log in</a>
-                <a href="/signup" className="flex-1 text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center hover:bg-purple-500">Get started</a>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      <Navbar />
 
       {/* Hero */}
       <section className={`relative text-center px-4 md:px-8 py-12 md:py-24 max-w-4xl mx-auto transition-all duration-700 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
