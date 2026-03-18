@@ -48,6 +48,9 @@ export default function InfluencerProfile() {
   const [followersPublic, setFollowersPublic] = useState(true)
   const [savingSettings, setSavingSettings] = useState(false)
   const [settingsSaved, setSettingsSaved] = useState(false)
+  const [activeTab, setActiveTab] = useState<"overview" | "portfolio">("overview")
+  const [portfolioItems, setPortfolioItems] = useState<any[]>([])
+  const [portfolioLoading, setPortfolioLoading] = useState(false)
 
   const colorMap: Record<string, string> = {
     PS: "bg-purple-500", RK: "bg-orange-500", AN: "bg-green-500",
@@ -63,6 +66,15 @@ export default function InfluencerProfile() {
         .then(data => setCredits(data.credits))
     }
   }, [params.id, session])
+
+  useEffect(() => {
+    if (!params.id) return
+    setPortfolioLoading(true)
+    fetch(`/api/portfolio?influencerId=${params.id}`)
+      .then(res => res.json())
+      .then(data => { setPortfolioItems(data.items || []); setPortfolioLoading(false) })
+      .catch(() => setPortfolioLoading(false))
+  }, [params.id])
 
   useEffect(() => {
     if (!params.id) return
@@ -264,6 +276,95 @@ export default function InfluencerProfile() {
             </div>
           </div>
         </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 mb-6 bg-[#12121A] border border-[#1E1E2E] rounded-xl p-1 w-fit">
+          <button
+            onClick={() => setActiveTab("overview")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "overview" ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20" : "text-[#64748B] hover:text-[#94A3B8]"}`}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab("portfolio")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "portfolio" ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20" : "text-[#64748B] hover:text-[#94A3B8]"}`}
+          >
+            Portfolio {portfolioItems.length > 0 && <span className="ml-1 text-xs opacity-70">({portfolioItems.length})</span>}
+          </button>
+        </div>
+
+        {/* Portfolio tab */}
+        {activeTab === "portfolio" && (
+          <div className="mb-6">
+            {portfolioLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[1,2].map(n => (
+                  <div key={n} className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 animate-pulse">
+                    <div className="h-3 bg-[#1E1E2E] rounded w-1/3 mb-2"></div>
+                    <div className="h-4 bg-[#1E1E2E] rounded w-2/3 mb-4"></div>
+                    <div className="h-3 bg-[#1E1E2E] rounded mb-2"></div>
+                    <div className="h-3 bg-[#1E1E2E] rounded w-3/4"></div>
+                  </div>
+                ))}
+              </div>
+            ) : portfolioItems.length === 0 ? (
+              <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-10 text-center">
+                <div className="text-3xl mb-3">📂</div>
+                <p className="font-medium text-[#94A3B8] mb-1">No portfolio items yet</p>
+                <p className="text-sm text-[#64748B]">This influencer hasn't added any collaborations yet.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {portfolioItems.map((item: any) => (
+                  <div key={item.id} className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 hover:border-purple-500/30 transition-colors">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div>
+                        <div className="text-xs text-purple-400 font-medium uppercase tracking-wide mb-0.5">{item.brandName}</div>
+                        <h3 className="font-semibold text-[#F8FAFC] text-sm leading-snug">{item.campaignTitle}</h3>
+                      </div>
+                      {item.completedAt && (
+                        <span className="text-xs text-[#64748B] whitespace-nowrap flex-shrink-0 mt-0.5">
+                          {new Date(item.completedAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
+                        </span>
+                      )}
+                    </div>
+                    {item.description && (
+                      <p className="text-sm text-[#94A3B8] mb-3 leading-relaxed">{item.description}</p>
+                    )}
+                    <div className="space-y-2">
+                      {item.deliverables && (
+                        <div className="bg-[#0D0D1A] rounded-lg px-3 py-2">
+                          <div className="text-xs text-[#64748B] font-medium mb-0.5">Deliverables</div>
+                          <div className="text-xs text-[#94A3B8]">{item.deliverables}</div>
+                        </div>
+                      )}
+                      {item.results && (
+                        <div className="bg-[#10B981]/5 border border-[#10B981]/20 rounded-lg px-3 py-2">
+                          <div className="text-xs text-[#10B981] font-medium mb-0.5">Results</div>
+                          <div className="text-xs text-[#94A3B8]">{item.results}</div>
+                        </div>
+                      )}
+                    </div>
+                    {item.mediaUrl && (
+                      <a
+                        href={item.mediaUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 transition-colors"
+                      >
+                        <span>🔗</span> View campaign media
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Overview tab content */}
+        {activeTab === "overview" && (
+        <>
 
         {/* Stats row */}
         {tier1 ? (
@@ -484,6 +585,9 @@ export default function InfluencerProfile() {
             </div>
           )}
         </div>
+
+        </>
+        )}
 
       </div>
     </main>

@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 const bcrypt = require("bcryptjs")
 
-const handler = NextAuth({
+export const authOptions = {
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -60,6 +60,7 @@ const handler = NextAuth({
     },
   },
   pages: { signIn: "/login" },
-})
+}
 
+const handler = NextAuth(authOptions)
 export { handler as GET, handler as POST }

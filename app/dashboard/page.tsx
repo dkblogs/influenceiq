@@ -149,6 +149,17 @@ export default function Dashboard() {
   const [brandCampaigns, setBrandCampaigns] = useState<any[]>([])
   const [reviewModal, setReviewModal] = useState<any>(null)
   const [reviewSuccess, setReviewSuccess] = useState("")
+  // Portfolio state (influencer only)
+  const [myInfluencerProfile, setMyInfluencerProfile] = useState<any>(null)
+  const [portfolioItems, setPortfolioItems] = useState<any[]>([])
+  const [portfolioToast, setPortfolioToast] = useState("")
+  const [portfolioError, setPortfolioError] = useState("")
+  const [editingItem, setEditingItem] = useState<any>(null)
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [portfolioForm, setPortfolioForm] = useState({
+    brandName: "", campaignTitle: "", description: "",
+    deliverables: "", results: "", mediaUrl: "", completedAt: "",
+  })
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -179,7 +190,66 @@ export default function Dashboard() {
         .then(res => res.json())
         .then(data => setBrandCampaigns(data.campaigns || []))
     }
+    if (u?.role === "influencer" && u?.id) {
+      fetch(`/api/influencers?userId=${u.id}`)
+        .then(res => res.json())
+        .then(data => {
+          const inf = (data.influencers || [])[0] || null
+          setMyInfluencerProfile(inf)
+          if (inf?.id) {
+            fetch(`/api/portfolio?influencerId=${inf.id}`)
+              .then(r => r.json())
+              .then(d => setPortfolioItems(d.items || []))
+          }
+        })
+    }
   }, [session?.user?.id])
+
+  function showToast(msg: string) {
+    setPortfolioToast(msg)
+    setTimeout(() => setPortfolioToast(""), 3000)
+  }
+
+  async function handlePortfolioAdd(e: React.FormEvent) {
+    e.preventDefault()
+    if (!myInfluencerProfile?.id) { setPortfolioError("No influencer profile linked to your account"); return }
+    setPortfolioError("")
+    const res = await fetch("/api/portfolio", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...portfolioForm, influencerId: myInfluencerProfile.id }),
+    })
+    const data = await res.json()
+    if (!res.ok) { setPortfolioError(data.error || "Failed to add item"); return }
+    setPortfolioItems(prev => [data.item, ...prev])
+    setPortfolioForm({ brandName: "", campaignTitle: "", description: "", deliverables: "", results: "", mediaUrl: "", completedAt: "" })
+    setShowAddForm(false)
+    showToast("Collaboration added!")
+  }
+
+  async function handlePortfolioDelete(id: string) {
+    if (!confirm("Delete this portfolio item?")) return
+    const res = await fetch(`/api/portfolio/${id}`, { method: "DELETE" })
+    if (res.ok) {
+      setPortfolioItems(prev => prev.filter(i => i.id !== id))
+      showToast("Deleted.")
+    }
+  }
+
+  async function handlePortfolioEdit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editingItem) return
+    const res = await fetch(`/api/portfolio/${editingItem.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editingItem),
+    })
+    const data = await res.json()
+    if (!res.ok) { setPortfolioError(data.error || "Failed to update"); return }
+    setPortfolioItems(prev => prev.map(i => i.id === data.item.id ? data.item : i))
+    setEditingItem(null)
+    showToast("Updated!")
+  }
 
   async function handleReviewSubmit(data: any) {
     const res = await fetch("/api/campaign-reviews", {
@@ -398,6 +468,176 @@ export default function Dashboard() {
                     </button>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* My Portfolio — influencers only */}
+        {user.role === "influencer" && (
+          <div className="mt-6 bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6">
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="font-medium text-[#F8FAFC]">My Portfolio</h2>
+              <button
+                onClick={() => { setShowAddForm(v => !v); setPortfolioError("") }}
+                className="text-xs bg-purple-600 text-white px-3 py-1.5 rounded-lg hover:bg-purple-500 transition-colors"
+              >
+                {showAddForm ? "Cancel" : "+ Add Collaboration"}
+              </button>
+            </div>
+            <p className="text-xs text-[#64748B] mb-4">Showcase your past brand collaborations to attract more opportunities.</p>
+
+            {portfolioToast && (
+              <div className="bg-[#10B981]/10 text-[#10B981] text-sm px-4 py-3 rounded-lg mb-4 border border-[#10B981]/20">{portfolioToast}</div>
+            )}
+            {portfolioError && (
+              <div className="bg-red-500/10 text-red-400 text-sm px-4 py-3 rounded-lg mb-4 border border-red-500/20">{portfolioError}</div>
+            )}
+
+            {/* Add form */}
+            {showAddForm && (
+              <form onSubmit={handlePortfolioAdd} className="bg-[#0D0D1A] border border-[#1E1E2E] rounded-xl p-4 mb-4 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Brand Name *</label>
+                    <input required value={portfolioForm.brandName} onChange={e => setPortfolioForm(p => ({...p, brandName: e.target.value}))}
+                      placeholder="e.g. Nike, Zomato" className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Campaign Title *</label>
+                    <input required value={portfolioForm.campaignTitle} onChange={e => setPortfolioForm(p => ({...p, campaignTitle: e.target.value}))}
+                      placeholder="e.g. Diwali Product Launch" className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#94A3B8] mb-1">Description</label>
+                  <textarea value={portfolioForm.description} onChange={e => setPortfolioForm(p => ({...p, description: e.target.value}))}
+                    placeholder="What was the campaign about?" rows={2} className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500 resize-none" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Deliverables</label>
+                    <input value={portfolioForm.deliverables} onChange={e => setPortfolioForm(p => ({...p, deliverables: e.target.value}))}
+                      placeholder="e.g. 3 Reels, 5 Stories" className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Results</label>
+                    <input value={portfolioForm.results} onChange={e => setPortfolioForm(p => ({...p, results: e.target.value}))}
+                      placeholder="e.g. 2M reach, 8% engagement" className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Media URL</label>
+                    <input type="url" value={portfolioForm.mediaUrl} onChange={e => setPortfolioForm(p => ({...p, mediaUrl: e.target.value}))}
+                      placeholder="https://instagram.com/p/..." className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Completion Date</label>
+                    <input type="date" value={portfolioForm.completedAt} onChange={e => setPortfolioForm(p => ({...p, completedAt: e.target.value}))}
+                      className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500" />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-1">
+                  <button type="button" onClick={() => setShowAddForm(false)} className="text-sm text-[#64748B] hover:text-[#94A3B8] px-3 py-1.5 transition-colors">Cancel</button>
+                  <button type="submit" className="text-sm bg-purple-600 text-white px-4 py-1.5 rounded-lg hover:bg-purple-500 transition-colors">Save Collaboration</button>
+                </div>
+              </form>
+            )}
+
+            {/* Items list */}
+            {portfolioItems.length === 0 && !showAddForm ? (
+              <div className="text-center py-8 text-[#64748B]">
+                <div className="text-3xl mb-2">📂</div>
+                <div className="text-sm">No portfolio items yet. Add your first collaboration above.</div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {portfolioItems.map((item) => (
+                  <div key={item.id}>
+                    {editingItem?.id === item.id ? (
+                      <form onSubmit={handlePortfolioEdit} className="bg-[#0D0D1A] border border-purple-500/30 rounded-xl p-4 space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-[#94A3B8] mb-1">Brand Name *</label>
+                            <input required value={editingItem.brandName} onChange={e => setEditingItem((p: any) => ({...p, brandName: e.target.value}))}
+                              className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-[#94A3B8] mb-1">Campaign Title *</label>
+                            <input required value={editingItem.campaignTitle} onChange={e => setEditingItem((p: any) => ({...p, campaignTitle: e.target.value}))}
+                              className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500" />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-[#94A3B8] mb-1">Description</label>
+                          <textarea value={editingItem.description || ""} onChange={e => setEditingItem((p: any) => ({...p, description: e.target.value}))}
+                            rows={2} className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500 resize-none" />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-[#94A3B8] mb-1">Deliverables</label>
+                            <input value={editingItem.deliverables || ""} onChange={e => setEditingItem((p: any) => ({...p, deliverables: e.target.value}))}
+                              className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-[#94A3B8] mb-1">Results</label>
+                            <input value={editingItem.results || ""} onChange={e => setEditingItem((p: any) => ({...p, results: e.target.value}))}
+                              className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-[#94A3B8] mb-1">Media URL</label>
+                            <input type="url" value={editingItem.mediaUrl || ""} onChange={e => setEditingItem((p: any) => ({...p, mediaUrl: e.target.value}))}
+                              className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-[#94A3B8] mb-1">Completion Date</label>
+                            <input type="date" value={editingItem.completedAt ? new Date(editingItem.completedAt).toISOString().split("T")[0] : ""}
+                              onChange={e => setEditingItem((p: any) => ({...p, completedAt: e.target.value}))}
+                              className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500" />
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-2 pt-1">
+                          <button type="button" onClick={() => setEditingItem(null)} className="text-sm text-[#64748B] hover:text-[#94A3B8] px-3 py-1.5 transition-colors">Cancel</button>
+                          <button type="submit" className="text-sm bg-purple-600 text-white px-4 py-1.5 rounded-lg hover:bg-purple-500 transition-colors">Save Changes</button>
+                        </div>
+                      </form>
+                    ) : (
+                      <div className="flex items-start justify-between gap-3 p-3 border border-[#1E1E2E] rounded-xl hover:border-purple-500/30 transition-colors">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs text-purple-400 font-medium">{item.brandName}</div>
+                          <div className="text-sm font-medium text-[#F8FAFC] truncate">{item.campaignTitle}</div>
+                          {item.results && <div className="text-xs text-[#10B981] mt-0.5 truncate">{item.results}</div>}
+                          {item.completedAt && (
+                            <div className="text-xs text-[#64748B] mt-0.5">
+                              {new Date(item.completedAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          <button onClick={() => { setEditingItem({...item}); setPortfolioError("") }}
+                            className="text-xs border border-[#1E1E2E] text-[#94A3B8] px-2.5 py-1 rounded-lg hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors">
+                            Edit
+                          </button>
+                          <button onClick={() => handlePortfolioDelete(item.id)}
+                            className="text-xs border border-red-500/20 text-red-400 px-2.5 py-1 rounded-lg hover:bg-red-500/10 transition-colors">
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {myInfluencerProfile && (
+              <div className="mt-4 pt-4 border-t border-[#1E1E2E]">
+                <a href={`/portfolio/${myInfluencerProfile.id}`} className="text-xs text-purple-400 hover:text-purple-300 transition-colors">
+                  View public portfolio page →
+                </a>
               </div>
             )}
           </div>

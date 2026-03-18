@@ -82,7 +82,22 @@ model Influencer {
   userId           String?
   followersPublic  Boolean  @default(true)
   createdAt        DateTime @default(now())
+  portfolioItems   PortfolioItem[]
   @@unique([handle])
+}
+
+model PortfolioItem {
+  id            String     @id @default(cuid())
+  influencerId  String
+  influencer    Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  brandName     String
+  campaignTitle String
+  description   String?
+  deliverables  String?
+  results       String?
+  mediaUrl      String?
+  completedAt   DateTime?
+  createdAt     DateTime   @default(now())
 }
 
 model UnlockedContact {

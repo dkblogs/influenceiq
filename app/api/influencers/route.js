@@ -6,8 +6,13 @@ export async function GET(request) {
     const niche = searchParams.get("niche")
     const platform = searchParams.get("platform")
     const search = searchParams.get("search")
+    const userId = searchParams.get("userId")
 
     const where = {}
+
+    if (userId) {
+      where.userId = userId
+    }
 
     if (niche && niche !== "All") {
       where.niche = niche
@@ -41,6 +46,8 @@ export async function GET(request) {
         rate: true,
         initials: true,
         verified: true,
+        userId: true,
+        followersPublic: true,
       },
     })
 
