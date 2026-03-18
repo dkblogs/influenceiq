@@ -143,6 +143,7 @@ function ReviewModal({ campaign, onClose, onSubmit }: {
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
+  console.log("Session user:", session?.user)
   const router = useRouter()
   const [credits, setCredits] = useState<number | null>(null)
   const [brandVerified, setBrandVerified] = useState<boolean | null>(null)
@@ -157,19 +158,27 @@ export default function Dashboard() {
   }, [status, router])
 
   useEffect(() => {
-    if (session?.user?.id) {
-      fetch(`/api/user-credits?userId=${session.user.id}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.credits !== undefined) setCredits(data.credits)
-          setBrandVerified(data.brandVerified ?? false)
-        })
-      const u = session.user as any
-      if (u.role === "brand") {
-        fetch(`/api/campaigns?brandId=${session.user.id}`)
-          .then(res => res.json())
-          .then(data => setBrandCampaigns(data.campaigns || []))
+    async function loadCredits() {
+      if (!session?.user?.id) return
+      try {
+        const res = await fetch(`/api/user-credits?userId=${(session.user as any).id}`)
+        const data = await res.json()
+        console.log("Credits loaded:", data)
+        if (typeof data.credits === "number") {
+          setCredits(data.credits)
+        }
+        setBrandVerified(data.brandVerified ?? false)
+      } catch (err) {
+        console.error("Failed to load credits:", err)
       }
+    }
+    loadCredits()
+
+    const u = session?.user as any
+    if (u?.role === "brand" && u?.id) {
+      fetch(`/api/campaigns?brandId=${u.id}`)
+        .then(res => res.json())
+        .then(data => setBrandCampaigns(data.campaigns || []))
     }
   }, [session?.user?.id])
 
