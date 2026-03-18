@@ -8,6 +8,7 @@ import Navbar from "@/app/components/Navbar"
 function LoginForm() {
   const searchParams = useSearchParams()
   const success = searchParams.get("success")
+  const next = searchParams.get("next") || "/dashboard"
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -30,7 +31,7 @@ function LoginForm() {
       return
     }
 
-    window.location.href = "/dashboard"
+    window.location.href = next
   }
 
   return (

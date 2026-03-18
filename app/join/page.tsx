@@ -1,156 +1,239 @@
+"use client"
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
 
 export default function Join() {
-  return (
-    <main className="min-h-screen bg-gray-50">
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const user = session?.user as any
 
+  const [form, setForm] = useState({
+    name: "",
+    handle: "",
+    location: "",
+    platform: "",
+    niche: "",
+    followers: "",
+    engagementRate: "",
+    pricePerPost: "",
+    bio: "",
+    phone: "",
+  })
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState("")
+
+  // Auth gate
+  useEffect(() => {
+    if (status === "loading") return
+    if (status === "unauthenticated") {
+      router.replace("/signup?role=influencer")
+      return
+    }
+    if (user?.role && user.role !== "influencer") {
+      router.replace("/dashboard")
+      return
+    }
+  }, [status, user?.role])
+
+  // Pre-fill name and email from session
+  useEffect(() => {
+    if (user?.name || user?.email) {
+      setForm(p => ({
+        ...p,
+        name: p.name || user.name || "",
+        handle: p.handle || (user.email ? `@${user.email.split("@")[0].replace(/[^a-z0-9]/gi, "_")}` : ""),
+      }))
+    }
+  }, [user?.name, user?.email])
+
+  function set(field: string, value: string) {
+    setForm(p => ({ ...p, [field]: value }))
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!form.platform) { setError("Please select a platform"); return }
+    if (!form.niche) { setError("Please select a niche"); return }
+
+    setSubmitting(true)
+    setError("")
+
+    const res = await fetch("/api/influencers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...form,
+        email: user?.email || "",
+        userId: user?.id || "",
+      }),
+    })
+    const data = await res.json()
+
+    if (res.status === 409) {
+      setError("Profile already exists — redirecting to dashboard")
+      setTimeout(() => router.push("/dashboard"), 1500)
+      return
+    }
+    if (!res.ok) {
+      setError(data.error || "Something went wrong")
+      setSubmitting(false)
+      return
+    }
+
+    router.push("/dashboard")
+  }
+
+  // Show nothing while redirecting non-influencers
+  if (status === "loading" || (status === "authenticated" && user?.role !== "influencer")) {
+    return (
+      <main className="min-h-screen bg-[#0A0A0F]">
+        <Navbar />
+      </main>
+    )
+  }
+
+  const inputClass = "w-full px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm focus:outline-none focus:border-purple-500 bg-[#0A0A0F] text-[#F8FAFC] placeholder-[#64748B]"
+  const selectClass = `${inputClass} text-[#94A3B8]`
+
+  return (
+    <main className="min-h-screen bg-[#0A0A0F]">
       <Navbar />
 
-      <div className="px-8 py-12 max-w-2xl mx-auto">
+      <div className="px-4 md:px-8 py-10 max-w-2xl mx-auto">
 
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-block bg-purple-50 text-purple-700 text-sm px-4 py-1 rounded-full mb-4">
+          <div className="inline-block bg-purple-500/10 text-purple-400 text-sm px-4 py-1 rounded-full mb-4 border border-purple-500/20">
             For Influencers
           </div>
-          <h1 className="text-3xl font-semibold text-gray-900 mb-3">
+          <h1 className="text-3xl font-bold text-[#F8FAFC] mb-3 tracking-tight">
             Get discovered by top brands
           </h1>
-          <p className="text-gray-500">
+          <p className="text-[#94A3B8]">
             List your profile for free. AI scores you automatically. Brands send proposals directly to you.
           </p>
         </div>
 
         {/* Benefits */}
         <div className="grid grid-cols-3 gap-4 mb-10">
-          <div className="bg-white rounded-xl p-4 text-center border border-gray-100">
-            <div className="text-2xl mb-2">🆓</div>
-            <div className="text-sm font-medium text-gray-900">Free listing</div>
-            <div className="text-xs text-gray-400 mt-1">No cost to join</div>
-          </div>
-          <div className="bg-white rounded-xl p-4 text-center border border-gray-100">
-            <div className="text-2xl mb-2">⚡</div>
-            <div className="text-sm font-medium text-gray-900">AI scored</div>
-            <div className="text-xs text-gray-400 mt-1">Auto verified</div>
-          </div>
-          <div className="bg-white rounded-xl p-4 text-center border border-gray-100">
-            <div className="text-2xl mb-2">📩</div>
-            <div className="text-sm font-medium text-gray-900">Direct proposals</div>
-            <div className="text-xs text-gray-400 mt-1">Brands reach you</div>
-          </div>
+          {[
+            { icon: "🆓", title: "Free listing", sub: "No cost to join" },
+            { icon: "⚡", title: "AI scored", sub: "Auto verified" },
+            { icon: "📩", title: "Direct proposals", sub: "Brands reach you" },
+          ].map(b => (
+            <div key={b.title} className="bg-[#12121A] rounded-xl p-4 text-center border border-[#1E1E2E]">
+              <div className="text-2xl mb-2">{b.icon}</div>
+              <div className="text-sm font-medium text-[#F8FAFC]">{b.title}</div>
+              <div className="text-xs text-[#64748B] mt-1">{b.sub}</div>
+            </div>
+          ))}
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-8">
-          <h2 className="font-medium text-gray-900 mb-6">Your profile</h2>
+        <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6 md:p-8">
+          <h2 className="font-semibold text-[#F8FAFC] mb-6">Your profile</h2>
 
-          <form className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5">
 
-            {/* Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
-              <input
-                type="text"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
-                placeholder="Your name"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Full name <span className="text-red-400">*</span></label>
+                <input required type="text" value={form.name} onChange={e => set("name", e.target.value)}
+                  className={inputClass} placeholder="Your name" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Handle / Username <span className="text-red-400">*</span></label>
+                <input required type="text" value={form.handle} onChange={e => set("handle", e.target.value)}
+                  className={inputClass} placeholder="@yourhandle" />
+              </div>
             </div>
 
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
-              <input
-                type="email"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
-                placeholder="you@example.com"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Primary platform <span className="text-red-400">*</span></label>
+                <select required value={form.platform} onChange={e => set("platform", e.target.value)} className={selectClass}>
+                  <option value="">Select platform</option>
+                  <option>Instagram</option>
+                  <option>YouTube</option>
+                  <option>Facebook</option>
+                  <option>LinkedIn</option>
+                  <option>X (Twitter)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Your niche <span className="text-red-400">*</span></label>
+                <select required value={form.niche} onChange={e => set("niche", e.target.value)} className={selectClass}>
+                  <option value="">Select niche</option>
+                  <option>Food</option>
+                  <option>Tech</option>
+                  <option>Fashion</option>
+                  <option>Finance</option>
+                  <option>Fitness</option>
+                  <option>Travel</option>
+                  <option>Gaming</option>
+                  <option>Education</option>
+                  <option>Entertainment</option>
+                  <option>Other</option>
+                </select>
+              </div>
             </div>
 
-            {/* Location */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-              <input
-                type="text"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
-                placeholder="Mumbai, Delhi, Bangalore..."
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">City / Location</label>
+                <input type="text" value={form.location} onChange={e => set("location", e.target.value)}
+                  className={inputClass} placeholder="Mumbai, Delhi, Bangalore..." />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Phone number</label>
+                <input type="tel" value={form.phone} onChange={e => set("phone", e.target.value)}
+                  className={inputClass} placeholder="+91 98765 43210" />
+              </div>
             </div>
 
-            {/* Primary platform */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Primary platform</label>
-              <select className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400 text-gray-600">
-                <option>Select platform</option>
-                <option>Instagram</option>
-                <option>YouTube</option>
-                <option>Facebook</option>
-                <option>LinkedIn</option>
-                <option>X (Twitter)</option>
-              </select>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Follower count</label>
+                <input type="text" value={form.followers} onChange={e => set("followers", e.target.value)}
+                  className={inputClass} placeholder="e.g. 50K" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Engagement rate %</label>
+                <input type="text" value={form.engagementRate} onChange={e => set("engagementRate", e.target.value)}
+                  className={inputClass} placeholder="e.g. 4.2" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Rate per post (₹)</label>
+                <input type="text" value={form.pricePerPost} onChange={e => set("pricePerPost", e.target.value)}
+                  className={inputClass} placeholder="e.g. 5000" />
+              </div>
             </div>
 
-            {/* Profile URL */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Profile URL</label>
-              <input
-                type="url"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
-                placeholder="https://instagram.com/yourhandle"
-              />
+              <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Bio <span className="text-[#64748B] font-normal">(optional)</span></label>
+              <textarea value={form.bio} onChange={e => set("bio", e.target.value)}
+                rows={3} className={`${inputClass} resize-none`}
+                placeholder="Tell brands about yourself, your content style, and audience..." />
             </div>
 
-            {/* Niche */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Your niche</label>
-              <select className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400 text-gray-600">
-                <option>Select niche</option>
-                <option>Food & Lifestyle</option>
-                <option>Tech & Gadgets</option>
-                <option>Fashion & Beauty</option>
-                <option>Finance & Business</option>
-                <option>Health & Fitness</option>
-                <option>Travel</option>
-                <option>Education</option>
-                <option>Entertainment</option>
-                <option>Gaming</option>
-                <option>Other</option>
-              </select>
-            </div>
-
-            {/* Followers */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Follower count</label>
-              <select className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400 text-gray-600">
-                <option>Select range</option>
-                <option>1,000 – 10,000</option>
-                <option>10,000 – 50,000</option>
-                <option>50,000 – 100,000</option>
-                <option>100,000 – 500,000</option>
-                <option>500,000+</option>
-              </select>
-            </div>
-
-            {/* Average rate */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Average rate per post (₹)</label>
-              <input
-                type="text"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
-                placeholder="e.g. 5000"
-              />
-            </div>
+            {error && (
+              <div className="bg-red-500/10 text-red-400 text-sm px-4 py-3 rounded-lg border border-red-500/20">{error}</div>
+            )}
 
             <button
               type="submit"
-              className="w-full bg-purple-600 text-white py-3 rounded-lg text-sm font-medium hover:bg-purple-700"
+              disabled={submitting}
+              className="w-full bg-purple-600 text-white py-3 rounded-lg text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors shadow-lg shadow-purple-500/20"
             >
-              Submit my profile — free
+              {submitting ? "Submitting..." : "Submit my profile — free"}
             </button>
 
           </form>
 
-          <p className="text-center text-xs text-gray-400 mt-4">
-            Your profile will be reviewed and listed within 24 hours.
+          <p className="text-center text-xs text-[#64748B] mt-4">
+            Your profile will be listed immediately and AI-scored within 24 hours.
           </p>
         </div>
       </div>

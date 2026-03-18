@@ -1,10 +1,17 @@
 "use client"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 
 export default function Signup() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [role, setRole] = useState("brand")
+
+  useEffect(() => {
+    if (searchParams.get("role") === "influencer") {
+      setRole("influencer")
+    }
+  }, [])
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -31,7 +38,11 @@ export default function Signup() {
         return
       }
 
-      router.push("/login?success=Account created! Please sign in.")
+      if (role === "influencer") {
+        router.push("/login?success=Account created! Please sign in.&next=/join")
+      } else {
+        router.push("/login?success=Account created! Please sign in.")
+      }
 
     } catch (err) {
       setError("Something went wrong. Please try again.")
