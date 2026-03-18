@@ -144,6 +144,7 @@ export default function Dashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [credits, setCredits] = useState(null)
+  const [brandVerified, setBrandVerified] = useState<boolean | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [brandCampaigns, setBrandCampaigns] = useState<any[]>([])
   const [reviewModal, setReviewModal] = useState<any>(null)
@@ -159,7 +160,10 @@ export default function Dashboard() {
     if (session?.user?.id) {
       fetch(`/api/user-credits?userId=${session.user.id}`)
         .then(res => res.json())
-        .then(data => setCredits(data.credits))
+        .then(data => {
+          setCredits(data.credits)
+          setBrandVerified(data.brandVerified ?? false)
+        })
       const u = session.user as any
       if (u.role === "brand") {
         fetch(`/api/campaigns?brandId=${session.user.id}`)
@@ -270,6 +274,21 @@ export default function Dashboard() {
             You are signed in as {user.role === "brand" ? "a Brand" : "an Influencer"} · {user.email}
           </p>
         </div>
+
+        {/* Brand verification banner */}
+        {user.role === "brand" && brandVerified !== null && (
+          brandVerified ? (
+            <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl bg-[#10B981]/10 border border-[#10B981]/20 text-sm text-[#10B981]">
+              <span className="text-base">✓</span>
+              <span>Your brand is verified. Influencers can trust your campaigns.</span>
+            </div>
+          ) : (
+            <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-sm text-amber-400">
+              <span className="text-base">⚠️</span>
+              <span>Your brand is not verified yet. Verification builds trust with influencers. <a href="mailto:support@influenceiq.in" className="underline hover:text-amber-300 transition-colors">Contact us to get verified.</a></span>
+            </div>
+          )
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">

@@ -11,14 +11,14 @@ export async function GET(request) {
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { credits: true },
+      select: { credits: true, brandVerified: true },
     })
 
     if (!user) {
       return Response.json({ error: "User not found" }, { status: 404 })
     }
 
-    return Response.json({ credits: user.credits })
+    return Response.json({ credits: user.credits, brandVerified: user.brandVerified ?? false })
 
   } catch (error) {
     console.error("Credits fetch error:", error.message)

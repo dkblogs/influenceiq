@@ -2,11 +2,11 @@
 import { useState } from "react"
 
 const allBrands = [
-  { name: "FreshKart", industry: "Food & Grocery", location: "Mumbai", size: "Startup", budget: "₹10K–50K", platforms: ["Instagram", "YouTube"], looking: ["Food", "Lifestyle"], initials: "FK", color: "bg-orange-500", about: "Online grocery delivery startup expanding to 10 new cities." },
+  { name: "FreshKart", industry: "Food & Grocery", location: "Mumbai", size: "Startup", budget: "₹10K–50K", platforms: ["Instagram", "YouTube"], looking: ["Food", "Lifestyle"], initials: "FK", color: "bg-orange-500", about: "Online grocery delivery startup expanding to 10 new cities.", verified: true },
   { name: "ZenFit", industry: "Health & Fitness", location: "Bangalore", size: "Startup", budget: "₹5K–20K", platforms: ["Instagram"], looking: ["Fitness", "Health"], initials: "ZF", color: "bg-green-500", about: "AI-powered fitness app with 200K active users." },
-  { name: "PayEasy", industry: "Fintech", location: "Delhi", size: "Mid-size", budget: "₹50K–2L", platforms: ["YouTube", "LinkedIn"], looking: ["Finance", "Tech"], initials: "PE", color: "bg-blue-500", about: "Digital payments platform targeting small businesses." },
-  { name: "StyleHub", industry: "Fashion", location: "Mumbai", size: "Mid-size", budget: "₹20K–1L", platforms: ["Instagram"], looking: ["Fashion", "Lifestyle"], initials: "SH", color: "bg-pink-500", about: "Premium Indian ethnic wear brand going national." },
-  { name: "TechNova", industry: "Technology", location: "Hyderabad", size: "Enterprise", budget: "₹1L–5L", platforms: ["YouTube", "LinkedIn", "X"], looking: ["Tech", "Gaming"], initials: "TN", color: "bg-indigo-500", about: "B2B software company launching consumer product line." },
+  { name: "PayEasy", industry: "Fintech", location: "Delhi", size: "Mid-size", budget: "₹50K–2L", platforms: ["YouTube", "LinkedIn"], looking: ["Finance", "Tech"], initials: "PE", color: "bg-blue-500", about: "Digital payments platform targeting small businesses.", verified: true },
+  { name: "StyleHub", industry: "Fashion", location: "Mumbai", size: "Mid-size", budget: "₹20K–1L", platforms: ["Instagram"], looking: ["Fashion", "Lifestyle"], initials: "SH", color: "bg-pink-500", about: "Premium Indian ethnic wear brand going national.", verified: true },
+  { name: "TechNova", industry: "Technology", location: "Hyderabad", size: "Enterprise", budget: "₹1L–5L", platforms: ["YouTube", "LinkedIn", "X"], looking: ["Tech", "Gaming"], initials: "TN", color: "bg-indigo-500", about: "B2B software company launching consumer product line.", verified: true },
   { name: "HealthPlus", industry: "Healthcare", location: "Chennai", size: "Startup", budget: "₹10K–30K", platforms: ["Instagram", "YouTube"], looking: ["Health", "Fitness", "Food"], initials: "HP", color: "bg-teal-500", about: "Ayurvedic wellness brand with D2C ambitions." },
   { name: "EduLearn", industry: "Education", location: "Pune", size: "Mid-size", budget: "₹15K–60K", platforms: ["YouTube", "Instagram"], looking: ["Education", "Tech"], initials: "EL", color: "bg-yellow-500", about: "Ed-tech platform for competitive exam preparation." },
   { name: "FoodBox", industry: "Food & Beverage", location: "Kolkata", size: "Startup", budget: "₹5K–25K", platforms: ["Instagram"], looking: ["Food", "Lifestyle"], initials: "FB", color: "bg-red-500", about: "Healthy snack subscription box launching pan-India." },
@@ -151,7 +151,12 @@ export default function Brands() {
                     {brand.initials}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-[#F8FAFC]">{brand.name}</div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-[#F8FAFC]">{brand.name}</span>
+                      {brand.verified && (
+                        <span className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full">✓ Verified</span>
+                      )}
+                    </div>
                     <div className="text-xs text-[#64748B]">{brand.industry} · {brand.location}</div>
                     <div className="flex gap-1 mt-1">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${

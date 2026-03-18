@@ -65,6 +65,15 @@ export default function Admin() {
     setLoading(false)
   }
 
+  async function verifyBrand(id: string, current: boolean) {
+    await fetch("/api/admin/users", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, brandVerified: !current }),
+    })
+    fetchAllData()
+  }
+
   async function toggleVerified(id: string, current: boolean) {
     await fetch("/api/admin/influencers", {
       method: "PATCH",
@@ -187,6 +196,7 @@ export default function Admin() {
                   <th className="text-left px-6 py-3 font-medium text-[#64748B]">Role</th>
                   <th className="text-left px-6 py-3 font-medium text-[#64748B]">Credits</th>
                   <th className="text-left px-6 py-3 font-medium text-[#64748B]">Joined</th>
+                  <th className="text-left px-6 py-3 font-medium text-[#64748B]">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -201,6 +211,16 @@ export default function Admin() {
                     </td>
                     <td className="px-6 py-3 font-medium text-purple-400">{u.credits}</td>
                     <td className="px-6 py-3 text-[#64748B]">{new Date(u.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-3">
+                      {u.role === "brand" && (
+                        <button
+                          onClick={() => verifyBrand(u.id, u.brandVerified)}
+                          className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${u.brandVerified ? "bg-blue-500/10 text-blue-400 border-blue-500/20" : "bg-[#1E1E2E] text-[#64748B] border-[#1E1E2E] hover:border-blue-500/30 hover:text-blue-400"}`}
+                        >
+                          {u.brandVerified ? "✓ Verified" : "Verify"}
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

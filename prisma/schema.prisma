@@ -13,11 +13,13 @@ model User {
   email         String    @unique
   name          String?
   password      String?
-  role          String    @default("brand")
-  credits       Int       @default(5)
-  createdAt     DateTime  @default(now())
-  sessions      Session[]
-  accounts      Account[]
+  role             String    @default("brand")
+  credits          Int       @default(5)
+  brandVerified    Boolean   @default(false)
+  brandVerifiedAt  DateTime?
+  createdAt        DateTime  @default(now())
+  sessions         Session[]
+  accounts         Account[]
 }
 
 model Account {

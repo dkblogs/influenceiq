@@ -192,7 +192,12 @@ export default function Campaigns() {
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 gap-1">
                       <div>
                         <div className="font-medium text-[#F8FAFC] mb-0.5">{c.title}</div>
-                        <div className="text-xs text-[#64748B]">{c.brand || "Brand"} · {c.location}</div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs text-[#64748B]">{c.brand || "Brand"} · {c.location}</span>
+                          {c.brandVerified && (
+                            <span className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full">✓ Verified Brand</span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-2 sm:flex-shrink-0 sm:ml-4">
                         <span className="text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded-full font-medium">{c.status}</span>

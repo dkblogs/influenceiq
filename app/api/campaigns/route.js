@@ -15,23 +15,34 @@ export async function GET(request) {
       },
     })
 
-    const formatted = campaigns.map((c) => ({
-      id: c.id,
-      brand: "Brand",
-      brandInitials: "BR",
-      brandColor: "bg-purple-500",
-      title: c.title,
-      description: c.description,
-      niche: c.niche,
-      platform: c.platform,
-      budget: c.budget,
-      deadline: c.deadline,
-      applicants: c._count.applications,
-      slots: c.slots,
-      location: c.location,
-      minFollowers: c.minFollowers,
-      status: c.status,
-    }))
+    const brandIds = [...new Set(campaigns.map((c) => c.brandId))]
+    const brands = await prisma.user.findMany({
+      where: { id: { in: brandIds } },
+      select: { id: true, name: true, brandVerified: true },
+    })
+    const brandMap = Object.fromEntries(brands.map((b) => [b.id, b]))
+
+    const formatted = campaigns.map((c) => {
+      const brand = brandMap[c.brandId]
+      return {
+        id: c.id,
+        brand: brand?.name || "Brand",
+        brandInitials: brand?.name ? brand.name.slice(0, 2).toUpperCase() : "BR",
+        brandColor: "bg-purple-500",
+        brandVerified: brand?.brandVerified ?? false,
+        title: c.title,
+        description: c.description,
+        niche: c.niche,
+        platform: c.platform,
+        budget: c.budget,
+        deadline: c.deadline,
+        applicants: c._count.applications,
+        slots: c.slots,
+        location: c.location,
+        minFollowers: c.minFollowers,
+        status: c.status,
+      }
+    })
 
     return Response.json({ campaigns: formatted })
 
