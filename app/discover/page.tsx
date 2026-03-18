@@ -182,7 +182,11 @@ export default function Discover() {
                     {/* Stats */}
                     <div className="flex gap-2 mb-3">
                       <div className="flex-1 bg-gray-50 rounded-lg p-2 text-center">
-                        <p className="text-xs font-medium text-gray-900">{inf.followers}</p>
+                        {inf.followersPublic ? (
+                          <p className="text-xs font-medium text-gray-900">{inf.followers}</p>
+                        ) : (
+                          <p className="text-xs text-gray-400">🔒 Private</p>
+                        )}
                         <p className="text-xs text-gray-400">Followers</p>
                       </div>
                       <div className="flex-1 bg-gray-50 rounded-lg p-2 text-center">

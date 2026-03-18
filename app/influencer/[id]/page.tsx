@@ -44,6 +44,9 @@ export default function InfluencerProfile() {
   const [reviews, setReviews] = useState<any[]>([])
   const [reviewsTotal, setReviewsTotal] = useState(0)
   const [reviewsAvg, setReviewsAvg] = useState(0)
+  const [followersPublic, setFollowersPublic] = useState(true)
+  const [savingSettings, setSavingSettings] = useState(false)
+  const [settingsSaved, setSettingsSaved] = useState(false)
 
   const colorMap: Record<string, string> = {
     PS: "bg-purple-500", RK: "bg-orange-500", AN: "bg-green-500",
@@ -53,15 +56,6 @@ export default function InfluencerProfile() {
 
   useEffect(() => {
     fetchInfluencer()
-    if (params.id) {
-      fetch(`/api/campaign-reviews?influencerId=${params.id}`)
-        .then(res => res.json())
-        .then(data => {
-          setReviews(data.reviews || [])
-          setReviewsTotal(data.total || 0)
-          setReviewsAvg(data.avgRating || 0)
-        })
-    }
     if (session?.user?.id) {
       fetch(`/api/user-credits?userId=${session.user.id}`)
         .then(res => res.json())
@@ -69,12 +63,47 @@ export default function InfluencerProfile() {
     }
   }, [params.id, session])
 
+  // Fetch reviews once we have both the influencer id and (optionally) the session user id
+  useEffect(() => {
+    if (!params.id) return
+    const ownerParam = session?.user?.id ? `&ownerId=${session.user.id}` : ""
+    fetch(`/api/campaign-reviews?influencerId=${params.id}${ownerParam}`)
+      .then(res => res.json())
+      .then(data => {
+        setReviews(data.reviews || [])
+        setReviewsTotal(data.total || 0)
+        setReviewsAvg(data.avgRating || 0)
+      })
+  }, [params.id, session])
+
+  async function toggleReviewPrivacy(reviewId: string, field: "namePublic" | "reviewPublic", value: boolean) {
+    setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, [field]: value } : r))
+    await fetch("/api/campaign-reviews", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: reviewId, [field]: value }),
+    })
+  }
+
   async function fetchInfluencer() {
     const res = await fetch(`/api/influencers/${params.id}`)
     const data = await res.json()
     setInfluencer(data.influencer)
     setUnlocked(data.unlocked)
+    setFollowersPublic(data.influencer?.followersPublic ?? true)
     setLoading(false)
+  }
+
+  async function saveSettings() {
+    setSavingSettings(true)
+    await fetch(`/api/influencers/${params.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ followersPublic, requestingUserId: (session?.user as any)?.id }),
+    })
+    setSavingSettings(false)
+    setSettingsSaved(true)
+    setTimeout(() => setSettingsSaved(false), 3000)
   }
 
   async function handleUnlock() {
@@ -129,6 +158,7 @@ export default function InfluencerProfile() {
   const tier1 = !loggedIn                  // not logged in
   const tier2 = loggedIn && !unlocked      // logged in, not unlocked
   const tier3 = loggedIn && unlocked       // logged in + unlocked
+  const isOwner = !!(loggedIn && influencer?.userId && (session?.user as any)?.id === influencer.userId)
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -149,6 +179,37 @@ export default function InfluencerProfile() {
           )}
         </div>
       </nav>
+
+      {/* Owner settings panel */}
+      {isOwner && (
+        <div className="bg-amber-50 border-b border-amber-100 px-4 md:px-8 py-4">
+          <div className="max-w-4xl mx-auto">
+            <p className="text-xs font-medium text-amber-700 uppercase tracking-wide mb-3">Your Profile Settings</p>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex items-center justify-between sm:justify-start gap-4 flex-1">
+                <span className="text-sm text-gray-700">Follower count visibility</span>
+                <div
+                  className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer flex-shrink-0 ${followersPublic ? "bg-purple-600" : "bg-gray-300"}`}
+                  onClick={() => setFollowersPublic(!followersPublic)}
+                >
+                  <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${followersPublic ? "translate-x-5" : "translate-x-0.5"}`} />
+                </div>
+                <span className="text-sm font-medium text-gray-600">{followersPublic ? "Public" : "Private"}</span>
+              </div>
+              <button
+                onClick={saveSettings}
+                disabled={savingSettings}
+                className="sm:ml-auto text-sm bg-purple-600 text-white px-4 py-1.5 rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors whitespace-nowrap"
+              >
+                {savingSettings ? "Saving..." : settingsSaved ? "Saved ✓" : "Save settings"}
+              </button>
+            </div>
+            {!followersPublic && (
+              <p className="text-xs text-amber-700 mt-2">⚠️ Keeping follower count private may reduce brand interest in your profile.</p>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="px-4 md:px-8 py-8 md:py-10 max-w-4xl mx-auto">
 
@@ -231,10 +292,17 @@ export default function InfluencerProfile() {
             </a>
           </div>
         ) : (
-          /* Tier 2 + 3: stats visible */
+          /* Tier 2 + 3: stats visible, follower count respects followersPublic */
           <div className="grid grid-cols-3 gap-3 md:gap-4 mb-6">
             <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5 text-center">
-              <div className="text-xl md:text-2xl font-semibold text-gray-900">{influencer.followers}</div>
+              {followersPublic ? (
+                <div className="text-xl md:text-2xl font-semibold text-gray-900">{influencer.followers}</div>
+              ) : (
+                <div className="text-sm text-gray-400 flex flex-col items-center gap-1">
+                  <span className="text-lg">🔒</span>
+                  <span className="text-xs">Kept private</span>
+                </div>
+              )}
               <div className="text-xs md:text-sm text-gray-400 mt-1">Followers</div>
             </div>
             <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5 text-center">
@@ -409,8 +477,26 @@ export default function InfluencerProfile() {
                     </div>
                   </div>
                   <p className="text-sm text-gray-600">{r.review}</p>
-                  <div className="text-xs text-gray-400 mt-2">
-                    {new Date(r.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" })}
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="text-xs text-gray-400">
+                      {new Date(r.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" })}
+                    </div>
+                    {isOwner && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => toggleReviewPrivacy(r.id, "namePublic", !r.namePublic)}
+                          className={`text-xs px-2 py-1 rounded-full border transition-colors ${r.namePublic ? "border-green-200 text-green-700 bg-green-50" : "border-gray-200 text-gray-400 bg-gray-50"}`}
+                        >
+                          Campaign: {r.namePublic ? "Public" : "Private"}
+                        </button>
+                        <button
+                          onClick={() => toggleReviewPrivacy(r.id, "reviewPublic", !r.reviewPublic)}
+                          className={`text-xs px-2 py-1 rounded-full border transition-colors ${r.reviewPublic ? "border-green-200 text-green-700 bg-green-50" : "border-gray-200 text-gray-400 bg-gray-50"}`}
+                        >
+                          Review: {r.reviewPublic ? "Public" : "Private"}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

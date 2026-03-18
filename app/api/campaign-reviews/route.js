@@ -4,9 +4,17 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const influencerId = searchParams.get("influencerId")
+    const ownerId = searchParams.get("ownerId") // set by client when logged-in user is the profile owner
 
     if (!influencerId) {
       return Response.json({ error: "influencerId required" }, { status: 400 })
+    }
+
+    // Verify ownership: check that the ownerId matches influencer.userId
+    let isOwner = false
+    if (ownerId) {
+      const influencer = await prisma.influencer.findUnique({ where: { id: influencerId }, select: { userId: true } })
+      isOwner = influencer?.userId === ownerId
     }
 
     const reviews = await prisma.campaignReview.findMany({
@@ -17,9 +25,12 @@ export async function GET(request) {
     const formatted = reviews.map((r) => ({
       id: r.id,
       rating: r.rating,
-      campaignName: r.namePublic ? r.campaignName : "Private Campaign",
-      campaignDesc: r.namePublic ? r.campaignDesc : null,
-      review: r.reviewPublic ? r.review : "Review kept private",
+      // Owner sees real values + flags; others see masked values
+      campaignName: isOwner ? r.campaignName : (r.namePublic ? r.campaignName : "Private Campaign"),
+      campaignDesc: isOwner ? r.campaignDesc : (r.namePublic ? r.campaignDesc : null),
+      review: isOwner ? r.review : (r.reviewPublic ? r.review : "Review kept private"),
+      namePublic: isOwner ? r.namePublic : undefined,
+      reviewPublic: isOwner ? r.reviewPublic : undefined,
       createdAt: r.createdAt,
     }))
 
@@ -32,6 +43,30 @@ export async function GET(request) {
   } catch (error) {
     console.error("Campaign reviews GET error:", error.message)
     return Response.json({ error: "Failed to fetch reviews" }, { status: 500 })
+  }
+}
+
+export async function PATCH(request) {
+  try {
+    const { id, namePublic, reviewPublic } = await request.json()
+
+    if (!id) {
+      return Response.json({ error: "Review id required" }, { status: 400 })
+    }
+
+    const data = {}
+    if (namePublic !== undefined) data.namePublic = namePublic
+    if (reviewPublic !== undefined) data.reviewPublic = reviewPublic
+
+    const updated = await prisma.campaignReview.update({
+      where: { id },
+      data,
+    })
+
+    return Response.json({ success: true, review: updated })
+  } catch (error) {
+    console.error("Campaign reviews PATCH error:", error.message)
+    return Response.json({ error: "Failed to update review" }, { status: 500 })
   }
 }
 

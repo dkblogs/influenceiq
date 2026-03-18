@@ -31,8 +31,6 @@ function ReviewModal({ campaign, onClose, onSubmit }: {
   const [selectedInfluencer, setSelectedInfluencer] = useState<any>(null)
   const [rating, setRating] = useState(0)
   const [review, setReview] = useState("")
-  const [namePublic, setNamePublic] = useState(true)
-  const [reviewPublic, setReviewPublic] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
 
@@ -56,8 +54,8 @@ function ReviewModal({ campaign, onClose, onSubmit }: {
       review,
       campaignName: campaign.title,
       campaignDesc: campaign.description,
-      namePublic,
-      reviewPublic,
+      namePublic: true,
+      reviewPublic: true,
     })
     setSubmitting(false)
   }
@@ -124,28 +122,6 @@ function ReviewModal({ campaign, onClose, onSubmit }: {
               rows={3}
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none"
             />
-          </div>
-
-          {/* Toggles */}
-          <div className="space-y-2">
-            <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-sm text-gray-600">Make campaign name public</span>
-              <div
-                className={`w-10 h-5 rounded-full transition-colors relative ${namePublic ? "bg-purple-600" : "bg-gray-200"}`}
-                onClick={() => setNamePublic(!namePublic)}
-              >
-                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${namePublic ? "translate-x-5" : "translate-x-0.5"}`} />
-              </div>
-            </label>
-            <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-sm text-gray-600">Make review public</span>
-              <div
-                className={`w-10 h-5 rounded-full transition-colors relative ${reviewPublic ? "bg-purple-600" : "bg-gray-200"}`}
-                onClick={() => setReviewPublic(!reviewPublic)}
-              >
-                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${reviewPublic ? "translate-x-5" : "translate-x-0.5"}`} />
-              </div>
-            </label>
           </div>
 
           {error && <div className="text-red-600 text-sm">{error}</div>}

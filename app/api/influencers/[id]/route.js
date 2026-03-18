@@ -5,7 +5,7 @@ export async function GET(request, context) {
     const id = context.params.id
 
     const influencer = await prisma.influencer.findFirst({
-      where: { id: id },
+      where: { id },
     })
 
     if (!influencer) {
@@ -23,5 +23,32 @@ export async function GET(request, context) {
   } catch (error) {
     console.error("Influencer fetch error:", error.message)
     return Response.json({ error: "Failed to fetch influencer" }, { status: 500 })
+  }
+}
+
+export async function PATCH(request, context) {
+  try {
+    const id = context.params.id
+    const { followersPublic, requestingUserId } = await request.json()
+
+    // Verify ownership
+    const influencer = await prisma.influencer.findUnique({ where: { id }, select: { userId: true } })
+    if (!influencer) {
+      return Response.json({ error: "Influencer not found" }, { status: 404 })
+    }
+    if (influencer.userId !== requestingUserId) {
+      return Response.json({ error: "Not authorized" }, { status: 403 })
+    }
+
+    const updated = await prisma.influencer.update({
+      where: { id },
+      data: { followersPublic },
+    })
+
+    return Response.json({ success: true, followersPublic: updated.followersPublic })
+
+  } catch (error) {
+    console.error("Influencer PATCH error:", error.message)
+    return Response.json({ error: "Failed to update influencer" }, { status: 500 })
   }
 }

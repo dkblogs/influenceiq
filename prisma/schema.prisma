@@ -76,9 +76,10 @@ model Influencer {
   about        String?
   email        String?
   phone        String?
-  verified     Boolean  @default(false)
-  userId       String?
-  createdAt    DateTime @default(now())
+  verified         Boolean  @default(false)
+  userId           String?
+  followersPublic  Boolean  @default(true)
+  createdAt        DateTime @default(now())
   @@unique([handle])
 }
 
