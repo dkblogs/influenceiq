@@ -68,6 +68,7 @@ const scoreFactors = [
 
 export default function Home() {
   const { data: session, status } = useSession()
+  console.log("Session status:", status, "User:", session?.user?.email, "Role:", (session?.user as any)?.role)
   const loggedIn = status !== "loading" && !!session
   const user = session?.user as any
   const role = user?.role
