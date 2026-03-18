@@ -405,7 +405,7 @@ export default function Home() {
               <a href="/brands" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Find Brands</a>
               <a href="/campaigns" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Open Campaigns</a>
               <a href="/leaderboard" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Leaderboard</a>
-              <a href="/join" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Join as Influencer</a>
+              <a href="/signup?role=influencer" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Join as Influencer</a>
               <a href="/pricing" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Pricing</a>
             </div>
           </div>
