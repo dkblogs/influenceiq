@@ -1,4 +1,73 @@
 import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+
+export async function POST(request) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Prevent duplicate profiles
+    const existing = await prisma.influencer.findFirst({
+      where: { userId: session.user.id },
+    })
+    if (existing) {
+      return Response.json({ error: "Influencer profile already exists", influencer: existing }, { status: 409 })
+    }
+
+    const body = await request.json()
+    const { name, niche, platform, bio, location, followers, engagementRate, handle, email, phone, pricePerPost } = body
+
+    if (!name || !handle) {
+      return Response.json({ error: "Name and handle are required" }, { status: 400 })
+    }
+
+    // Derive initials from name
+    const parts = (name || "").trim().split(" ")
+    const initials = parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : (name.slice(0, 2)).toUpperCase()
+
+    const influencer = await prisma.influencer.create({
+      data: {
+        userId: session.user.id,
+        name,
+        handle: handle.startsWith("@") ? handle : `@${handle}`,
+        location: location || "",
+        niche: niche || "Other",
+        platform: platform || "Instagram",
+        followers: followers ? String(followers) : "0",
+        engagement: engagementRate ? `${engagementRate}%` : "0%",
+        score: 50,
+        rate: pricePerPost ? `₹${pricePerPost}/post` : "₹0/post",
+        initials,
+        about: bio || null,
+        email: email || null,
+        phone: phone || null,
+      },
+    })
+
+    // Kick off AI scoring in background (non-blocking)
+    try {
+      const origin = process.env.NEXTAUTH_URL || "http://localhost:3000"
+      fetch(`${origin}/api/ai-score`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ influencerId: influencer.id }),
+      }).catch(() => {})
+    } catch (_) {}
+
+    return Response.json({ influencer })
+  } catch (error) {
+    if (error.code === "P2002") {
+      return Response.json({ error: "That handle is already taken" }, { status: 409 })
+    }
+    console.error("Influencer POST error:", error.message)
+    return Response.json({ error: "Failed to create profile" }, { status: 500 })
+  }
+}
 
 export async function GET(request) {
   try {

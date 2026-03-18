@@ -23,6 +23,8 @@ export default function Join() {
   })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
+  const [fetchingProfile, setFetchingProfile] = useState(false)
+  const [fetchStatus, setFetchStatus] = useState<"" | "success" | "error">("")
 
   // Auth gate
   useEffect(() => {
@@ -50,6 +52,39 @@ export default function Join() {
 
   function set(field: string, value: string) {
     setForm(p => ({ ...p, [field]: value }))
+  }
+
+  async function handleFetchProfile() {
+    if (!form.handle || !form.platform) {
+      setError("Enter your handle and select a platform first")
+      return
+    }
+    setFetchingProfile(true)
+    setFetchStatus("")
+    setError("")
+    try {
+      const res = await fetch("/api/scrape-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ handle: form.handle, platform: form.platform.toLowerCase().replace(" (twitter)", "").replace("x ", "x") }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setFetchStatus("error")
+      } else {
+        setForm(p => ({
+          ...p,
+          name: data.fullName || p.name,
+          bio: data.bio || p.bio,
+          followers: data.followers ? String(data.followers) : p.followers,
+        }))
+        setFetchStatus("success")
+      }
+    } catch {
+      setFetchStatus("error")
+    } finally {
+      setFetchingProfile(false)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -145,8 +180,34 @@ export default function Join() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Handle / Username <span className="text-red-400">*</span></label>
-                <input required type="text" value={form.handle} onChange={e => set("handle", e.target.value)}
-                  className={inputClass} placeholder="@yourhandle" />
+                <div className="flex gap-2">
+                  <input required type="text" value={form.handle} onChange={e => set("handle", e.target.value)}
+                    className={inputClass} placeholder="@yourhandle" />
+                  <button
+                    type="button"
+                    onClick={handleFetchProfile}
+                    disabled={fetchingProfile || !form.handle || !form.platform}
+                    className="flex-shrink-0 px-3 py-2 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-500 disabled:opacity-40 transition-colors whitespace-nowrap"
+                    title="Auto-fill from your profile"
+                  >
+                    {fetchingProfile ? "..." : "Auto-fill"}
+                  </button>
+                </div>
+                {fetchingProfile && (
+                  <p className="text-xs text-purple-400 mt-1.5 flex items-center gap-1.5">
+                    <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                    </svg>
+                    Fetching your profile data...
+                  </p>
+                )}
+                {fetchStatus === "success" && !fetchingProfile && (
+                  <p className="text-xs text-[#10B981] mt-1.5">Profile data fetched successfully!</p>
+                )}
+                {fetchStatus === "error" && !fetchingProfile && (
+                  <p className="text-xs text-red-400 mt-1.5">Could not fetch profile — please fill manually</p>
+                )}
               </div>
             </div>
 
