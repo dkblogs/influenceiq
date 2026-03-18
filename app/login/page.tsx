@@ -34,50 +34,50 @@ function LoginForm() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-md">
+    <main className="min-h-screen bg-[#0A0A0F] flex items-center justify-center px-4">
+      <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-8 w-full max-w-md shadow-2xl shadow-black/50">
 
         <div className="text-center mb-8">
           <a href="/" className="inline-flex items-center gap-2">
             <span className="text-2xl">⚡</span>
-            <span className="text-xl font-semibold">
-              Influence<span className="text-purple-600">IQ</span>
+            <span className="text-xl font-semibold text-[#F8FAFC]">
+              Influence<span className="text-purple-400">IQ</span>
             </span>
           </a>
-          <p className="text-gray-500 text-sm mt-2">Sign in to your account</p>
+          <p className="text-[#94A3B8] text-sm mt-2">Sign in to your account</p>
         </div>
 
         {success && (
-          <div className="bg-green-50 text-green-700 text-sm px-4 py-3 rounded-lg mb-4">
+          <div className="bg-[#10B981]/10 text-[#10B981] text-sm px-4 py-3 rounded-lg mb-4 border border-[#10B981]/20">
             {success}
           </div>
         )}
 
         {error && (
-          <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-4">
+          <div className="bg-red-500/10 text-red-400 text-sm px-4 py-3 rounded-lg mb-4 border border-red-500/20">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
+            <label className="block text-sm font-medium text-[#94A3B8] mb-1">Email address</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm focus:outline-none focus:border-purple-500 bg-[#0A0A0F] text-[#F8FAFC] placeholder-[#64748B]"
               placeholder="you@example.com"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-[#94A3B8] mb-1">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm focus:outline-none focus:border-purple-500 bg-[#0A0A0F] text-[#F8FAFC] placeholder-[#64748B]"
               placeholder="••••••••"
               required
             />
@@ -85,15 +85,15 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50"
+            className="w-full bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors shadow-lg shadow-purple-500/20"
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-[#94A3B8] mt-6">
           Don't have an account?{" "}
-          <a href="/signup" className="text-purple-600 hover:underline font-medium">Sign up free</a>
+          <a href="/signup" className="text-purple-400 hover:underline font-medium">Sign up free</a>
         </p>
 
       </div>

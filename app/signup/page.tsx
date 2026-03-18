@@ -40,18 +40,18 @@ export default function Signup() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-md">
+    <main className="min-h-screen bg-[#0A0A0F] flex items-center justify-center px-4">
+      <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-8 w-full max-w-md shadow-2xl shadow-black/50">
 
         {/* Logo */}
         <div className="text-center mb-8">
           <a href="/" className="inline-flex items-center gap-2">
             <span className="text-2xl">⚡</span>
-            <span className="text-xl font-semibold">
-              Influence<span className="text-purple-600">IQ</span>
+            <span className="text-xl font-semibold text-[#F8FAFC]">
+              Influence<span className="text-purple-400">IQ</span>
             </span>
           </a>
-          <p className="text-gray-500 text-sm mt-2">Create your free account</p>
+          <p className="text-[#94A3B8] text-sm mt-2">Create your free account</p>
         </div>
 
         {/* Account type selector */}
@@ -59,26 +59,26 @@ export default function Signup() {
           <button
             type="button"
             onClick={() => setRole("brand")}
-            className={`border-2 rounded-xl p-3 text-center transition-colors ${role === "brand" ? "border-purple-600 bg-purple-50" : "border-gray-200 hover:border-purple-300"}`}
+            className={`border-2 rounded-xl p-3 text-center transition-colors ${role === "brand" ? "border-purple-500 bg-purple-500/10" : "border-[#1E1E2E] hover:border-purple-500/50 bg-[#0A0A0F]"}`}
           >
             <div className="text-xl mb-1">🏢</div>
-            <div className={`text-sm font-medium ${role === "brand" ? "text-purple-700" : "text-gray-700"}`}>I am a Brand</div>
-            <div className={`text-xs mt-0.5 ${role === "brand" ? "text-purple-500" : "text-gray-400"}`}>Find influencers</div>
+            <div className={`text-sm font-medium ${role === "brand" ? "text-purple-300" : "text-[#94A3B8]"}`}>I am a Brand</div>
+            <div className={`text-xs mt-0.5 ${role === "brand" ? "text-purple-400/70" : "text-[#64748B]"}`}>Find influencers</div>
           </button>
           <button
             type="button"
             onClick={() => setRole("influencer")}
-            className={`border-2 rounded-xl p-3 text-center transition-colors ${role === "influencer" ? "border-purple-600 bg-purple-50" : "border-gray-200 hover:border-purple-300"}`}
+            className={`border-2 rounded-xl p-3 text-center transition-colors ${role === "influencer" ? "border-purple-500 bg-purple-500/10" : "border-[#1E1E2E] hover:border-purple-500/50 bg-[#0A0A0F]"}`}
           >
             <div className="text-xl mb-1">⭐</div>
-            <div className={`text-sm font-medium ${role === "influencer" ? "text-purple-700" : "text-gray-700"}`}>I am an Influencer</div>
-            <div className={`text-xs mt-0.5 ${role === "influencer" ? "text-purple-500" : "text-gray-400"}`}>Get discovered</div>
+            <div className={`text-sm font-medium ${role === "influencer" ? "text-purple-300" : "text-[#94A3B8]"}`}>I am an Influencer</div>
+            <div className={`text-xs mt-0.5 ${role === "influencer" ? "text-purple-400/70" : "text-[#64748B]"}`}>Get discovered</div>
           </button>
         </div>
 
         {/* Error */}
         {error && (
-          <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-4">
+          <div className="bg-red-500/10 text-red-400 text-sm px-4 py-3 rounded-lg mb-4 border border-red-500/20">
             {error}
           </div>
         )}
@@ -86,34 +86,34 @@ export default function Signup() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
+            <label className="block text-sm font-medium text-[#94A3B8] mb-1">Full name</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm focus:outline-none focus:border-purple-500 bg-[#0A0A0F] text-[#F8FAFC] placeholder-[#64748B]"
               placeholder="Your name"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
+            <label className="block text-sm font-medium text-[#94A3B8] mb-1">Email address</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm focus:outline-none focus:border-purple-500 bg-[#0A0A0F] text-[#F8FAFC] placeholder-[#64748B]"
               placeholder="you@example.com"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-[#94A3B8] mb-1">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm focus:outline-none focus:border-purple-500 bg-[#0A0A0F] text-[#F8FAFC] placeholder-[#64748B]"
               placeholder="Min. 8 characters"
               required
             />
@@ -121,19 +121,19 @@ export default function Signup() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-purple-500/20"
           >
             {loading ? "Creating account..." : "Create account — free"}
           </button>
         </form>
 
-        <p className="text-center text-xs text-gray-400 mt-4">
+        <p className="text-center text-xs text-[#64748B] mt-4">
           You get 5 free credits on sign up. No credit card needed.
         </p>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-[#94A3B8] mt-6">
           Already have an account?{" "}
-          <a href="/login" className="text-purple-600 hover:underline font-medium">Sign in</a>
+          <a href="/login" className="text-purple-400 hover:underline font-medium">Sign in</a>
         </p>
 
       </div>

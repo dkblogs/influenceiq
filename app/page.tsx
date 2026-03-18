@@ -86,27 +86,27 @@ export default function Home() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-[#0A0A0F]">
 
       {/* Navigation */}
-      <nav className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-gray-100 sticky top-0 bg-white z-50">
+      <nav className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-[#1E1E2E] sticky top-0 bg-[#0A0A0F]/80 backdrop-blur-md z-50">
         <div className="flex items-center gap-2">
           <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold">Influence<span className="text-purple-600">IQ</span></span>
+          <span className="text-xl font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
         </div>
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-6">
-          <a href="/discover" className="text-sm text-gray-500 hover:text-gray-900">Find Influencers</a>
-          <a href="/brands" className="text-sm text-gray-500 hover:text-gray-900">Find Brands</a>
-          <a href="/campaigns" className="text-sm text-gray-500 hover:text-gray-900">Open Campaigns</a>
-          <a href="/how-it-works" className="text-sm text-gray-500 hover:text-gray-900">How it works</a>
-          <a href="/pricing" className="text-sm text-gray-500 hover:text-gray-900">Pricing</a>
+          <a href="/discover" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Influencers</a>
+          <a href="/brands" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Brands</a>
+          <a href="/campaigns" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Open Campaigns</a>
+          <a href="/how-it-works" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">How it works</a>
+          <a href="/pricing" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Pricing</a>
           {loggedIn ? (
-            <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Dashboard</a>
+            <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Dashboard</a>
           ) : (
             <>
-              <a href="/login" className="text-sm border border-gray-200 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50">Log in</a>
-              <a href="/signup" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Get started free</a>
+              <a href="/login" className="text-sm border border-[#1E1E2E] text-[#94A3B8] px-4 py-2 rounded-lg hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors">Log in</a>
+              <a href="/signup" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Get started free</a>
             </>
           )}
         </div>
@@ -116,27 +116,27 @@ export default function Home() {
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label="Toggle menu"
         >
-          <span className={`block w-5 h-0.5 bg-gray-600 transition-all ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`}></span>
-          <span className={`block w-5 h-0.5 bg-gray-600 transition-all ${mobileMenuOpen ? "opacity-0" : ""}`}></span>
-          <span className={`block w-5 h-0.5 bg-gray-600 transition-all ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`}></span>
+          <span className={`block w-5 h-0.5 bg-[#94A3B8] transition-all ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`}></span>
+          <span className={`block w-5 h-0.5 bg-[#94A3B8] transition-all ${mobileMenuOpen ? "opacity-0" : ""}`}></span>
+          <span className={`block w-5 h-0.5 bg-[#94A3B8] transition-all ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`}></span>
         </button>
       </nav>
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-gray-100 bg-white px-4 py-4 flex flex-col gap-3 z-40">
-          <a href="/discover" className="text-sm text-gray-600 py-2 border-b border-gray-50">Find Influencers</a>
-          <a href="/brands" className="text-sm text-gray-600 py-2 border-b border-gray-50">Find Brands</a>
-          <a href="/campaigns" className="text-sm text-gray-600 py-2 border-b border-gray-50">Open Campaigns</a>
-          <a href="/how-it-works" className="text-sm text-gray-600 py-2 border-b border-gray-50">How it works</a>
-          <a href="/pricing" className="text-sm text-gray-600 py-2 border-b border-gray-50">Pricing</a>
+        <div className="md:hidden border-b border-[#1E1E2E] bg-[#0A0A0F] px-4 py-4 flex flex-col gap-3 z-40">
+          <a href="/discover" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Find Influencers</a>
+          <a href="/brands" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Find Brands</a>
+          <a href="/campaigns" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Open Campaigns</a>
+          <a href="/how-it-works" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">How it works</a>
+          <a href="/pricing" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Pricing</a>
           <div className="flex gap-3 pt-2">
             {loggedIn ? (
-              <a href="/dashboard" className="flex-1 text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center hover:bg-purple-700">Dashboard</a>
+              <a href="/dashboard" className="flex-1 text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center hover:bg-purple-500">Dashboard</a>
             ) : (
               <>
-                <a href="/login" className="flex-1 text-sm border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-center hover:bg-gray-50">Log in</a>
-                <a href="/signup" className="flex-1 text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center hover:bg-purple-700">Get started</a>
+                <a href="/login" className="flex-1 text-sm border border-[#1E1E2E] text-[#94A3B8] px-4 py-2 rounded-lg text-center hover:bg-[#1E1E2E]">Log in</a>
+                <a href="/signup" className="flex-1 text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center hover:bg-purple-500">Get started</a>
               </>
             )}
           </div>
@@ -144,36 +144,41 @@ export default function Home() {
       )}
 
       {/* Hero */}
-      <section className={`text-center px-4 md:px-8 py-12 md:py-24 max-w-4xl mx-auto transition-all duration-700 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-        <div className="inline-flex items-center gap-2 bg-purple-50 text-purple-700 text-sm px-4 py-1.5 rounded-full mb-6">
-          <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
-          India's first AI-scored influencer marketplace
+      <section className={`relative text-center px-4 md:px-8 py-12 md:py-24 max-w-4xl mx-auto transition-all duration-700 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+        {/* Subtle dot grid */}
+        <div className="absolute inset-0 bg-[radial-gradient(#1E1E2E_1px,transparent_1px)] [background-size:24px_24px] opacity-60 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0F] via-transparent to-[#0A0A0F] pointer-events-none" />
+        <div className="relative">
+          <div className="inline-flex items-center gap-2 bg-purple-500/10 text-purple-400 text-sm px-4 py-1.5 rounded-full mb-6 border border-purple-500/20">
+            <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
+            India's first AI-scored influencer marketplace
+          </div>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-[#F8FAFC] leading-tight mb-6">
+            Find the right influencer.<br />
+            <span className="bg-gradient-to-r from-purple-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">Powered by AI.</span>
+          </h1>
+          <p className="text-lg md:text-xl text-[#94A3B8] mb-10 max-w-2xl mx-auto leading-relaxed">
+            Discover, verify, and hire micro-influencers across Instagram, YouTube,
+            Facebook, LinkedIn and X. Pay only for what you use.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mb-6">
+            <a href="/discover" className="bg-purple-600 text-white px-8 py-3 rounded-lg text-base font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/25">
+              Find Influencers — free
+            </a>
+            <a href="/join" className="border border-[#1E1E2E] text-[#94A3B8] px-8 py-3 rounded-lg text-base hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors">
+              Join as Influencer
+            </a>
+          </div>
+          <p className="text-sm text-[#64748B]">5 free credits on signup · No card needed · Cancel anytime</p>
         </div>
-        <h1 className="text-3xl md:text-5xl font-semibold text-gray-900 leading-tight mb-6 tracking-tight">
-          Find the right influencer.<br />
-          <span className="text-purple-600">Powered by AI.</span>
-        </h1>
-        <p className="text-lg md:text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed">
-          Discover, verify, and hire micro-influencers across Instagram, YouTube,
-          Facebook, LinkedIn and X. Pay only for what you use.
-        </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mb-6">
-          <a href="/discover" className="bg-purple-600 text-white px-8 py-3 rounded-lg text-base font-medium hover:bg-purple-700 transition-colors">
-            Find Influencers — free
-          </a>
-          <a href="/join" className="border border-gray-200 text-gray-600 px-8 py-3 rounded-lg text-base hover:bg-gray-50 transition-colors">
-            Join as Influencer
-          </a>
-        </div>
-        <p className="text-sm text-gray-400">5 free credits on signup · No card needed · Cancel anytime</p>
       </section>
 
       {/* Brand logos */}
-      <section className="border-y border-gray-100 py-8 px-4 md:px-8 overflow-hidden">
-        <p className="text-center text-xs text-gray-400 uppercase tracking-widest mb-6">Trusted by brands across India</p>
+      <section className="border-y border-[#1E1E2E] py-8 px-4 md:px-8 overflow-hidden">
+        <p className="text-center text-xs text-[#64748B] uppercase tracking-widest mb-6">Trusted by brands across India</p>
         <div className="flex gap-6 md:gap-8 justify-center flex-wrap">
           {brands.map((brand) => (
-            <div key={brand} className="text-sm font-medium text-gray-300 hover:text-gray-500 transition-colors cursor-default">
+            <div key={brand} className="text-sm font-medium text-[#334155] hover:text-[#94A3B8] transition-colors cursor-default">
               {brand}
             </div>
           ))}
@@ -183,116 +188,116 @@ export default function Home() {
       {/* Live stats */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 px-4 md:px-8 py-10 md:py-16 max-w-4xl mx-auto">
         <div className="text-center px-2">
-          <div className="text-2xl md:text-4xl font-semibold text-gray-900 mb-1">
+          <div className="text-2xl md:text-4xl font-bold text-[#F8FAFC] mb-1">
             <CountUp target={12400} suffix="+" />
           </div>
-          <div className="text-xs md:text-sm text-gray-400">Influencers listed</div>
+          <div className="text-xs md:text-sm text-[#94A3B8]">Influencers listed</div>
         </div>
         <div className="text-center px-2">
-          <div className="text-2xl md:text-4xl font-semibold text-purple-600 mb-1">
+          <div className="text-2xl md:text-4xl font-bold text-purple-400 mb-1">
             <CountUp target={8920} />
           </div>
-          <div className="text-xs md:text-sm text-gray-400">AI verified</div>
+          <div className="text-xs md:text-sm text-[#94A3B8]">AI verified</div>
         </div>
         <div className="text-center px-2">
-          <div className="text-2xl md:text-4xl font-semibold text-gray-900 mb-1">
+          <div className="text-2xl md:text-4xl font-bold text-[#F8FAFC] mb-1">
             <CountUp target={340} suffix="+" />
           </div>
-          <div className="text-xs md:text-sm text-gray-400">Niches covered</div>
+          <div className="text-xs md:text-sm text-[#94A3B8]">Niches covered</div>
         </div>
         <div className="text-center px-2">
-          <div className="text-2xl md:text-4xl font-semibold text-gray-900 mb-1">
+          <div className="text-2xl md:text-4xl font-bold text-[#F8FAFC] mb-1">
             <CountUp target={5} />
           </div>
-          <div className="text-xs md:text-sm text-gray-400">Platforms</div>
+          <div className="text-xs md:text-sm text-[#94A3B8]">Platforms</div>
         </div>
       </section>
 
       {/* Featured influencers */}
-      <section className="bg-gray-50 px-4 md:px-8 py-12 md:py-16">
+      <section className="bg-[#0D0D1A] px-4 md:px-8 py-12 md:py-16">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-end justify-between mb-8">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900">Featured influencers</h2>
-              <p className="text-gray-500 text-sm mt-1">Top AI-scored creators ready for brand partnerships</p>
+              <h2 className="text-2xl font-bold tracking-tight text-[#F8FAFC]">Featured influencers</h2>
+              <p className="text-[#94A3B8] text-sm mt-1">Top AI-scored creators ready for brand partnerships</p>
             </div>
-            <a href="/discover" className="text-sm text-purple-600 font-medium hover:underline whitespace-nowrap ml-4">View all →</a>
+            <a href="/discover" className="text-sm text-purple-400 font-medium hover:underline whitespace-nowrap ml-4">View all →</a>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {featuredInfluencers.length === 0
               ? Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="bg-white rounded-xl border border-gray-100 p-5 animate-pulse">
+                  <div key={i} className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 animate-pulse">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-200" />
+                        <div className="w-10 h-10 rounded-full bg-[#1E1E2E]" />
                         <div className="space-y-1.5">
-                          <div className="h-3 w-24 bg-gray-200 rounded" />
-                          <div className="h-2.5 w-16 bg-gray-100 rounded" />
+                          <div className="h-3 w-24 bg-[#1E1E2E] rounded" />
+                          <div className="h-2.5 w-16 bg-[#1E1E2E] rounded" />
                         </div>
                       </div>
                       <div className="space-y-1 text-right">
-                        <div className="h-5 w-8 bg-gray-200 rounded" />
-                        <div className="h-2.5 w-12 bg-gray-100 rounded" />
+                        <div className="h-5 w-8 bg-[#1E1E2E] rounded" />
+                        <div className="h-2.5 w-12 bg-[#1E1E2E] rounded" />
                       </div>
                     </div>
                     <div className="flex gap-2 mb-3">
-                      <div className="h-5 w-14 bg-gray-100 rounded-full" />
-                      <div className="h-5 w-16 bg-gray-100 rounded-full" />
-                      <div className="h-5 w-10 bg-gray-100 rounded-full" />
+                      <div className="h-5 w-14 bg-[#1E1E2E] rounded-full" />
+                      <div className="h-5 w-16 bg-[#1E1E2E] rounded-full" />
+                      <div className="h-5 w-10 bg-[#1E1E2E] rounded-full" />
                     </div>
-                    <div className="h-8 bg-gray-100 rounded-lg" />
+                    <div className="h-8 bg-[#1E1E2E] rounded-lg" />
                   </div>
                 ))
               : featuredInfluencers.map((inf) => {
                   const initials = getInitials(inf.name)
                   const color = getColor(initials)
                   return (
-                    <div key={inf.id} className="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer" onClick={() => window.location.href = `/influencer/${inf.id}`}>
+                    <div key={inf.id} className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-500/50 transition-all hover:-translate-y-0.5 cursor-pointer" onClick={() => window.location.href = `/influencer/${inf.id}`}>
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-full ${color} flex items-center justify-center text-white text-sm font-medium`}>
                             {initials}
                           </div>
                           <div>
-                            <div className="font-medium text-gray-900 text-sm">
+                            <div className="font-medium text-[#F8FAFC] text-sm">
                               {loggedIn ? inf.name : firstName(inf.name)}
                             </div>
                             {loggedIn ? (
-                              <div className="text-xs text-gray-400">{inf.handle}</div>
+                              <div className="text-xs text-[#64748B]">{inf.handle}</div>
                             ) : (
-                              <div className="text-xs text-gray-300 select-none blur-sm">{inf.handle}</div>
+                              <div className="text-xs text-[#334155] select-none blur-sm">{inf.handle}</div>
                             )}
                           </div>
                         </div>
                         <div className="text-center">
                           {loggedIn ? (
                             <>
-                              <div className="text-lg font-semibold text-purple-600">{inf.score}</div>
-                              <div className="text-xs text-gray-400">AI Score</div>
+                              <div className="text-lg font-semibold text-purple-400">{inf.score}</div>
+                              <div className="text-xs text-[#64748B]">AI Score</div>
                             </>
                           ) : (
                             <>
-                              <div className="text-lg text-gray-300">🔒</div>
-                              <div className="text-xs text-gray-400">AI Score</div>
+                              <div className="text-lg text-[#334155]">🔒</div>
+                              <div className="text-xs text-[#64748B]">AI Score</div>
                             </>
                           )}
                         </div>
                       </div>
                       <div className="flex gap-2 mb-3 flex-wrap">
-                        <span className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">{inf.niche}</span>
-                        <span className="text-xs bg-gray-50 text-gray-500 px-2 py-0.5 rounded-full">{inf.platform}</span>
+                        <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full">{inf.niche}</span>
+                        <span className="text-xs bg-[#1E1E2E] text-[#94A3B8] px-2 py-0.5 rounded-full">{inf.platform}</span>
                         {loggedIn ? (
-                          <span className="text-xs bg-gray-50 text-gray-500 px-2 py-0.5 rounded-full">{inf.followers}</span>
+                          <span className="text-xs bg-[#1E1E2E] text-[#94A3B8] px-2 py-0.5 rounded-full">{inf.followers}</span>
                         ) : (
-                          <span className="text-xs bg-gray-50 text-gray-300 px-2 py-0.5 rounded-full blur-sm select-none">{inf.followers}</span>
+                          <span className="text-xs bg-[#1E1E2E] text-[#334155] px-2 py-0.5 rounded-full blur-sm select-none">{inf.followers}</span>
                         )}
                       </div>
                       {!loggedIn && (
-                        <div className="text-xs text-center text-gray-400 mb-2">
-                          🔒 <a href="/login" className="text-purple-600 hover:underline">Sign in to see full details</a>
+                        <div className="text-xs text-center text-[#64748B] mb-2">
+                          🔒 <a href="/login" className="text-purple-400 hover:underline">Sign in to see full details</a>
                         </div>
                       )}
-                      <a href={loggedIn ? `/influencer/${inf.id}` : "/login"} className="block w-full text-center bg-purple-50 text-purple-700 py-2 rounded-lg text-xs font-medium hover:bg-purple-100 transition-colors">
+                      <a href={loggedIn ? `/influencer/${inf.id}` : "/login"} className="block w-full text-center bg-purple-500/10 text-purple-400 py-2 rounded-lg text-xs font-medium hover:bg-purple-500/20 transition-colors border border-purple-500/20">
                         {loggedIn ? "View profile →" : "Sign in to view →"}
                       </a>
                     </div>
@@ -307,44 +312,44 @@ export default function Home() {
       <section className="px-4 md:px-8 py-12 md:py-16 max-w-4xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
           <div>
-            <div className="inline-block bg-purple-50 text-purple-700 text-xs px-3 py-1 rounded-full mb-4">AI Scoring Engine</div>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Every influencer scored on 6 real signals</h2>
-            <p className="text-gray-500 text-sm leading-relaxed mb-6">
+            <div className="inline-block bg-purple-500/10 text-purple-400 text-xs px-3 py-1 rounded-full mb-4 border border-purple-500/20">AI Scoring Engine</div>
+            <h2 className="text-2xl font-bold tracking-tight text-[#F8FAFC] mb-4">Every influencer scored on 6 real signals</h2>
+            <p className="text-[#94A3B8] text-sm leading-relaxed mb-6">
               Our AI analyses every influencer's public data weekly. No guessing. No fake metrics. Just honest scores based on what actually matters for brand campaigns.
             </p>
             <button
               onClick={() => setAiDemo(!aiDemo)}
-              className="bg-purple-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+              className="bg-purple-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/25"
             >
               {aiDemo ? "Hide demo" : "See a live score breakdown →"}
             </button>
           </div>
-          <div className={`transition-all duration-500 ${aiDemo ? "opacity-100" : "opacity-40"}`}>
-            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+          <div className={`transition-all duration-500 ${aiDemo ? "opacity-100" : "opacity-30"}`}>
+            <div className="bg-[#12121A] rounded-2xl p-6 border border-[#1E1E2E]">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center text-white text-sm font-medium">PS</div>
                   <div>
-                    <div className="font-medium text-gray-900 text-sm">Priya Sharma</div>
-                    <div className="text-xs text-gray-400">@priyaeats · Food · Instagram</div>
+                    <div className="font-medium text-[#F8FAFC] text-sm">Priya Sharma</div>
+                    <div className="text-xs text-[#64748B]">@priyaeats · Food · Instagram</div>
                   </div>
                 </div>
-                <div className="text-3xl font-semibold text-purple-600">91</div>
+                <div className="text-3xl font-semibold text-purple-400">91</div>
               </div>
               <div className="space-y-3">
                 {scoreFactors.map((f) => (
                   <div key={f.label}>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-600">{f.label}</span>
-                      <span className="font-medium text-purple-600">{f.value}</span>
+                      <span className="text-[#94A3B8]">{f.label}</span>
+                      <span className="font-medium text-purple-400">{f.value}</span>
                     </div>
-                    <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-[#1E1E2E] rounded-full overflow-hidden">
                       <div
                         className="h-full bg-purple-500 rounded-full transition-all duration-1000"
                         style={{ width: aiDemo ? `${f.value}%` : "0%" }}
                       ></div>
                     </div>
-                    {aiDemo && <div className="text-xs text-gray-400 mt-0.5">{f.desc}</div>}
+                    {aiDemo && <div className="text-xs text-[#64748B] mt-0.5">{f.desc}</div>}
                   </div>
                 ))}
               </div>
@@ -354,28 +359,28 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="bg-gray-50 px-4 md:px-8 py-12 md:py-16">
+      <section className="bg-[#0D0D1A] px-4 md:px-8 py-12 md:py-16">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl font-semibold text-gray-900 text-center mb-2">What people are saying</h2>
-          <p className="text-gray-500 text-center text-sm mb-10">From brands and influencers across India</p>
+          <h2 className="text-2xl font-bold tracking-tight text-[#F8FAFC] text-center mb-2">What people are saying</h2>
+          <p className="text-[#94A3B8] text-center text-sm mb-10">From brands and influencers across India</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {testimonials.map((t) => (
-              <div key={t.name} className="bg-white rounded-xl border border-gray-100 p-6">
+              <div key={t.name} className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6 hover:border-purple-500/30 transition-colors">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-full ${t.color} flex items-center justify-center text-white text-sm font-medium`}>
                       {t.avatar}
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900 text-sm">{t.name}</div>
-                      <div className="text-xs text-gray-400">{t.role}</div>
+                      <div className="font-medium text-[#F8FAFC] text-sm">{t.name}</div>
+                      <div className="text-xs text-[#64748B]">{t.role}</div>
                     </div>
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${t.type === "Brand" ? "bg-blue-50 text-blue-600" : "bg-purple-50 text-purple-600"}`}>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${t.type === "Brand" ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" : "bg-purple-500/10 text-purple-400 border border-purple-500/20"}`}>
                     {t.type}
                   </span>
                 </div>
-                <p className="text-sm text-gray-500 leading-relaxed">"{t.text}"</p>
+                <p className="text-sm text-[#94A3B8] leading-relaxed">"{t.text}"</p>
               </div>
             ))}
           </div>
@@ -384,10 +389,10 @@ export default function Home() {
 
       {/* Newsletter */}
       <section className="px-4 md:px-8 py-12 md:py-16 max-w-2xl mx-auto text-center">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-2">Stay in the loop</h2>
-        <p className="text-gray-500 text-sm mb-6">Get influencer marketing tips, platform updates, and new creator spotlights. No spam.</p>
+        <h2 className="text-2xl font-bold tracking-tight text-[#F8FAFC] mb-2">Stay in the loop</h2>
+        <p className="text-[#94A3B8] text-sm mb-6">Get influencer marketing tips, platform updates, and new creator spotlights. No spam.</p>
         {subscribed ? (
-          <div className="bg-green-50 text-green-700 px-6 py-3 rounded-lg text-sm font-medium">
+          <div className="bg-[#10B981]/10 text-[#10B981] px-6 py-3 rounded-lg text-sm font-medium border border-[#10B981]/20">
             You are subscribed! We will be in touch.
           </div>
         ) : (
@@ -396,12 +401,12 @@ export default function Home() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
+              className="flex-1 px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm focus:outline-none focus:border-purple-500 bg-[#12121A] text-[#F8FAFC] placeholder-[#64748B]"
               placeholder="you@example.com"
             />
             <button
               onClick={() => { if (email) setSubscribed(true) }}
-              className="bg-purple-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors whitespace-nowrap"
+              className="bg-purple-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 transition-colors whitespace-nowrap shadow-lg shadow-purple-500/20"
             >
               Subscribe
             </button>
@@ -410,44 +415,44 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 px-4 md:px-8 py-12">
+      <footer className="border-t border-[#1E1E2E] px-4 md:px-8 py-12">
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <span className="text-xl">⚡</span>
-              <span className="font-semibold">Influence<span className="text-purple-600">IQ</span></span>
+              <span className="font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
             </div>
-            <p className="text-sm text-gray-400 leading-relaxed">India's first AI-scored influencer marketplace.</p>
+            <p className="text-sm text-[#64748B] leading-relaxed">India's first AI-scored influencer marketplace.</p>
           </div>
           <div>
-            <div className="text-sm font-medium text-gray-900 mb-3">Platform</div>
+            <div className="text-sm font-medium text-[#F8FAFC] mb-3">Platform</div>
             <div className="space-y-2">
-              <a href="/discover" className="block text-sm text-gray-400 hover:text-gray-600">Find Influencers</a>
-              <a href="/brands" className="block text-sm text-gray-400 hover:text-gray-600">Find Brands</a>
-              <a href="/campaigns" className="block text-sm text-gray-400 hover:text-gray-600">Open Campaigns</a>
-              <a href="/join" className="block text-sm text-gray-400 hover:text-gray-600">Join as Influencer</a>
-              <a href="/pricing" className="block text-sm text-gray-400 hover:text-gray-600">Pricing</a>
-            </div>
-          </div>
-          <div>
-            <div className="text-sm font-medium text-gray-900 mb-3">Company</div>
-            <div className="space-y-2">
-              <a href="/about" className="block text-sm text-gray-400 hover:text-gray-600">About Us</a>
-              <a href="/why" className="block text-sm text-gray-400 hover:text-gray-600">Why InfluenceIQ</a>
-              <a href="/how-it-works" className="block text-sm text-gray-400 hover:text-gray-600">How It Works</a>
-              <a href="/contact" className="block text-sm text-gray-400 hover:text-gray-600">Contact Us</a>
+              <a href="/discover" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Find Influencers</a>
+              <a href="/brands" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Find Brands</a>
+              <a href="/campaigns" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Open Campaigns</a>
+              <a href="/join" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Join as Influencer</a>
+              <a href="/pricing" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Pricing</a>
             </div>
           </div>
           <div>
-            <div className="text-sm font-medium text-gray-900 mb-3">Legal</div>
+            <div className="text-sm font-medium text-[#F8FAFC] mb-3">Company</div>
             <div className="space-y-2">
-              <a href="/privacy" className="block text-sm text-gray-400 hover:text-gray-600">Privacy Policy</a>
-              <a href="/terms" className="block text-sm text-gray-400 hover:text-gray-600">Terms of Service</a>
-              <a href="/faq" className="block text-sm text-gray-400 hover:text-gray-600">FAQ</a>
+              <a href="/about" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">About Us</a>
+              <a href="/why" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Why InfluenceIQ</a>
+              <a href="/how-it-works" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">How It Works</a>
+              <a href="/contact" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Contact Us</a>
+            </div>
+          </div>
+          <div>
+            <div className="text-sm font-medium text-[#F8FAFC] mb-3">Legal</div>
+            <div className="space-y-2">
+              <a href="/privacy" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Privacy Policy</a>
+              <a href="/terms" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">Terms of Service</a>
+              <a href="/faq" className="block text-sm text-[#64748B] hover:text-[#94A3B8]">FAQ</a>
             </div>
           </div>
         </div>
-        <div className="border-t border-gray-100 pt-6 text-center text-sm text-gray-400">
+        <div className="border-t border-[#1E1E2E] pt-6 text-center text-sm text-[#64748B]">
           © 2025 InfluenceIQ · India's AI Influencer Marketplace
         </div>
       </footer>

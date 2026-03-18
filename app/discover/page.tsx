@@ -42,33 +42,33 @@ export default function Discover() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-[#0A0A0F]">
 
       {/* Nav */}
-      <nav className="bg-white border-b border-gray-100 sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
+      <nav className="bg-[#0A0A0F]/80 backdrop-blur-md border-b border-[#1E1E2E] sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
         <a href="/" className="flex items-center gap-2">
           <span className="text-xl">⚡</span>
-          <span className="font-semibold text-gray-900">Influence<span className="text-purple-600">IQ</span></span>
+          <span className="font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
         </a>
         {loggedIn
-          ? <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg">Dashboard</a>
-          : <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg">Sign in</a>
+          ? <a href="/dashboard" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Dashboard</a>
+          : <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Sign in</a>
         }
       </nav>
 
       <div className="px-4 py-6 max-w-6xl mx-auto">
 
         {/* Header */}
-        <h1 className="text-xl font-semibold text-gray-900 mb-1">Find Influencers</h1>
-        <p className="text-sm text-gray-500 mb-4">Browse AI-scored influencers. Free to search and filter.</p>
+        <h1 className="text-xl font-bold tracking-tight text-[#F8FAFC] mb-1">Find Influencers</h1>
+        <p className="text-sm text-[#94A3B8] mb-4">Browse AI-scored influencers. Free to search and filter.</p>
 
         {/* Guest nudge */}
         {!loggedIn && status !== "loading" && (
-          <div className="bg-purple-50 border border-purple-100 rounded-xl px-4 py-3 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <p className="text-sm text-purple-800">
+          <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl px-4 py-3 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <p className="text-sm text-purple-300">
               🔒 <strong>Sign in free</strong> to see full profiles, stats, and contact details.
             </p>
-            <a href="/signup" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center whitespace-nowrap">
+            <a href="/signup" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center whitespace-nowrap hover:bg-purple-500 transition-colors">
               Create free account
             </a>
           </div>
@@ -76,21 +76,21 @@ export default function Discover() {
 
         {/* Search */}
         <input
-          className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:border-purple-400 mb-4"
+          className="w-full px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm bg-[#12121A] text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500 mb-4"
           placeholder="Search by name, niche, or city..."
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
 
-        {/* Niche pills — horizontally scrollable */}
+        {/* Niche pills */}
         <div className="mb-3">
-          <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-2">Niche</p>
+          <p className="text-xs text-[#64748B] font-medium uppercase tracking-wide mb-2">Niche</p>
           <div className="flex gap-2 overflow-x-auto pb-1" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
             {niches.map(n => (
               <button
                 key={n}
                 onClick={() => setSelectedNiche(n)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedNiche === n ? "bg-purple-600 text-white" : "bg-white border border-gray-200 text-gray-600"}`}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedNiche === n ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"}`}
               >
                 {n}
               </button>
@@ -98,15 +98,15 @@ export default function Discover() {
           </div>
         </div>
 
-        {/* Platform pills — horizontally scrollable */}
+        {/* Platform pills */}
         <div className="mb-5">
-          <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-2">Platform</p>
+          <p className="text-xs text-[#64748B] font-medium uppercase tracking-wide mb-2">Platform</p>
           <div className="flex gap-2 overflow-x-auto pb-1" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
             {platforms.map(p => (
               <button
                 key={p}
                 onClick={() => setSelectedPlatform(p)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedPlatform === p ? "bg-gray-900 text-white" : "bg-white border border-gray-200 text-gray-600"}`}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedPlatform === p ? "bg-[#F8FAFC] text-[#0A0A0F]" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"}`}
               >
                 {p}
               </button>
@@ -115,7 +115,7 @@ export default function Discover() {
         </div>
 
         {/* Count */}
-        <p className="text-xs text-gray-400 mb-4">
+        <p className="text-xs text-[#64748B] mb-4">
           {loading ? "Loading..." : `${influencers.length} influencer${influencers.length !== 1 ? "s" : ""}`}
           {selectedNiche !== "All" && ` · ${selectedNiche}`}
           {selectedPlatform !== "All" && ` · ${selectedPlatform}`}
@@ -125,24 +125,24 @@ export default function Discover() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {[1, 2, 3, 4, 5, 6].map(n => (
-              <div key={n} className="bg-white rounded-xl border border-gray-100 p-4 animate-pulse">
+              <div key={n} className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-4 animate-pulse">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0"></div>
+                  <div className="w-10 h-10 rounded-full bg-[#1E1E2E] flex-shrink-0"></div>
                   <div className="flex-1">
-                    <div className="h-3 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-3 bg-[#1E1E2E] rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-[#1E1E2E] rounded w-1/2"></div>
                   </div>
                 </div>
-                <div className="h-3 bg-gray-200 rounded mb-2"></div>
-                <div className="h-8 bg-gray-200 rounded mt-3"></div>
+                <div className="h-3 bg-[#1E1E2E] rounded mb-2"></div>
+                <div className="h-8 bg-[#1E1E2E] rounded mt-3"></div>
               </div>
             ))}
           </div>
         ) : influencers.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-4xl mb-3">🔍</div>
-            <p className="font-medium text-gray-600 mb-1">No influencers found</p>
-            <p className="text-sm text-gray-400">Try a different niche or platform</p>
+            <p className="font-medium text-[#94A3B8] mb-1">No influencers found</p>
+            <p className="text-sm text-[#64748B]">Try a different niche or platform</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -150,10 +150,9 @@ export default function Discover() {
               <div
                 key={inf.id}
                 onClick={() => { window.location.href = `/influencer/${inf.id}` }}
-                className="bg-white rounded-xl border border-gray-100 p-4 cursor-pointer hover:shadow-sm transition-shadow overflow-hidden"
+                className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-4 cursor-pointer hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10 transition-all overflow-hidden"
               >
                 {loggedIn ? (
-                  /* Logged-in view */
                   <div>
                     {/* Top row */}
                     <div className="flex items-start gap-3 mb-3">
@@ -162,40 +161,40 @@ export default function Discover() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1">
-                          <span className="font-medium text-gray-900 text-sm truncate">{inf.name}</span>
-                          {inf.verified && <span className="text-blue-500 text-xs flex-shrink-0">✓</span>}
+                          <span className="font-medium text-[#F8FAFC] text-sm truncate">{inf.name}</span>
+                          {inf.verified && <span className="text-cyan-400 text-xs flex-shrink-0">✓</span>}
                         </div>
-                        <p className="text-xs text-gray-400 truncate">{inf.handle} · {inf.location}</p>
+                        <p className="text-xs text-[#64748B] truncate">{inf.handle} · {inf.location}</p>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <p className="text-base font-semibold text-purple-600">{inf.score}</p>
-                        <p className="text-xs text-gray-400">AI Score</p>
+                        <p className="text-base font-semibold text-purple-400">{inf.score}</p>
+                        <p className="text-xs text-[#64748B]">AI Score</p>
                       </div>
                     </div>
 
                     {/* Badges */}
                     <div className="flex gap-1 flex-wrap mb-3">
-                      <span className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">{inf.niche}</span>
-                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{inf.platform}</span>
+                      <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full">{inf.niche}</span>
+                      <span className="text-xs bg-[#1E1E2E] text-[#94A3B8] px-2 py-0.5 rounded-full">{inf.platform}</span>
                     </div>
 
                     {/* Stats */}
                     <div className="flex gap-2 mb-3">
-                      <div className="flex-1 bg-gray-50 rounded-lg p-2 text-center">
+                      <div className="flex-1 bg-[#0D0D1A] rounded-lg p-2 text-center">
                         {inf.followersPublic ? (
-                          <p className="text-xs font-medium text-gray-900">{inf.followers}</p>
+                          <p className="text-xs font-medium text-[#F8FAFC]">{inf.followers}</p>
                         ) : (
-                          <p className="text-xs text-gray-400">🔒 Private</p>
+                          <p className="text-xs text-[#64748B]">🔒 Private</p>
                         )}
-                        <p className="text-xs text-gray-400">Followers</p>
+                        <p className="text-xs text-[#64748B]">Followers</p>
                       </div>
-                      <div className="flex-1 bg-gray-50 rounded-lg p-2 text-center">
-                        <p className="text-xs font-medium text-gray-900">{inf.engagement}</p>
-                        <p className="text-xs text-gray-400">Engagement</p>
+                      <div className="flex-1 bg-[#0D0D1A] rounded-lg p-2 text-center">
+                        <p className="text-xs font-medium text-[#F8FAFC]">{inf.engagement}</p>
+                        <p className="text-xs text-[#64748B]">Engagement</p>
                       </div>
-                      <div className="flex-1 bg-gray-50 rounded-lg p-2 text-center">
-                        <p className="text-xs font-medium text-gray-900">{inf.rate}</p>
-                        <p className="text-xs text-gray-400">Avg. rate</p>
+                      <div className="flex-1 bg-[#0D0D1A] rounded-lg p-2 text-center">
+                        <p className="text-xs font-medium text-[#F8FAFC]">{inf.rate}</p>
+                        <p className="text-xs text-[#64748B]">Avg. rate</p>
                       </div>
                     </div>
 
@@ -204,20 +203,19 @@ export default function Discover() {
                       <a
                         href={`/influencer/${inf.id}`}
                         onClick={e => e.stopPropagation()}
-                        className="block w-full text-center bg-purple-600 text-white py-2 rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors"
+                        className="block w-full text-center bg-purple-600 text-white py-2 rounded-lg text-xs font-medium hover:bg-purple-500 transition-colors"
                       >
                         Unlock contact — 5 cr
                       </a>
                       <button
                         onClick={e => e.stopPropagation()}
-                        className="w-full border border-gray-200 text-gray-600 py-2 rounded-lg text-xs hover:bg-gray-50 transition-colors"
+                        className="w-full border border-[#1E1E2E] text-[#94A3B8] py-2 rounded-lg text-xs hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors"
                       >
                         AI report — 3 cr
                       </button>
                     </div>
                   </div>
                 ) : (
-                  /* Guest view */
                   <div>
                     {/* Top row */}
                     <div className="flex items-center gap-3 mb-2">
@@ -226,21 +224,21 @@ export default function Discover() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1 mb-0.5">
-                          <span className="font-medium text-gray-900 text-sm">{firstName(inf.name)}</span>
-                          {inf.verified && <span className="text-blue-500 text-xs">✓</span>}
+                          <span className="font-medium text-[#F8FAFC] text-sm">{firstName(inf.name)}</span>
+                          {inf.verified && <span className="text-cyan-400 text-xs">✓</span>}
                         </div>
-                        <p className="text-xs text-gray-400">{inf.location}</p>
+                        <p className="text-xs text-[#64748B]">{inf.location}</p>
                       </div>
                     </div>
 
                     {/* Badges */}
                     <div className="flex gap-1 flex-wrap mb-3">
-                      <span className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">{inf.niche}</span>
-                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{inf.platform}</span>
+                      <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full">{inf.niche}</span>
+                      <span className="text-xs bg-[#1E1E2E] text-[#94A3B8] px-2 py-0.5 rounded-full">{inf.platform}</span>
                     </div>
 
                     {/* Lock message */}
-                    <div className="bg-gray-50 rounded-lg px-3 py-2 mb-3 text-xs text-gray-500">
+                    <div className="bg-[#0D0D1A] rounded-lg px-3 py-2 mb-3 text-xs text-[#64748B]">
                       🔒 Sign in to see stats and contact details
                     </div>
 
@@ -248,7 +246,7 @@ export default function Discover() {
                     <a
                       href={`/influencer/${inf.id}`}
                       onClick={e => e.stopPropagation()}
-                      className="block w-full text-center bg-purple-600 text-white py-2 rounded-lg text-xs font-medium"
+                      className="block w-full text-center bg-purple-600 text-white py-2 rounded-lg text-xs font-medium hover:bg-purple-500 transition-colors"
                     >
                       View profile
                     </a>

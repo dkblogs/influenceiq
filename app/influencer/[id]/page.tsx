@@ -9,21 +9,21 @@ function firstName(name: string) {
 
 function SignupPromptCard() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+    <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-8 text-center">
       <div className="text-4xl mb-4">🔒</div>
-      <h2 className="font-semibold text-gray-900 mb-2">Create a free account to continue</h2>
-      <p className="text-gray-500 text-sm mb-6 max-w-sm mx-auto">
+      <h2 className="font-semibold text-[#F8FAFC] mb-2">Create a free account to continue</h2>
+      <p className="text-[#94A3B8] text-sm mb-6 max-w-sm mx-auto">
         Sign up free to see this influencer's full profile, contact details, AI score breakdown, and more.
       </p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <a href="/signup" className="bg-purple-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors">
+        <a href="/signup" className="bg-purple-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">
           Create free account
         </a>
-        <a href="/login" className="border border-gray-200 text-gray-600 px-6 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition-colors">
+        <a href="/login" className="border border-[#1E1E2E] text-[#94A3B8] px-6 py-2.5 rounded-lg text-sm hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors">
           Sign in
         </a>
       </div>
-      <p className="text-xs text-gray-400 mt-4">5 free credits on signup · No card needed</p>
+      <p className="text-xs text-[#64748B] mt-4">5 free credits on signup · No card needed</p>
     </div>
   )
 }
@@ -63,7 +63,6 @@ export default function InfluencerProfile() {
     }
   }, [params.id, session])
 
-  // Fetch reviews once we have both the influencer id and (optionally) the session user id
   useEffect(() => {
     if (!params.id) return
     const ownerParam = session?.user?.id ? `&ownerId=${session.user.id}` : ""
@@ -140,72 +139,71 @@ export default function InfluencerProfile() {
 
   if (loading || status === "loading") {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-400 text-sm">Loading...</div>
+      <main className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
+        <div className="text-[#64748B] text-sm">Loading...</div>
       </main>
     )
   }
 
   if (!influencer) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-400 text-sm">Influencer not found</div>
+      <main className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
+        <div className="text-[#64748B] text-sm">Influencer not found</div>
       </main>
     )
   }
 
-  // Tier helpers
-  const tier1 = !loggedIn                  // not logged in
-  const tier2 = loggedIn && !unlocked      // logged in, not unlocked
-  const tier3 = loggedIn && unlocked       // logged in + unlocked
+  const tier1 = !loggedIn
+  const tier2 = loggedIn && !unlocked
+  const tier3 = loggedIn && unlocked
   const isOwner = !!(loggedIn && influencer?.userId && (session?.user as any)?.id === influencer.userId)
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-[#0A0A0F]">
 
-      <nav className="bg-white flex items-center justify-between px-4 md:px-8 py-4 border-b border-gray-100">
+      <nav className="bg-[#0A0A0F]/80 backdrop-blur-md flex items-center justify-between px-4 md:px-8 py-4 border-b border-[#1E1E2E]">
         <a href="/" className="flex items-center gap-2">
           <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold">Influence<span className="text-purple-600">IQ</span></span>
+          <span className="text-xl font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
         </a>
         <div className="flex items-center gap-3">
-          <a href="/discover" className="text-sm text-gray-500 hover:text-gray-900">← Back</a>
+          <a href="/discover" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">← Back</a>
           {loggedIn ? (
-            <div className="flex items-center gap-2 bg-purple-50 px-3 py-1.5 rounded-lg">
-              <span className="text-xs text-purple-600 font-medium">{credits} credits</span>
+            <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-lg">
+              <span className="text-xs text-purple-400 font-medium">{credits} credits</span>
             </div>
           ) : (
-            <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Sign in</a>
+            <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Sign in</a>
           )}
         </div>
       </nav>
 
       {/* Owner settings panel */}
       {isOwner && (
-        <div className="bg-amber-50 border-b border-amber-100 px-4 md:px-8 py-4">
+        <div className="bg-amber-900/20 border-b border-amber-800/30 px-4 md:px-8 py-4">
           <div className="max-w-4xl mx-auto">
-            <p className="text-xs font-medium text-amber-700 uppercase tracking-wide mb-3">Your Profile Settings</p>
+            <p className="text-xs font-medium text-amber-400 uppercase tracking-wide mb-3">Your Profile Settings</p>
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               <div className="flex items-center justify-between sm:justify-start gap-4 flex-1">
-                <span className="text-sm text-gray-700">Follower count visibility</span>
+                <span className="text-sm text-[#94A3B8]">Follower count visibility</span>
                 <div
-                  className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer flex-shrink-0 ${followersPublic ? "bg-purple-600" : "bg-gray-300"}`}
+                  className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer flex-shrink-0 ${followersPublic ? "bg-purple-600" : "bg-[#1E1E2E]"}`}
                   onClick={() => setFollowersPublic(!followersPublic)}
                 >
                   <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${followersPublic ? "translate-x-5" : "translate-x-0.5"}`} />
                 </div>
-                <span className="text-sm font-medium text-gray-600">{followersPublic ? "Public" : "Private"}</span>
+                <span className="text-sm font-medium text-[#94A3B8]">{followersPublic ? "Public" : "Private"}</span>
               </div>
               <button
                 onClick={saveSettings}
                 disabled={savingSettings}
-                className="sm:ml-auto text-sm bg-purple-600 text-white px-4 py-1.5 rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors whitespace-nowrap"
+                className="sm:ml-auto text-sm bg-purple-600 text-white px-4 py-1.5 rounded-lg hover:bg-purple-500 disabled:opacity-50 transition-colors whitespace-nowrap"
               >
                 {savingSettings ? "Saving..." : settingsSaved ? "Saved ✓" : "Save settings"}
               </button>
             </div>
             {!followersPublic && (
-              <p className="text-xs text-amber-700 mt-2">⚠️ Keeping follower count private may reduce brand interest in your profile.</p>
+              <p className="text-xs text-amber-400/70 mt-2">⚠️ Keeping follower count private may reduce brand interest in your profile.</p>
             )}
           </div>
         </div>
@@ -214,7 +212,7 @@ export default function InfluencerProfile() {
       <div className="px-4 md:px-8 py-8 md:py-10 max-w-4xl mx-auto">
 
         {/* Profile header */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-8 mb-6">
+        <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 md:p-8 mb-6">
           <div className="flex flex-col sm:flex-row items-start gap-4 md:gap-6">
             <div className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl ${colorMap[influencer.initials] || "bg-purple-500"} flex items-center justify-center text-white font-semibold text-xl md:text-2xl flex-shrink-0`}>
               {influencer.initials}
@@ -223,21 +221,21 @@ export default function InfluencerProfile() {
 
               {/* Name */}
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
+                <h1 className="text-xl md:text-2xl font-bold tracking-tight text-[#F8FAFC]">
                   {tier1 ? firstName(influencer.name) : influencer.name}
                 </h1>
                 {influencer.verified && (
-                  <span className="bg-blue-50 text-blue-600 text-xs px-2 py-0.5 rounded-full font-medium">✓ Verified</span>
+                  <span className="bg-cyan-500/10 text-cyan-400 text-xs px-2 py-0.5 rounded-full font-medium border border-cyan-500/20">✓ Verified</span>
                 )}
               </div>
 
               {/* Handle + location */}
-              <div className="text-gray-400 text-sm mb-3">
+              <div className="text-[#64748B] text-sm mb-3">
                 {tier1 && (
-                  <>{influencer.location} · <span className="inline-flex items-center gap-1">🔒 <a href="/login" className="text-purple-600 hover:underline">Sign in to view</a></span></>
+                  <>{influencer.location} · <span className="inline-flex items-center gap-1">🔒 <a href="/login" className="text-purple-400 hover:underline">Sign in to view</a></span></>
                 )}
                 {tier2 && (
-                  <>{influencer.location} · <span className="inline-flex items-center gap-1 text-gray-400">🔒 <span className="text-purple-600 text-xs">Unlock contact to view handle</span></span></>
+                  <>{influencer.location} · <span className="inline-flex items-center gap-1 text-[#64748B]">🔒 <span className="text-purple-400 text-xs">Unlock contact to view handle</span></span></>
                 )}
                 {tier3 && (
                   <>{influencer.handle} · {influencer.location}</>
@@ -245,36 +243,36 @@ export default function InfluencerProfile() {
               </div>
 
               <div className="flex gap-2 mb-4 flex-wrap">
-                <span className="text-sm bg-purple-50 text-purple-700 px-3 py-1 rounded-full">{influencer.niche}</span>
-                <span className="text-sm bg-gray-50 text-gray-600 px-3 py-1 rounded-full">{influencer.platform}</span>
+                <span className="text-sm bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full border border-purple-500/20">{influencer.niche}</span>
+                <span className="text-sm bg-[#1E1E2E] text-[#94A3B8] px-3 py-1 rounded-full">{influencer.platform}</span>
               </div>
-              <p className="text-gray-500 text-sm leading-relaxed">{influencer.about}</p>
+              <p className="text-[#94A3B8] text-sm leading-relaxed">{influencer.about}</p>
             </div>
 
             {/* AI Score */}
             <div className="text-center flex-shrink-0 sm:ml-auto">
               {tier1 && (
                 <>
-                  <div className="text-3xl md:text-4xl text-gray-300">🔒</div>
-                  <div className="text-xs text-gray-400 mt-1">AI Score</div>
+                  <div className="text-3xl md:text-4xl text-[#334155]">🔒</div>
+                  <div className="text-xs text-[#64748B] mt-1">AI Score</div>
                 </>
               )}
               {tier2 && (
                 <>
-                  <div className="text-2xl text-gray-300">🔒</div>
-                  <div className="text-xs text-purple-500 mt-1">Get AI report</div>
+                  <div className="text-2xl text-[#334155]">🔒</div>
+                  <div className="text-xs text-purple-400 mt-1">Get AI report</div>
                 </>
               )}
               {tier3 && aiScores && (
                 <>
-                  <div className="text-3xl md:text-4xl font-semibold text-purple-600">{aiScores.overallScore}</div>
-                  <div className="text-xs text-gray-400 mt-1">AI Score</div>
+                  <div className="text-3xl md:text-4xl font-bold text-purple-400">{aiScores.overallScore}</div>
+                  <div className="text-xs text-[#64748B] mt-1">AI Score</div>
                 </>
               )}
               {tier3 && !aiScores && (
                 <>
-                  <div className="text-2xl text-gray-300">—</div>
-                  <div className="text-xs text-gray-400 mt-1">AI Score</div>
+                  <div className="text-2xl text-[#334155]">—</div>
+                  <div className="text-xs text-[#64748B] mt-1">AI Score</div>
                 </>
               )}
             </div>
@@ -283,35 +281,33 @@ export default function InfluencerProfile() {
 
         {/* Stats row */}
         {tier1 ? (
-          /* Tier 1: replace stats with sign-in prompt */
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6 text-center">
+          <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6 mb-6 text-center">
             <div className="text-2xl mb-2">🔒</div>
-            <p className="text-sm font-medium text-gray-700 mb-3">Sign in to see stats</p>
-            <a href="/login" className="inline-block bg-purple-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors">
+            <p className="text-sm font-medium text-[#94A3B8] mb-3">Sign in to see stats</p>
+            <a href="/login" className="inline-block bg-purple-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">
               Sign in free
             </a>
           </div>
         ) : (
-          /* Tier 2 + 3: stats visible, follower count respects followersPublic */
           <div className="grid grid-cols-3 gap-3 md:gap-4 mb-6">
-            <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5 text-center">
+            <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-4 md:p-5 text-center">
               {followersPublic ? (
-                <div className="text-xl md:text-2xl font-semibold text-gray-900">{influencer.followers}</div>
+                <div className="text-xl md:text-2xl font-bold text-[#F8FAFC]">{influencer.followers}</div>
               ) : (
-                <div className="text-sm text-gray-400 flex flex-col items-center gap-1">
+                <div className="text-sm text-[#64748B] flex flex-col items-center gap-1">
                   <span className="text-lg">🔒</span>
                   <span className="text-xs">Kept private</span>
                 </div>
               )}
-              <div className="text-xs md:text-sm text-gray-400 mt-1">Followers</div>
+              <div className="text-xs md:text-sm text-[#64748B] mt-1">Followers</div>
             </div>
-            <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5 text-center">
-              <div className="text-xl md:text-2xl font-semibold text-gray-900">{influencer.engagement}</div>
-              <div className="text-xs md:text-sm text-gray-400 mt-1">Engagement</div>
+            <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-4 md:p-5 text-center">
+              <div className="text-xl md:text-2xl font-bold text-[#F8FAFC]">{influencer.engagement}</div>
+              <div className="text-xs md:text-sm text-[#64748B] mt-1">Engagement</div>
             </div>
-            <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5 text-center">
-              <div className="text-xl md:text-2xl font-semibold text-gray-900">{influencer.rate}</div>
-              <div className="text-xs md:text-sm text-gray-400 mt-1">Avg. rate</div>
+            <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-4 md:p-5 text-center">
+              <div className="text-xl md:text-2xl font-bold text-[#F8FAFC]">{influencer.rate}</div>
+              <div className="text-xs md:text-sm text-[#64748B] mt-1">Avg. rate</div>
             </div>
           </div>
         )}
@@ -322,16 +318,16 @@ export default function InfluencerProfile() {
             <SignupPromptCard />
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-8 mb-6">
+          <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 md:p-8 mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
               <div>
-                <h2 className="font-semibold text-gray-900">AI Score Breakdown</h2>
-                <p className="text-xs text-gray-400 mt-1">Powered by InfluenceIQ AI · Updated on demand</p>
+                <h2 className="font-semibold text-[#F8FAFC]">AI Score Breakdown</h2>
+                <p className="text-xs text-[#64748B] mt-1">Powered by InfluenceIQ AI · Updated on demand</p>
               </div>
               <button
                 onClick={generateScore}
                 disabled={scoring}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50 transition-colors whitespace-nowrap"
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors whitespace-nowrap shadow-lg shadow-purple-500/20"
               >
                 {scoring ? "Analyzing..." : "Generate AI Score — 3 cr"}
               </button>
@@ -348,30 +344,30 @@ export default function InfluencerProfile() {
                     { label: "Growth Trend", value: aiScores.growthTrend, note: aiScores.growthTrendNote },
                     { label: "Brand Safety", value: aiScores.brandSafety, note: aiScores.brandSafetyNote },
                   ].map((item) => (
-                    <div key={item.label} className="bg-gray-50 rounded-xl p-4">
+                    <div key={item.label} className="bg-[#0D0D1A] rounded-xl p-4 border border-[#1E1E2E]">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium text-gray-700">{item.label}</span>
-                        <span className="text-sm font-semibold text-purple-600">{item.value}</span>
+                        <span className="text-sm font-medium text-[#94A3B8]">{item.label}</span>
+                        <span className="text-sm font-semibold text-purple-400">{item.value}</span>
                       </div>
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden mb-2">
+                      <div className="h-2 bg-[#1E1E2E] rounded-full overflow-hidden mb-2">
                         <div className="h-full bg-purple-500 rounded-full transition-all duration-1000" style={{ width: `${item.value}%` }}></div>
                       </div>
-                      <p className="text-xs text-gray-400">{item.note}</p>
+                      <p className="text-xs text-[#64748B]">{item.note}</p>
                     </div>
                   ))}
                 </div>
-                <div className="bg-purple-50 rounded-xl p-4">
+                <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg font-semibold text-purple-600">{aiScores.overallScore}</span>
-                    <span className="text-sm text-gray-500">Overall AI Score</span>
+                    <span className="text-lg font-semibold text-purple-400">{aiScores.overallScore}</span>
+                    <span className="text-sm text-[#94A3B8]">Overall AI Score</span>
                   </div>
-                  <p className="text-sm text-gray-600">{aiScores.summary}</p>
+                  <p className="text-sm text-[#94A3B8]">{aiScores.summary}</p>
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8 text-[#64748B]">
                 <div className="text-4xl mb-3">⚡</div>
-                <div className="font-medium text-gray-600 mb-1">No AI score generated yet</div>
+                <div className="font-medium text-[#94A3B8] mb-1">No AI score generated yet</div>
                 <div className="text-sm">Click Generate AI Score to get a detailed breakdown — costs 3 credits</div>
               </div>
             )}
@@ -380,52 +376,51 @@ export default function InfluencerProfile() {
 
         {/* Contact section */}
         {tier1 ? null : (
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-8">
-            <h2 className="font-semibold text-gray-900 mb-2">Contact details</h2>
+          <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 md:p-8">
+            <h2 className="font-semibold text-[#F8FAFC] mb-2">Contact details</h2>
 
             {tier3 ? (
               <div className="space-y-3">
-                <div className="flex items-center gap-3 p-4 bg-green-50 rounded-xl">
+                <div className="flex items-center gap-3 p-4 bg-[#10B981]/10 border border-[#10B981]/20 rounded-xl">
                   <span className="text-lg">✉️</span>
                   <div>
-                    <div className="text-xs text-gray-400 mb-0.5">Email</div>
-                    <div className="font-medium text-gray-900">{influencer.email}</div>
+                    <div className="text-xs text-[#64748B] mb-0.5">Email</div>
+                    <div className="font-medium text-[#F8FAFC]">{influencer.email}</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-4 bg-green-50 rounded-xl">
+                <div className="flex items-center gap-3 p-4 bg-[#10B981]/10 border border-[#10B981]/20 rounded-xl">
                   <span className="text-lg">📱</span>
                   <div>
-                    <div className="text-xs text-gray-400 mb-0.5">Phone</div>
-                    <div className="font-medium text-gray-900">{influencer.phone}</div>
+                    <div className="text-xs text-[#64748B] mb-0.5">Phone</div>
+                    <div className="font-medium text-[#F8FAFC]">{influencer.phone}</div>
                   </div>
                 </div>
-                <div className="text-xs text-gray-400 mt-2">
+                <div className="text-xs text-[#64748B] mt-2">
                   Contact details unlocked. Please use this information responsibly.
                 </div>
               </div>
             ) : (
-              /* tier2: show unlock button */
               <div>
-                <p className="text-sm text-gray-500 mb-4">
+                <p className="text-sm text-[#94A3B8] mb-4">
                   Unlock this influencer's email and phone number to contact them directly.
                 </p>
                 {error && (
-                  <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-4">{error}</div>
+                  <div className="bg-red-500/10 text-red-400 text-sm px-4 py-3 rounded-lg mb-4 border border-red-500/20">{error}</div>
                 )}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-gray-50 rounded-xl mb-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-[#0D0D1A] border border-[#1E1E2E] rounded-xl mb-4">
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-700">Email address</div>
-                    <div className="text-sm text-gray-400">••••••••••@••••••.com</div>
+                    <div className="text-sm font-medium text-[#94A3B8]">Email address</div>
+                    <div className="text-sm text-[#64748B]">••••••••••@••••••.com</div>
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-700">Phone number</div>
-                    <div className="text-sm text-gray-400">+91 ••••• •••••</div>
+                    <div className="text-sm font-medium text-[#94A3B8]">Phone number</div>
+                    <div className="text-sm text-[#64748B]">+91 ••••• •••••</div>
                   </div>
                 </div>
                 <button
                   onClick={handleUnlock}
                   disabled={unlocking}
-                  className="w-full bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                  className="w-full bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors shadow-lg shadow-purple-500/20"
                 >
                   {unlocking ? "Unlocking..." : "Unlock contact details — 5 credits"}
                 </button>
@@ -434,64 +429,64 @@ export default function InfluencerProfile() {
           </div>
         )}
 
-        {/* Campaign History - visible to all */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-8 mt-6">
+        {/* Campaign History */}
+        <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 md:p-8 mt-6">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-semibold text-gray-900">Campaign History</h2>
-            <span className="text-xs text-gray-400">{reviewsTotal} campaign{reviewsTotal !== 1 ? "s" : ""}</span>
+            <h2 className="font-semibold text-[#F8FAFC]">Campaign History</h2>
+            <span className="text-xs text-[#64748B]">{reviewsTotal} campaign{reviewsTotal !== 1 ? "s" : ""}</span>
           </div>
 
           {/* Summary row */}
           <div className="flex items-center gap-3 mb-6">
             <div className="flex gap-0.5">
               {[1,2,3,4,5].map((star) => (
-                <span key={star} className={`text-lg ${star <= Math.round(reviewsAvg) ? "text-yellow-400" : "text-gray-200"}`}>★</span>
+                <span key={star} className={`text-lg ${star <= Math.round(reviewsAvg) ? "text-yellow-400" : "text-[#1E1E2E]"}`}>★</span>
               ))}
             </div>
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-[#94A3B8]">
               {reviewsAvg > 0 ? reviewsAvg.toFixed(1) : "—"}
             </span>
-            <span className="text-sm text-gray-400">avg across {reviewsTotal} review{reviewsTotal !== 1 ? "s" : ""}</span>
+            <span className="text-sm text-[#64748B]">avg across {reviewsTotal} review{reviewsTotal !== 1 ? "s" : ""}</span>
           </div>
 
           {reviews.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-[#64748B]">
               <div className="text-3xl mb-2">📋</div>
               <div className="text-sm">No campaign reviews yet</div>
             </div>
           ) : (
             <div className="space-y-4">
               {reviews.map((r) => (
-                <div key={r.id} className="border border-gray-100 rounded-xl p-4">
+                <div key={r.id} className="border border-[#1E1E2E] rounded-xl p-4 hover:border-purple-500/30 transition-colors">
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div>
-                      <div className="font-medium text-gray-900 text-sm">{r.campaignName}</div>
+                      <div className="font-medium text-[#F8FAFC] text-sm">{r.campaignName}</div>
                       {r.campaignDesc && (
-                        <div className="text-xs text-gray-400 mt-0.5">{r.campaignDesc}</div>
+                        <div className="text-xs text-[#64748B] mt-0.5">{r.campaignDesc}</div>
                       )}
                     </div>
                     <div className="flex gap-0.5 flex-shrink-0">
                       {[1,2,3,4,5].map((star) => (
-                        <span key={star} className={`text-sm ${star <= r.rating ? "text-yellow-400" : "text-gray-200"}`}>★</span>
+                        <span key={star} className={`text-sm ${star <= r.rating ? "text-yellow-400" : "text-[#1E1E2E]"}`}>★</span>
                       ))}
                     </div>
                   </div>
-                  <p className="text-sm text-gray-600">{r.review}</p>
+                  <p className="text-sm text-[#94A3B8]">{r.review}</p>
                   <div className="flex items-center justify-between mt-2">
-                    <div className="text-xs text-gray-400">
+                    <div className="text-xs text-[#64748B]">
                       {new Date(r.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" })}
                     </div>
                     {isOwner && (
                       <div className="flex gap-2">
                         <button
                           onClick={() => toggleReviewPrivacy(r.id, "namePublic", !r.namePublic)}
-                          className={`text-xs px-2 py-1 rounded-full border transition-colors ${r.namePublic ? "border-green-200 text-green-700 bg-green-50" : "border-gray-200 text-gray-400 bg-gray-50"}`}
+                          className={`text-xs px-2 py-1 rounded-full border transition-colors ${r.namePublic ? "border-[#10B981]/30 text-[#10B981] bg-[#10B981]/10" : "border-[#1E1E2E] text-[#64748B] bg-[#0D0D1A]"}`}
                         >
                           Campaign: {r.namePublic ? "Public" : "Private"}
                         </button>
                         <button
                           onClick={() => toggleReviewPrivacy(r.id, "reviewPublic", !r.reviewPublic)}
-                          className={`text-xs px-2 py-1 rounded-full border transition-colors ${r.reviewPublic ? "border-green-200 text-green-700 bg-green-50" : "border-gray-200 text-gray-400 bg-gray-50"}`}
+                          className={`text-xs px-2 py-1 rounded-full border transition-colors ${r.reviewPublic ? "border-[#10B981]/30 text-[#10B981] bg-[#10B981]/10" : "border-[#1E1E2E] text-[#64748B] bg-[#0D0D1A]"}`}
                         >
                           Review: {r.reviewPublic ? "Public" : "Private"}
                         </button>

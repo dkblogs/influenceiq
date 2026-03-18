@@ -11,7 +11,7 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
         <button
           key={star}
           type="button"
-          className={`text-2xl transition-colors ${star <= (hovered || value) ? "text-yellow-400" : "text-gray-200"}`}
+          className={`text-2xl transition-colors ${star <= (hovered || value) ? "text-yellow-400" : "text-[#1E1E2E]"}`}
           onMouseEnter={() => setHovered(star)}
           onMouseLeave={() => setHovered(0)}
           onClick={() => onChange(star)}
@@ -61,22 +61,22 @@ function ReviewModal({ campaign, onClose, onSubmit }: {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6 w-full max-w-md shadow-2xl shadow-black/50" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5">
-          <h3 className="font-semibold text-gray-900">Rate Influencer</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+          <h3 className="font-semibold text-[#F8FAFC]">Rate Influencer</h3>
+          <button onClick={onClose} className="text-[#64748B] hover:text-[#F8FAFC] text-xl leading-none transition-colors">×</button>
         </div>
-        <div className="text-xs text-gray-400 mb-4 bg-gray-50 px-3 py-2 rounded-lg">{campaign.title}</div>
+        <div className="text-xs text-[#64748B] mb-4 bg-[#0A0A0F] px-3 py-2 rounded-lg border border-[#1E1E2E]">{campaign.title}</div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Influencer search */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Influencer</label>
+            <label className="block text-sm font-medium text-[#94A3B8] mb-1">Influencer</label>
             {selectedInfluencer ? (
-              <div className="flex items-center justify-between bg-purple-50 px-3 py-2 rounded-lg">
-                <span className="text-sm text-purple-700 font-medium">{selectedInfluencer.name}</span>
-                <button type="button" className="text-xs text-gray-400 hover:text-gray-600" onClick={() => setSelectedInfluencer(null)}>Change</button>
+              <div className="flex items-center justify-between bg-purple-500/10 border border-purple-500/20 px-3 py-2 rounded-lg">
+                <span className="text-sm text-purple-300 font-medium">{selectedInfluencer.name}</span>
+                <button type="button" className="text-xs text-[#64748B] hover:text-[#F8FAFC] transition-colors" onClick={() => setSelectedInfluencer(null)}>Change</button>
               </div>
             ) : (
               <div className="relative">
@@ -85,19 +85,19 @@ function ReviewModal({ campaign, onClose, onSubmit }: {
                   placeholder="Search influencer name..."
                   value={influencerSearch}
                   onChange={(e) => { setInfluencerSearch(e.target.value); searchInfluencers(e.target.value) }}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+                  className="w-full border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500 bg-[#0A0A0F] text-[#F8FAFC] placeholder-[#64748B]"
                 />
                 {influencerResults.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg mt-1 shadow-lg z-10">
+                  <div className="absolute top-full left-0 right-0 bg-[#12121A] border border-[#1E1E2E] rounded-lg mt-1 shadow-xl z-10">
                     {influencerResults.map((inf) => (
                       <button
                         key={inf.id}
                         type="button"
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-[#1E1E2E] flex items-center gap-2 transition-colors"
                         onClick={() => { setSelectedInfluencer(inf); setInfluencerResults([]); setInfluencerSearch("") }}
                       >
-                        <span className="font-medium text-gray-900">{inf.name}</span>
-                        <span className="text-gray-400 text-xs">{inf.niche}</span>
+                        <span className="font-medium text-[#F8FAFC]">{inf.name}</span>
+                        <span className="text-[#64748B] text-xs">{inf.niche}</span>
                       </button>
                     ))}
                   </div>
@@ -108,29 +108,29 @@ function ReviewModal({ campaign, onClose, onSubmit }: {
 
           {/* Star rating */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+            <label className="block text-sm font-medium text-[#94A3B8] mb-2">Rating</label>
             <StarPicker value={rating} onChange={setRating} />
           </div>
 
           {/* Review */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Review <span className="text-gray-400 font-normal">(optional)</span></label>
+            <label className="block text-sm font-medium text-[#94A3B8] mb-1">Review <span className="text-[#64748B] font-normal">(optional)</span></label>
             <textarea
               value={review}
               onChange={(e) => setReview(e.target.value)}
               placeholder="Describe the collaboration..."
               rows={3}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none"
+              className="w-full border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500 resize-none bg-[#0A0A0F] text-[#F8FAFC] placeholder-[#64748B]"
             />
           </div>
 
-          {error && <div className="text-red-600 text-sm">{error}</div>}
+          {error && <div className="text-red-400 text-sm">{error}</div>}
 
           <div className="flex gap-3 pt-1">
-            <button type="button" onClick={onClose} className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-lg text-sm hover:bg-gray-50">
+            <button type="button" onClick={onClose} className="flex-1 border border-[#1E1E2E] text-[#94A3B8] py-2.5 rounded-lg text-sm hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors">
               Cancel
             </button>
-            <button type="submit" disabled={submitting} className="flex-1 bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50">
+            <button type="submit" disabled={submitting} className="flex-1 bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors">
               {submitting ? "Submitting..." : "Submit Review"}
             </button>
           </div>
@@ -186,8 +186,8 @@ export default function Dashboard() {
 
   if (status === "loading" || credits === null) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-400 text-sm">Loading...</div>
+      <main className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
+        <div className="text-[#64748B] text-sm">Loading...</div>
       </main>
     )
   }
@@ -198,60 +198,60 @@ export default function Dashboard() {
   const initial = user.name ? user.name[0].toUpperCase() : "U"
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-[#0A0A0F]">
 
       {/* Navigation */}
-      <nav className="bg-white flex items-center justify-between px-4 md:px-8 py-4 border-b border-gray-100">
+      <nav className="bg-[#0A0A0F]/80 backdrop-blur-md flex items-center justify-between px-4 md:px-8 py-4 border-b border-[#1E1E2E]">
         <a href="/" className="flex items-center gap-2">
           <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold">
-            Influence<span className="text-purple-600">IQ</span>
+          <span className="text-xl font-semibold text-[#F8FAFC]">
+            Influence<span className="text-purple-400">IQ</span>
           </span>
         </a>
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-4">
-          <a href="/discover" className="text-sm text-gray-500 hover:text-gray-900">Find Influencers</a>
-          <a href="/brands" className="text-sm text-gray-500 hover:text-gray-900">Find Brands</a>
-          <a href="/campaigns" className="text-sm text-gray-500 hover:text-gray-900">Campaigns</a>
-          <div className="flex items-center gap-2 bg-purple-50 px-3 py-1.5 rounded-lg">
-            <span className="text-xs text-purple-600 font-medium">{credits} credits</span>
+          <a href="/discover" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Influencers</a>
+          <a href="/brands" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Brands</a>
+          <a href="/campaigns" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Campaigns</a>
+          <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-lg">
+            <span className="text-xs text-purple-400 font-medium">{credits} credits</span>
           </div>
           <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
             {initial}
           </div>
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="text-sm text-gray-400 hover:text-gray-600"
+            className="text-sm text-[#64748B] hover:text-[#94A3B8] transition-colors"
           >
             Sign out
           </button>
         </div>
         {/* Mobile right side */}
         <div className="flex md:hidden items-center gap-3">
-          <div className="bg-purple-50 px-2 py-1 rounded-lg">
-            <span className="text-xs text-purple-600 font-medium">{credits} cr</span>
+          <div className="bg-purple-500/10 border border-purple-500/20 px-2 py-1 rounded-lg">
+            <span className="text-xs text-purple-400 font-medium">{credits} cr</span>
           </div>
           <button
             className="flex flex-col gap-1.5 p-2"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
-            <span className="block w-5 h-0.5 bg-gray-600"></span>
-            <span className="block w-5 h-0.5 bg-gray-600"></span>
-            <span className="block w-5 h-0.5 bg-gray-600"></span>
+            <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
+            <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
+            <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
           </button>
         </div>
       </nav>
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-gray-100 bg-white px-4 py-4 flex flex-col gap-3">
-          <a href="/discover" className="text-sm text-gray-600 py-2 border-b border-gray-50">Find Influencers</a>
-          <a href="/brands" className="text-sm text-gray-600 py-2 border-b border-gray-50">Find Brands</a>
-          <a href="/campaigns" className="text-sm text-gray-600 py-2 border-b border-gray-50">Campaigns</a>
+        <div className="md:hidden border-b border-[#1E1E2E] bg-[#0A0A0F] px-4 py-4 flex flex-col gap-3">
+          <a href="/discover" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Find Influencers</a>
+          <a href="/brands" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Find Brands</a>
+          <a href="/campaigns" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Campaigns</a>
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="text-sm text-red-500 py-2 text-left"
+            className="text-sm text-red-400 py-2 text-left"
           >
             Sign out
           </button>
@@ -262,137 +262,137 @@ export default function Dashboard() {
 
         {/* Welcome */}
         <div className="mb-6 md:mb-8">
-          <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-[#F8FAFC]">
             Welcome back, {user.name} 👋
           </h1>
-          <p className="text-gray-500 text-sm mt-1">
+          <p className="text-[#94A3B8] text-sm mt-1">
             You are signed in as {user.role === "brand" ? "a Brand" : "an Influencer"} · {user.email}
           </p>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
-          <div className="bg-white rounded-xl p-4 md:p-5 border border-gray-100">
-            <div className="text-sm text-gray-500 mb-1">Credits remaining</div>
-            <div className="text-2xl font-semibold text-purple-600">{credits}</div>
-            <div className="text-xs text-gray-400 mt-1">Never expire</div>
+          <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+            <div className="text-sm text-[#94A3B8] mb-1">Credits remaining</div>
+            <div className="text-2xl font-bold text-purple-400">{credits}</div>
+            <div className="text-xs text-[#64748B] mt-1">Never expire</div>
           </div>
-          <div className="bg-white rounded-xl p-4 md:p-5 border border-gray-100">
-            <div className="text-sm text-gray-500 mb-1">Influencers unlocked</div>
-            <div className="text-2xl font-semibold text-gray-900">0</div>
-            <div className="text-xs text-gray-400 mt-1">Unlock for 5 credits</div>
+          <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+            <div className="text-sm text-[#94A3B8] mb-1">Influencers unlocked</div>
+            <div className="text-2xl font-bold text-[#F8FAFC]">0</div>
+            <div className="text-xs text-[#64748B] mt-1">Unlock for 5 credits</div>
           </div>
-          <div className="bg-white rounded-xl p-4 md:p-5 border border-gray-100">
-            <div className="text-sm text-gray-500 mb-1">Proposals sent</div>
-            <div className="text-2xl font-semibold text-gray-900">0</div>
-            <div className="text-xs text-gray-400 mt-1">Send for 10 credits</div>
+          <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+            <div className="text-sm text-[#94A3B8] mb-1">Proposals sent</div>
+            <div className="text-2xl font-bold text-[#F8FAFC]">0</div>
+            <div className="text-xs text-[#64748B] mt-1">Send for 10 credits</div>
           </div>
-          <div className="bg-white rounded-xl p-4 md:p-5 border border-gray-100">
-            <div className="text-sm text-gray-500 mb-1">AI reports</div>
-            <div className="text-2xl font-semibold text-gray-900">0</div>
-            <div className="text-xs text-gray-400 mt-1">Get one for 3 credits</div>
+          <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+            <div className="text-sm text-[#94A3B8] mb-1">AI reports</div>
+            <div className="text-2xl font-bold text-[#F8FAFC]">0</div>
+            <div className="text-xs text-[#64748B] mt-1">Get one for 3 credits</div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* Get started */}
-          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 p-6">
-            <h2 className="font-medium text-gray-900 mb-4">Get started</h2>
+          <div className="lg:col-span-2 bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6">
+            <h2 className="font-medium text-[#F8FAFC] mb-4">Get started</h2>
             <div className="space-y-3">
-              <a href={user.role === "brand" ? "/discover" : "/brands"} className="flex items-center gap-4 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-lg flex-shrink-0">🔍</div>
+              <a href={user.role === "brand" ? "/discover" : "/brands"} className="flex items-center gap-4 p-3 rounded-xl border border-[#1E1E2E] hover:bg-[#1E1E2E] hover:border-purple-500/30 transition-all">
+                <div className="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center text-lg flex-shrink-0">🔍</div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm font-medium text-[#F8FAFC]">
                     {user.role === "brand" ? "Browse influencers" : "Browse brands"}
                   </div>
-                  <div className="text-xs text-gray-400">
+                  <div className="text-xs text-[#64748B]">
                     {user.role === "brand" ? "Search by niche, platform, location — free" : "Find brands looking for your niche — free"}
                   </div>
                 </div>
-                <span className="text-xs text-purple-600 font-medium whitespace-nowrap">Browse →</span>
+                <span className="text-xs text-purple-400 font-medium whitespace-nowrap">Browse →</span>
               </a>
-              <a href="/campaigns" className="flex items-center gap-4 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-lg flex-shrink-0">📋</div>
+              <a href="/campaigns" className="flex items-center gap-4 p-3 rounded-xl border border-[#1E1E2E] hover:bg-[#1E1E2E] hover:border-purple-500/30 transition-all">
+                <div className="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center text-lg flex-shrink-0">📋</div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-900">Open campaigns</div>
-                  <div className="text-xs text-gray-400">
+                  <div className="text-sm font-medium text-[#F8FAFC]">Open campaigns</div>
+                  <div className="text-xs text-[#64748B]">
                     {user.role === "brand" ? "Post a campaign — 15 credits" : "Apply to campaigns — 2 credits each"}
                   </div>
                 </div>
-                <span className="text-xs text-purple-600 font-medium whitespace-nowrap">View →</span>
+                <span className="text-xs text-purple-400 font-medium whitespace-nowrap">View →</span>
               </a>
               {user.role === "brand" ? (
-                <a href="/recommend" className="flex items-center gap-4 p-3 rounded-lg border border-purple-100 bg-purple-50/40 hover:bg-purple-50 transition-colors">
-                  <div className="w-8 h-8 bg-purple-200 rounded-lg flex items-center justify-center text-lg flex-shrink-0">🤖</div>
+                <a href="/recommend" className="flex items-center gap-4 p-3 rounded-xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/10 transition-all">
+                  <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center text-lg flex-shrink-0">🤖</div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900">AI Influencer Recommendations</div>
-                    <div className="text-xs text-gray-400">Describe your campaign · get your best matches · free</div>
+                    <div className="text-sm font-medium text-[#F8FAFC]">AI Influencer Recommendations</div>
+                    <div className="text-xs text-[#64748B]">Describe your campaign · get your best matches · free</div>
                   </div>
-                  <span className="text-xs text-purple-600 font-medium whitespace-nowrap">Try →</span>
+                  <span className="text-xs text-purple-400 font-medium whitespace-nowrap">Try →</span>
                 </a>
               ) : (
-                <a href="/bio-writer" className="flex items-center gap-4 p-3 rounded-lg border border-purple-100 bg-purple-50/40 hover:bg-purple-50 transition-colors">
-                  <div className="w-8 h-8 bg-purple-200 rounded-lg flex items-center justify-center text-lg flex-shrink-0">✍️</div>
+                <a href="/bio-writer" className="flex items-center gap-4 p-3 rounded-xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/10 transition-all">
+                  <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center text-lg flex-shrink-0">✍️</div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900">AI Bio Writer</div>
-                    <div className="text-xs text-gray-400">Get a professional bio for your media kit · free</div>
+                    <div className="text-sm font-medium text-[#F8FAFC]">AI Bio Writer</div>
+                    <div className="text-xs text-[#64748B]">Get a professional bio for your media kit · free</div>
                   </div>
-                  <span className="text-xs text-purple-600 font-medium whitespace-nowrap">Try →</span>
+                  <span className="text-xs text-purple-400 font-medium whitespace-nowrap">Try →</span>
                 </a>
               )}
-              <a href="/pricing" className="flex items-center gap-4 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-lg flex-shrink-0">💳</div>
+              <a href="/pricing" className="flex items-center gap-4 p-3 rounded-xl border border-[#1E1E2E] hover:bg-[#1E1E2E] hover:border-purple-500/30 transition-all">
+                <div className="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center text-lg flex-shrink-0">💳</div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-900">Buy more credits</div>
-                  <div className="text-xs text-gray-400">Starter ₹499 · Growth ₹1,499 · Agency ₹3,999</div>
+                  <div className="text-sm font-medium text-[#F8FAFC]">Buy more credits</div>
+                  <div className="text-xs text-[#64748B]">Starter ₹499 · Growth ₹1,499 · Agency ₹3,999</div>
                 </div>
-                <span className="text-xs text-purple-600 font-medium whitespace-nowrap">Buy →</span>
+                <span className="text-xs text-purple-400 font-medium whitespace-nowrap">Buy →</span>
               </a>
             </div>
           </div>
 
           {/* Credits */}
-          <div className="bg-white rounded-xl border border-gray-100 p-6">
-            <h2 className="font-medium text-gray-900 mb-4">Your credits</h2>
+          <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6">
+            <h2 className="font-medium text-[#F8FAFC] mb-4">Your credits</h2>
             <div className="text-center py-4">
-              <div className="text-5xl font-semibold text-purple-600 mb-1">{credits}</div>
-              <div className="text-sm text-gray-400 mb-6">credits remaining</div>
-              <a href="/pricing" className="block w-full bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700 text-center">
+              <div className="text-5xl font-bold text-purple-400 mb-1">{credits}</div>
+              <div className="text-sm text-[#64748B] mb-6">credits remaining</div>
+              <a href="/pricing" className="block w-full bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 text-center transition-colors shadow-lg shadow-purple-500/20">
                 Buy credits
               </a>
             </div>
-            <div className="border-t border-gray-100 pt-4 mt-2">
-              <div className="text-xs font-medium text-gray-500 mb-3">What you can do</div>
+            <div className="border-t border-[#1E1E2E] pt-4 mt-2">
+              <div className="text-xs font-medium text-[#94A3B8] mb-3">What you can do</div>
               <div className="space-y-2">
                 {user.role === "brand" ? (
                   <>
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">Unlock contacts</span>
-                      <span className="text-gray-900 font-medium">{Math.floor(credits / 5)}x</span>
+                      <span className="text-[#64748B]">Unlock contacts</span>
+                      <span className="text-[#F8FAFC] font-medium">{Math.floor(credits / 5)}x</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">AI reports</span>
-                      <span className="text-gray-900 font-medium">{Math.floor(credits / 3)}x</span>
+                      <span className="text-[#64748B]">AI reports</span>
+                      <span className="text-[#F8FAFC] font-medium">{Math.floor(credits / 3)}x</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">Proposals</span>
-                      <span className="text-gray-900 font-medium">{Math.floor(credits / 10)}x</span>
+                      <span className="text-[#64748B]">Proposals</span>
+                      <span className="text-[#F8FAFC] font-medium">{Math.floor(credits / 10)}x</span>
                     </div>
                   </>
                 ) : (
                   <>
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">Campaign applications</span>
-                      <span className="text-gray-900 font-medium">{Math.floor(credits / 2)}x</span>
+                      <span className="text-[#64748B]">Campaign applications</span>
+                      <span className="text-[#F8FAFC] font-medium">{Math.floor(credits / 2)}x</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">Send requests</span>
-                      <span className="text-gray-900 font-medium">{Math.floor(credits / 10)}x</span>
+                      <span className="text-[#64748B]">Send requests</span>
+                      <span className="text-[#F8FAFC] font-medium">{Math.floor(credits / 10)}x</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">Profile views</span>
-                      <span className="text-gray-900 font-medium">{Math.floor(credits / 5)}x</span>
+                      <span className="text-[#64748B]">Profile views</span>
+                      <span className="text-[#F8FAFC] font-medium">{Math.floor(credits / 5)}x</span>
                     </div>
                   </>
                 )}
@@ -404,30 +404,30 @@ export default function Dashboard() {
 
         {/* Rate Influencers — brands only */}
         {(session?.user as any)?.role === "brand" && (
-          <div className="mt-6 bg-white rounded-xl border border-gray-100 p-6">
-            <h2 className="font-medium text-gray-900 mb-1">Rate Influencers</h2>
-            <p className="text-xs text-gray-400 mb-4">Leave a review for influencers you've worked with</p>
+          <div className="mt-6 bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6">
+            <h2 className="font-medium text-[#F8FAFC] mb-1">Rate Influencers</h2>
+            <p className="text-xs text-[#64748B] mb-4">Leave a review for influencers you've worked with</p>
 
             {reviewSuccess && (
-              <div className="bg-green-50 text-green-700 text-sm px-4 py-3 rounded-lg mb-4">{reviewSuccess}</div>
+              <div className="bg-[#10B981]/10 text-[#10B981] text-sm px-4 py-3 rounded-lg mb-4 border border-[#10B981]/20">{reviewSuccess}</div>
             )}
 
             {brandCampaigns.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8 text-[#64748B]">
                 <div className="text-3xl mb-2">📋</div>
-                <div className="text-sm">No campaigns yet. <a href="/campaigns" className="text-purple-600 hover:underline">Post a campaign</a> to start working with influencers.</div>
+                <div className="text-sm">No campaigns yet. <a href="/campaigns" className="text-purple-400 hover:underline">Post a campaign</a> to start working with influencers.</div>
               </div>
             ) : (
               <div className="space-y-3">
                 {brandCampaigns.map((campaign) => (
-                  <div key={campaign.id} className="flex items-center justify-between gap-4 p-3 border border-gray-100 rounded-lg">
+                  <div key={campaign.id} className="flex items-center justify-between gap-4 p-3 border border-[#1E1E2E] rounded-xl hover:border-purple-500/30 transition-colors">
                     <div className="min-w-0">
-                      <div className="text-sm font-medium text-gray-900 truncate">{campaign.title}</div>
-                      <div className="text-xs text-gray-400">{campaign.niche} · {campaign.platform} · {campaign.status}</div>
+                      <div className="text-sm font-medium text-[#F8FAFC] truncate">{campaign.title}</div>
+                      <div className="text-xs text-[#64748B]">{campaign.niche} · {campaign.platform} · {campaign.status}</div>
                     </div>
                     <button
                       onClick={() => { setReviewSuccess(""); setReviewModal(campaign) }}
-                      className="flex-shrink-0 text-xs bg-purple-600 text-white px-3 py-1.5 rounded-lg hover:bg-purple-700 transition-colors"
+                      className="flex-shrink-0 text-xs bg-purple-600 text-white px-3 py-1.5 rounded-lg hover:bg-purple-500 transition-colors"
                     >
                       Rate Influencer
                     </button>

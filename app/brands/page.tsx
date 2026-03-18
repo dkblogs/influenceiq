@@ -31,20 +31,20 @@ export default function Brands() {
   })
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-[#0A0A0F]">
 
       {/* Navigation */}
-      <nav className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-gray-100 sticky top-0 bg-white z-50">
+      <nav className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-[#1E1E2E] sticky top-0 bg-[#0A0A0F]/80 backdrop-blur-md z-50">
         <a href="/" className="flex items-center gap-2">
           <span className="text-2xl">⚡</span>
-          <span className="text-xl font-semibold">Influence<span className="text-purple-600">IQ</span></span>
+          <span className="text-xl font-semibold text-[#F8FAFC]">Influence<span className="text-purple-400">IQ</span></span>
         </a>
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-4">
-          <a href="/discover" className="text-sm text-gray-500 hover:text-gray-900">Find Influencers</a>
-          <a href="/brands" className="text-sm text-purple-600 font-medium">Find Brands</a>
-          <a href="/campaigns" className="text-sm text-gray-500 hover:text-gray-900">Open Campaigns</a>
-          <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Get Started</a>
+          <a href="/discover" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Find Influencers</a>
+          <a href="/brands" className="text-sm text-purple-400 font-medium">Find Brands</a>
+          <a href="/campaigns" className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">Open Campaigns</a>
+          <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">Get Started</a>
         </div>
         {/* Mobile hamburger */}
         <button
@@ -52,19 +52,19 @@ export default function Brands() {
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label="Toggle menu"
         >
-          <span className="block w-5 h-0.5 bg-gray-600"></span>
-          <span className="block w-5 h-0.5 bg-gray-600"></span>
-          <span className="block w-5 h-0.5 bg-gray-600"></span>
+          <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
+          <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
+          <span className="block w-5 h-0.5 bg-[#94A3B8]"></span>
         </button>
       </nav>
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-gray-100 bg-white px-4 py-4 flex flex-col gap-3">
-          <a href="/discover" className="text-sm text-gray-600 py-2 border-b border-gray-50">Find Influencers</a>
-          <a href="/brands" className="text-sm text-purple-600 font-medium py-2 border-b border-gray-50">Find Brands</a>
-          <a href="/campaigns" className="text-sm text-gray-600 py-2 border-b border-gray-50">Open Campaigns</a>
-          <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center">Get Started</a>
+        <div className="md:hidden border-b border-[#1E1E2E] bg-[#0A0A0F] px-4 py-4 flex flex-col gap-3">
+          <a href="/discover" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Find Influencers</a>
+          <a href="/brands" className="text-sm text-purple-400 font-medium py-2 border-b border-[#1E1E2E]">Find Brands</a>
+          <a href="/campaigns" className="text-sm text-[#94A3B8] py-2 border-b border-[#1E1E2E]">Open Campaigns</a>
+          <a href="/login" className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg text-center hover:bg-purple-500">Get Started</a>
         </div>
       )}
 
@@ -72,15 +72,15 @@ export default function Brands() {
 
         {/* Header */}
         <div className="mb-8">
-          <div className="inline-block bg-purple-50 text-purple-700 text-xs px-3 py-1 rounded-full mb-3">For Influencers</div>
-          <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-1">Discover Brands</h1>
-          <p className="text-gray-500 text-sm">Browse brands actively looking for influencer partnerships. Send them a collaboration request directly.</p>
+          <div className="inline-block bg-purple-500/10 text-purple-400 text-xs px-3 py-1 rounded-full mb-3 border border-purple-500/20">For Influencers</div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#F8FAFC] mb-1">Discover Brands</h1>
+          <p className="text-[#94A3B8] text-sm">Browse brands actively looking for influencer partnerships. Send them a collaboration request directly.</p>
         </div>
 
         {/* Search */}
         <div className="flex gap-3 mb-6">
           <input
-            className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-400"
+            className="flex-1 px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm focus:outline-none focus:border-purple-500 bg-[#12121A] text-[#F8FAFC] placeholder-[#64748B]"
             placeholder="Search by brand name, industry, or city..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -89,7 +89,7 @@ export default function Brands() {
 
         {/* Industry filters */}
         <div className="mb-4">
-          <div className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">Industry</div>
+          <div className="text-xs text-[#64748B] mb-2 font-medium uppercase tracking-wide">Industry</div>
           <div className="flex gap-2 flex-wrap">
             {industries.map((ind) => (
               <button
@@ -97,8 +97,8 @@ export default function Brands() {
                 onClick={() => setSelectedIndustry(ind)}
                 className={`px-3 md:px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   selectedIndustry === ind
-                    ? "bg-purple-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20"
+                    : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"
                 }`}
               >
                 {ind}
@@ -109,7 +109,7 @@ export default function Brands() {
 
         {/* Size filters */}
         <div className="mb-8">
-          <div className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">Company size</div>
+          <div className="text-xs text-[#64748B] mb-2 font-medium uppercase tracking-wide">Company size</div>
           <div className="flex gap-2 flex-wrap">
             {sizes.map((s) => (
               <button
@@ -117,8 +117,8 @@ export default function Brands() {
                 onClick={() => setSelectedSize(s)}
                 className={`px-3 md:px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   selectedSize === s
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-[#F8FAFC] text-[#0A0A0F]"
+                    : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"
                 }`}
               >
                 {s}
@@ -128,22 +128,22 @@ export default function Brands() {
         </div>
 
         {/* Results count */}
-        <div className="text-sm text-gray-400 mb-4">
+        <div className="text-sm text-[#64748B] mb-4">
           Showing {filtered.length} brand{filtered.length !== 1 ? "s" : ""}
           {selectedIndustry !== "All" && ` in ${selectedIndustry}`}
         </div>
 
         {/* Grid */}
         {filtered.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">
+          <div className="text-center py-16 text-[#64748B]">
             <div className="text-4xl mb-3">🔍</div>
-            <div className="font-medium text-gray-600 mb-1">No brands found</div>
+            <div className="font-medium text-[#94A3B8] mb-1">No brands found</div>
             <div className="text-sm">Try a different industry or size</div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((brand) => (
-              <div key={brand.name} className="border border-gray-100 rounded-xl p-5 hover:shadow-md transition-all hover:-translate-y-0.5">
+              <div key={brand.name} className="bg-[#12121A] border border-[#1E1E2E] rounded-2xl p-5 hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10 transition-all hover:-translate-y-0.5">
 
                 {/* Header */}
                 <div className="flex items-start gap-3 mb-4">
@@ -151,13 +151,13 @@ export default function Brands() {
                     {brand.initials}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900">{brand.name}</div>
-                    <div className="text-xs text-gray-400">{brand.industry} · {brand.location}</div>
+                    <div className="font-medium text-[#F8FAFC]">{brand.name}</div>
+                    <div className="text-xs text-[#64748B]">{brand.industry} · {brand.location}</div>
                     <div className="flex gap-1 mt-1">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        brand.size === "Enterprise" ? "bg-blue-50 text-blue-600" :
-                        brand.size === "Mid-size" ? "bg-yellow-50 text-yellow-600" :
-                        "bg-green-50 text-green-600"
+                        brand.size === "Enterprise" ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" :
+                        brand.size === "Mid-size" ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20" :
+                        "bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20"
                       }`}>
                         {brand.size}
                       </span>
@@ -166,23 +166,23 @@ export default function Brands() {
                 </div>
 
                 {/* About */}
-                <p className="text-xs text-gray-500 mb-4 leading-relaxed">{brand.about}</p>
+                <p className="text-xs text-[#94A3B8] mb-4 leading-relaxed">{brand.about}</p>
 
                 {/* Details */}
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-400">Campaign budget</span>
-                    <span className="font-medium text-gray-700">{brand.budget}</span>
+                    <span className="text-[#64748B]">Campaign budget</span>
+                    <span className="font-medium text-[#F8FAFC]">{brand.budget}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-400">Platforms</span>
-                    <span className="font-medium text-gray-700">{brand.platforms.join(", ")}</span>
+                    <span className="text-[#64748B]">Platforms</span>
+                    <span className="font-medium text-[#F8FAFC]">{brand.platforms.join(", ")}</span>
                   </div>
                   <div className="flex items-start justify-between text-xs">
-                    <span className="text-gray-400">Looking for</span>
+                    <span className="text-[#64748B]">Looking for</span>
                     <div className="flex gap-1 flex-wrap justify-end">
                       {brand.looking.map((niche) => (
-                        <span key={niche} className="bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">{niche}</span>
+                        <span key={niche} className="bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/20">{niche}</span>
                       ))}
                     </div>
                   </div>
@@ -190,10 +190,10 @@ export default function Brands() {
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                  <button className="flex-1 bg-purple-600 text-white py-2 rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors">
+                  <button className="flex-1 bg-purple-600 text-white py-2 rounded-lg text-xs font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">
                     Send request — 10 cr
                   </button>
-                  <button className="flex-1 border border-gray-200 text-gray-600 py-2 rounded-lg text-xs hover:bg-gray-50 transition-colors">
+                  <button className="flex-1 border border-[#1E1E2E] text-[#94A3B8] py-2 rounded-lg text-xs hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors">
                     View campaigns
                   </button>
                 </div>
@@ -205,7 +205,7 @@ export default function Brands() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 px-4 md:px-8 py-8 text-center text-sm text-gray-400 mt-8">
+      <footer className="border-t border-[#1E1E2E] px-4 md:px-8 py-8 text-center text-sm text-[#64748B] mt-8">
         InfluenceIQ · India's AI Influencer Marketplace · 2025
       </footer>
 
