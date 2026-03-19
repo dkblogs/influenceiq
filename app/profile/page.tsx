@@ -37,9 +37,18 @@ export default function ProfilePage() {
   const [instagramHandle, setInstagramHandle] = useState("")
   const [youtubeHandle, setYoutubeHandle] = useState("")
 
-  // Apify fetch state
+  // Apify fetch state (auto-fill)
   const [fetchingProfile, setFetchingProfile] = useState(false)
   const [fetchStatus, setFetchStatus] = useState<"" | "success" | "error">("")
+  // Per-handle verification state
+  const [verifyingIG, setVerifyingIG] = useState(false)
+  const [verifyingYT, setVerifyingYT] = useState(false)
+  const [igVerified, setIgVerified] = useState(false)
+  const [ytVerified, setYtVerified] = useState(false)
+  const [igFollowers, setIgFollowers] = useState<number | null>(null)
+  const [ytFollowers, setYtFollowers] = useState<number | null>(null)
+  const [igVerifyError, setIgVerifyError] = useState("")
+  const [ytVerifyError, setYtVerifyError] = useState("")
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/login"); return }
@@ -63,6 +72,10 @@ export default function ProfilePage() {
           setLocation(d.influencer.location || "")
           setInstagramHandle(d.influencer.instagramHandle || "")
           setYoutubeHandle(d.influencer.youtubeHandle || "")
+          setIgVerified(d.influencer.instagramVerified || false)
+          setYtVerified(d.influencer.youtubeVerified || false)
+          setIgFollowers(d.influencer.instagramFollowers ?? null)
+          setYtFollowers(d.influencer.youtubeFollowers ?? null)
         }
         setLoading(false)
       })
@@ -86,6 +99,41 @@ export default function ProfilePage() {
     if (data.influencer) setInfluencer(data.influencer)
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
+  }
+
+  async function handleVerify(platform: "instagram" | "youtube") {
+    const handle = platform === "instagram" ? instagramHandle : youtubeHandle
+    if (!handle) return
+    if (platform === "instagram") { setVerifyingIG(true); setIgVerifyError("") }
+    else { setVerifyingYT(true); setYtVerifyError("") }
+    try {
+      const res = await fetch("/api/verify-handle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ platform, handle }),
+      })
+      const data = await res.json()
+      if (data.verified) {
+        if (platform === "instagram") {
+          setIgVerified(true)
+          setIgFollowers(data.followers ?? null)
+        } else {
+          setYtVerified(true)
+          setYtFollowers(data.followers ?? null)
+        }
+      } else {
+        const msg = "Could not verify — check your handle and try again"
+        if (platform === "instagram") setIgVerifyError(msg)
+        else setYtVerifyError(msg)
+      }
+    } catch {
+      const msg = "Verification failed — try again"
+      if (platform === "instagram") setIgVerifyError(msg)
+      else setYtVerifyError(msg)
+    } finally {
+      if (platform === "instagram") setVerifyingIG(false)
+      else setVerifyingYT(false)
+    }
   }
 
   async function handleFetchProfile() {
@@ -263,43 +311,77 @@ export default function ProfilePage() {
           {isInfluencer && (
             <>
               <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6">
-                <h2 className="font-semibold text-[#F8FAFC] mb-5 text-sm uppercase tracking-wide">Social Handles</h2>
+                <h2 className="font-semibold text-[#F8FAFC] mb-1 text-sm uppercase tracking-wide">Social Handles</h2>
+                <p className="text-xs text-[#64748B] mb-5">Verified handles build trust with brands and unlock AI Score generation. Save your handle first, then click Verify.</p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className={labelClass}>Instagram Handle</label>
-                    <input type="text" value={instagramHandle} onChange={e => setInstagramHandle(e.target.value)}
-                      className={inputClass} placeholder="@instagram_username" />
+                {/* Instagram */}
+                <div className="mb-5">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <label className="text-sm font-medium text-[#94A3B8]">Instagram Handle</label>
+                    {igVerified
+                      ? <span className="text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded-full">✓ Verified{igFollowers ? ` · ${igFollowers.toLocaleString()} followers` : ""}</span>
+                      : <span className="text-xs bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-0.5 rounded-full">⚠ Not Verified</span>
+                    }
                   </div>
-                  <div>
-                    <label className={labelClass}>YouTube Channel</label>
-                    <input type="text" value={youtubeHandle} onChange={e => setYoutubeHandle(e.target.value)}
-                      className={inputClass} placeholder="@youtube_channel" />
+                  <div className="flex gap-2">
+                    <input type="text" value={instagramHandle} onChange={e => { setInstagramHandle(e.target.value); setIgVerified(false) }}
+                      className={`${inputClass} flex-1`} placeholder="@instagram_username" />
+                    <button
+                      type="button"
+                      onClick={() => handleVerify("instagram")}
+                      disabled={verifyingIG || !instagramHandle}
+                      className="flex-shrink-0 px-3 py-2 bg-[#1E1E2E] text-[#94A3B8] text-sm rounded-lg hover:bg-purple-600 hover:text-white disabled:opacity-40 transition-colors border border-[#1E1E2E]"
+                    >
+                      {verifyingIG ? (
+                        <span className="flex items-center gap-1.5">
+                          <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                          Verifying...
+                        </span>
+                      ) : "Verify"}
+                    </button>
                   </div>
+                  {igVerifyError && <p className="text-xs text-red-400 mt-1.5">{igVerifyError}</p>}
                 </div>
 
-                <div>
+                {/* YouTube */}
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <label className="text-sm font-medium text-[#94A3B8]">YouTube Channel</label>
+                    {ytVerified
+                      ? <span className="text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded-full">✓ Verified{ytFollowers ? ` · ${ytFollowers.toLocaleString()} followers` : ""}</span>
+                      : <span className="text-xs bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-0.5 rounded-full">⚠ Not Verified</span>
+                    }
+                  </div>
+                  <div className="flex gap-2">
+                    <input type="text" value={youtubeHandle} onChange={e => { setYoutubeHandle(e.target.value); setYtVerified(false) }}
+                      className={`${inputClass} flex-1`} placeholder="@youtube_channel" />
+                    <button
+                      type="button"
+                      onClick={() => handleVerify("youtube")}
+                      disabled={verifyingYT || !youtubeHandle}
+                      className="flex-shrink-0 px-3 py-2 bg-[#1E1E2E] text-[#94A3B8] text-sm rounded-lg hover:bg-purple-600 hover:text-white disabled:opacity-40 transition-colors border border-[#1E1E2E]"
+                    >
+                      {verifyingYT ? (
+                        <span className="flex items-center gap-1.5">
+                          <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                          Verifying...
+                        </span>
+                      ) : "Verify"}
+                    </button>
+                  </div>
+                  {ytVerifyError && <p className="text-xs text-red-400 mt-1.5">{ytVerifyError}</p>}
+                </div>
+
+                {/* Auto-fill */}
+                <div className="pt-3 border-t border-[#1E1E2E]">
                   <button
                     type="button"
                     onClick={handleFetchProfile}
                     disabled={fetchingProfile || (!instagramHandle && !youtubeHandle)}
-                    className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-500 disabled:opacity-40 transition-colors"
+                    className="px-4 py-2 bg-purple-600/20 text-purple-400 text-sm rounded-lg hover:bg-purple-600 hover:text-white disabled:opacity-40 transition-colors border border-purple-500/20"
                   >
-                    {fetchingProfile ? "Fetching..." : "Fetch Profile Data"}
+                    {fetchingProfile ? "Fetching..." : "Auto-fill bio & name from profile"}
                   </button>
-                  {fetchingProfile && (
-                    <p className="text-xs text-purple-400 mt-1.5 flex items-center gap-1.5">
-                      <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-                      </svg>
-                      {instagramHandle && youtubeHandle
-                        ? "Fetching Instagram & YouTube profiles..."
-                        : instagramHandle
-                        ? "Fetching Instagram profile..."
-                        : "Fetching YouTube channel..."}
-                    </p>
-                  )}
                   {fetchStatus === "success" && !fetchingProfile && (
                     <p className="text-xs text-[#10B981] mt-1.5">Profile data fetched — name and bio updated below.</p>
                   )}

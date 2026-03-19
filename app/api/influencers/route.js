@@ -113,6 +113,12 @@ export async function GET(request) {
         verified: true,
         userId: true,
         followersPublic: true,
+        instagramHandle: true,
+        instagramVerified: true,
+        instagramFollowers: true,
+        youtubeHandle: true,
+        youtubeVerified: true,
+        youtubeFollowers: true,
       },
     })
 

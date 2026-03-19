@@ -316,16 +316,35 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Influencer handle warning */}
-        {user.role === "influencer" && myInfluencerProfile !== null && !myInfluencerProfile?.instagramHandle && !myInfluencerProfile?.youtubeHandle && (
-          <div className="mb-6 flex items-start gap-3 px-4 py-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-400">
-            <span className="text-base mt-0.5">⚠️</span>
-            <span>
-              Your AI Score and AI Report require your real social media data.{" "}
-              <a href="/profile" className="underline hover:text-yellow-300 font-medium">Go to Profile → Fetch your handle first.</a>
-            </span>
-          </div>
-        )}
+        {/* Influencer handle verification status */}
+        {user.role === "influencer" && myInfluencerProfile !== null && (() => {
+          const igOk = myInfluencerProfile?.instagramVerified
+          const ytOk = myInfluencerProfile?.youtubeVerified
+          if (!igOk && !ytOk) {
+            return (
+              <div className="mb-6 flex items-start gap-3 px-4 py-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-400">
+                <span className="text-base mt-0.5">⚠️</span>
+                <span>
+                  No verified social handles. <a href="/profile" className="underline hover:text-yellow-300 font-medium">Go to Profile to verify your Instagram or YouTube handle</a> to unlock AI Score.
+                </span>
+              </div>
+            )
+          }
+          return (
+            <div className="mb-6 flex items-center gap-3 flex-wrap">
+              {igOk && (
+                <span className="flex items-center gap-1.5 text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-3 py-1.5 rounded-full font-medium">
+                  ✓ Instagram Verified
+                </span>
+              )}
+              {ytOk && (
+                <span className="flex items-center gap-1.5 text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-3 py-1.5 rounded-full font-medium">
+                  ✓ YouTube Verified
+                </span>
+              )}
+            </div>
+          )
+        })()}
 
         {/* Brand verification banner */}
         {user.role === "brand" && brandVerified !== null && (
