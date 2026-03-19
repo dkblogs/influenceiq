@@ -189,14 +189,6 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {/* Brand unverified banner */}
-      {loggedIn && role === "brand" && !brandVerified && (
-        <div className="sticky top-[65px] z-40 bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 text-center text-xs text-amber-400">
-          Your brand is not verified yet. Verification builds trust with influencers.{" "}
-          <a href="/profile" className="underline hover:text-amber-300 font-medium">Apply for verification →</a>
-        </div>
-      )}
-
       {/* Mobile dropdown */}
       {mobileOpen && (
         <div className="md:hidden sticky top-[65px] z-40 border-b border-[#1E1E2E] bg-[#0A0A0F] px-4 py-4 flex flex-col gap-1">
