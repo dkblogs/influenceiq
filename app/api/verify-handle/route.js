@@ -20,15 +20,12 @@ async function pollRun(runId) {
     })
     const data = await res.json()
     const status = data.data.status
-    console.log("Apify poll status:", status)
     if (status === "SUCCEEDED") {
       const dataRes = await fetch(
         `https://api.apify.com/v2/datasets/${data.data.defaultDatasetId}/items`,
         { headers: { "Authorization": `Bearer ${APIFY_TOKEN}` } }
       )
-      const dataset = await dataRes.json()
-      console.log("Apify dataset length:", dataset?.length, "keys:", Object.keys(dataset?.[0] || {}))
-      return dataset
+      return await dataRes.json()
     }
     if (status === "FAILED" || status === "ABORTED" || status === "TIMED-OUT") {
       throw new Error(`Apify run ${status}`)
@@ -39,7 +36,6 @@ async function pollRun(runId) {
 
 async function fetchInstagramBio(handle) {
   const clean = handle.replace(/^@/, "")
-  console.log("fetchInstagramBio: starting for", clean)
   const runRes = await fetch(
     "https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs",
     {
@@ -49,7 +45,6 @@ async function fetchInstagramBio(handle) {
     }
   )
   const run = await runRes.json()
-  console.log("fetchInstagramBio: run id:", run?.data?.id)
   if (!run?.data?.id) throw new Error("Failed to start Instagram Apify run")
   const dataset = await pollRun(run.data.id)
   const p = dataset?.[0]
@@ -64,7 +59,6 @@ async function fetchInstagramBio(handle) {
 
 async function fetchYouTubeBio(handle) {
   const clean = handle.replace(/^@/, "")
-  console.log("fetchYouTubeBio: starting for", clean)
   const runRes = await fetch(
     "https://api.apify.com/v2/acts/streamers~youtube-channel-scraper/runs",
     {
@@ -74,7 +68,6 @@ async function fetchYouTubeBio(handle) {
     }
   )
   const run = await runRes.json()
-  console.log("fetchYouTubeBio: run id:", run?.data?.id)
   if (!run?.data?.id) throw new Error("Failed to start YouTube Apify run")
   const dataset = await pollRun(run.data.id)
   const p = dataset?.[0]
@@ -96,9 +89,7 @@ export async function POST(request) {
     const { platform, handle, step } = await request.json()
     if (!platform || !handle || !step) return Response.json({ error: "platform, handle and step are required" }, { status: 400 })
 
-    console.log("verify-handle: session.user.id =", session?.user?.id)
     const influencer = await getInfluencerForUser({ userId: session.user.id, email: session.user.email })
-    console.log("verify-handle: influencer found =", JSON.stringify(influencer))
     if (!influencer) return Response.json({ error: "No influencer profile found" }, { status: 404 })
 
     const normalHandle = handle.startsWith("@") ? handle : `@${handle}`
@@ -138,8 +129,6 @@ export async function POST(request) {
         console.error("verify-handle scrape error:", e.message)
         return Response.json({ verified: false, error: "Could not fetch your profile — Apify scrape failed. Try again." })
       }
-
-      console.log("Checking bio for code", storedCode, "bio:", scraped.bio?.slice(0, 100))
 
       if (!scraped.bio || !scraped.bio.includes(storedCode)) {
         return Response.json({
