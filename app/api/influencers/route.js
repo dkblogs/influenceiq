@@ -51,16 +51,6 @@ export async function POST(request) {
       },
     })
 
-    // Kick off AI scoring in background (non-blocking)
-    try {
-      const origin = process.env.NEXTAUTH_URL || "http://localhost:3000"
-      fetch(`${origin}/api/ai-score`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ influencerId: influencer.id }),
-      }).catch(() => {})
-    } catch (_) {}
-
     return Response.json({ influencer })
   } catch (error) {
     if (error.code === "P2002") {
