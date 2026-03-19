@@ -12,6 +12,7 @@ async function pollRun(runId) {
     })
     const data = await res.json()
     const status = data.data.status
+    console.log("Apify poll status:", status)
     if (status === "SUCCEEDED") {
       const dataRes = await fetch(
         `https://api.apify.com/v2/datasets/${data.data.defaultDatasetId}/items`,
@@ -28,6 +29,7 @@ async function pollRun(runId) {
 
 async function scrapeInstagram(handle) {
   const clean = handle.replace(/^@/, "")
+  console.log("scrapeInstagram: starting for", clean)
   const runRes = await fetch(
     "https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs",
     {
@@ -37,20 +39,25 @@ async function scrapeInstagram(handle) {
     }
   )
   const run = await runRes.json()
+  console.log("scrapeInstagram: Apify run response:", JSON.stringify(run?.data?.id), "status:", run?.data?.status)
   if (!run?.data?.id) throw new Error("Failed to start Instagram Apify run")
   const dataset = await pollRun(run.data.id)
+  console.log("scrapeInstagram: dataset length:", dataset?.length, "first item keys:", Object.keys(dataset?.[0] || {}))
   const p = dataset?.[0]
   if (!p) throw new Error("No Instagram profile data returned")
-  return {
+  const result = {
     followers: p.followersCount ?? null,
     bio: p.biography ?? null,
     profilePic: p.profilePicUrl ?? null,
     fullName: p.fullName ?? null,
   }
+  console.log("scrapeInstagram: mapped result:", JSON.stringify(result))
+  return result
 }
 
 async function scrapeYouTube(handle) {
   const clean = handle.replace(/^@/, "")
+  console.log("scrapeYouTube: starting for", clean)
   const runRes = await fetch(
     "https://api.apify.com/v2/acts/streamers~youtube-channel-scraper/runs",
     {
@@ -60,16 +67,20 @@ async function scrapeYouTube(handle) {
     }
   )
   const run = await runRes.json()
+  console.log("scrapeYouTube: Apify run response:", JSON.stringify(run?.data?.id), "status:", run?.data?.status)
   if (!run?.data?.id) throw new Error("Failed to start YouTube Apify run")
   const dataset = await pollRun(run.data.id)
+  console.log("scrapeYouTube: dataset length:", dataset?.length, "first item keys:", Object.keys(dataset?.[0] || {}))
   const p = dataset?.[0]
   if (!p) throw new Error("No YouTube profile data returned")
-  return {
+  const result = {
     followers: p.numberOfSubscribers ?? p.subscriberCount ?? null,
     bio: p.description ?? null,
     profilePic: p.thumbnailUrl ?? null,
     fullName: p.channelName ?? p.title ?? null,
   }
+  console.log("scrapeYouTube: mapped result:", JSON.stringify(result))
+  return result
 }
 
 export async function POST(request) {
@@ -84,6 +95,8 @@ export async function POST(request) {
     const influencer = await prisma.influencer.findFirst({ where: { userId: session.user.id } })
     if (!influencer) return Response.json({ error: "No influencer profile found" }, { status: 404 })
 
+    console.log("1. Verify handle request:", { platform, handle })
+
     let scraped
     try {
       if (platform === "instagram") {
@@ -94,8 +107,12 @@ export async function POST(request) {
         return Response.json({ error: "platform must be 'instagram' or 'youtube'" }, { status: 400 })
       }
     } catch (e) {
+      console.error("2. Scrape error:", e.message)
       return Response.json({ verified: false, error: "Could not fetch profile data" }, { status: 200 })
     }
+
+    console.log("2. Scrape result:", JSON.stringify(scraped))
+    console.log("3. Verification check - followers:", scraped?.followers, "bio:", scraped?.bio)
 
     // Require at least followers > 0 or a bio to count as verified
     const hasData = (scraped.followers && scraped.followers > 0) || scraped.bio

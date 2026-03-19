@@ -8,13 +8,16 @@ async function pollRun(runId) {
     })
     const data = await res.json()
     const status = data.data.status
+    console.log("Apify poll status:", status)
 
     if (status === "SUCCEEDED") {
       const dataRes = await fetch(
         `https://api.apify.com/v2/datasets/${data.data.defaultDatasetId}/items`,
         { headers: { "Authorization": `Bearer ${APIFY_TOKEN}` } }
       )
-      return await dataRes.json()
+      const dataset = await dataRes.json()
+      console.log("Apify dataset:", JSON.stringify(dataset))
+      return dataset
     }
 
     if (status === "FAILED" || status === "ABORTED" || status === "TIMED-OUT") {
@@ -25,6 +28,7 @@ async function pollRun(runId) {
 
 async function scrapeInstagram(handle) {
   const clean = handle.replace(/^@/, "")
+  console.log("scrape-profile scrapeInstagram: starting for", clean)
   const runRes = await fetch(
     "https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs",
     {
@@ -34,11 +38,12 @@ async function scrapeInstagram(handle) {
     }
   )
   const run = await runRes.json()
+  console.log("Apify run started:", run.data?.id)
   if (!run?.data?.id) throw new Error("Failed to start Instagram Apify run")
   const dataset = await pollRun(run.data.id)
   const p = dataset?.[0]
   if (!p) throw new Error("No Instagram profile data returned")
-  return {
+  const profile = {
     followers: p.followersCount ?? null,
     bio: p.biography ?? null,
     postsCount: p.postsCount ?? null,
@@ -47,10 +52,13 @@ async function scrapeInstagram(handle) {
     verified: p.verified ?? false,
     engagement: null,
   }
+  console.log("Mapped profile:", JSON.stringify(profile))
+  return profile
 }
 
 async function scrapeYouTube(handle) {
   const clean = handle.replace(/^@/, "")
+  console.log("scrape-profile scrapeYouTube: starting for", clean)
   const runRes = await fetch(
     "https://api.apify.com/v2/acts/streamers~youtube-channel-scraper/runs",
     {
