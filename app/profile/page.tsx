@@ -118,7 +118,7 @@ function HandleVerifier({
             className="w-full flex items-center justify-center gap-2 bg-[#10B981] text-white py-2.5 rounded-lg text-sm font-medium hover:bg-[#059669] disabled:opacity-60 transition-colors"
           >
             {step === "checking"
-              ? <><Spinner /> Checking your bio via Apify...</>
+              ? <><Spinner /> Checking your bio...</>
               : "I've Added It — Verify Now"}
           </button>
         </div>
