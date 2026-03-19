@@ -7,6 +7,8 @@ export default function Navbar() {
   const { data: session, status } = useSession()
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [discoverOpen, setDiscoverOpen] = useState(false)
+  const discoverRef = useRef<HTMLDivElement>(null)
   const user = session?.user as any
   const [credits, setCredits] = useState<number | null>(user?.credits ?? null)
   const [brandVerified, setBrandVerified] = useState(false)
@@ -17,7 +19,6 @@ export default function Navbar() {
 
   useEffect(() => {
     if (!user?.id) return
-
     function fetchCredits() {
       fetch(`/api/user-credits?userId=${user.id}`)
         .then((r) => r.json())
@@ -27,23 +28,25 @@ export default function Navbar() {
         })
         .catch(() => {})
     }
-
     fetchCredits()
-
-    // retry once after 3s if credits still null
     retryRef.current = setTimeout(() => {
-      setCredits((prev) => {
-        if (prev === null) fetchCredits()
-        return prev
-      })
+      setCredits((prev) => { if (prev === null) fetchCredits(); return prev })
     }, 3000)
-
-    return () => {
-      if (retryRef.current) clearTimeout(retryRef.current)
-    }
+    return () => { if (retryRef.current) clearTimeout(retryRef.current) }
   }, [user?.id])
 
-  function link(href: string, label: string) {
+  // Close discover dropdown on outside click
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (discoverRef.current && !discoverRef.current.contains(e.target as Node)) {
+        setDiscoverOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [])
+
+  function navLink(href: string, label: string) {
     const isActive = pathname === href
     return (
       <a
@@ -56,27 +59,48 @@ export default function Navbar() {
     )
   }
 
-  const navLinks: { href: string; label: string }[] = loggedIn
-    ? role === "brand"
-      ? [
-          { href: "/discover", label: "Discover" },
-          { href: "/brands", label: "Brands" },
-          { href: "/campaigns", label: "Campaigns" },
-          { href: "/leaderboard", label: "Leaderboard" },
-          { href: "/post-campaign", label: "Post Campaign" },
-        ]
-      : [
-          { href: "/discover", label: "Discover" },
-          { href: "/brands", label: "Brands" },
-          { href: "/campaigns", label: "Campaigns" },
-          { href: "/leaderboard", label: "Leaderboard" },
-          { href: "/bio-writer", label: "Bio Writer" },
-        ]
-    : [
-        { href: "/discover", label: "Discover" },
-        { href: "/leaderboard", label: "Leaderboard" },
-        { href: "/pricing", label: "Pricing" },
-      ]
+  const DiscoverDropdown = ({ mobile = false }: { mobile?: boolean }) => (
+    <div ref={mobile ? undefined : discoverRef} className={mobile ? "" : "relative"}>
+      <button
+        onClick={() => setDiscoverOpen(o => !o)}
+        className={`text-sm transition-colors whitespace-nowrap flex items-center gap-1 ${
+          pathname.startsWith("/discover") ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8] hover:text-[#F8FAFC]"
+        }`}
+      >
+        Discover
+        <svg className={`w-3 h-3 transition-transform ${discoverOpen ? "rotate-180" : ""}`} viewBox="0 0 12 12" fill="none">
+          <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      {discoverOpen && (
+        <div className={mobile
+          ? "flex flex-col pl-3 mt-1"
+          : "absolute top-full left-0 mt-2 w-44 bg-[#12121A] border border-[#1E1E2E] rounded-xl shadow-xl z-50 overflow-hidden"
+        }>
+          <a
+            href="/discover/brands"
+            onClick={() => setDiscoverOpen(false)}
+            className={mobile
+              ? "text-sm py-2 text-[#94A3B8] hover:text-[#F8FAFC] border-b border-[#1E1E2E] transition-colors"
+              : "block px-4 py-2.5 text-sm text-[#94A3B8] hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors"
+            }
+          >
+            Brands
+          </a>
+          <a
+            href="/discover/influencers"
+            onClick={() => setDiscoverOpen(false)}
+            className={mobile
+              ? "text-sm py-2 text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
+              : "block px-4 py-2.5 text-sm text-[#94A3B8] hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors"
+            }
+          >
+            Influencers
+          </a>
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <>
@@ -89,39 +113,39 @@ export default function Navbar() {
           </span>
         </a>
 
-        {/* Desktop: all links + actions on the right */}
+        {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-5">
-          {navLinks.map((l) => link(l.href, l.label))}
-
-          {loggedIn ? (
+          {!loggedIn && (
             <>
-              {/* Separator */}
+              {navLink("/about", "About Us")}
+              {navLink("/why", "Why InfluenceIQ")}
+              <DiscoverDropdown />
+              {navLink("/pricing", "Pricing")}
+              {navLink("/contact", "Contact Us")}
               <span className="w-px h-4 bg-[#1E1E2E]" />
+              {navLink("/login", "Log in")}
+              <a
+                href="/signup"
+                className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20"
+              >
+                Sign up
+              </a>
+            </>
+          )}
 
-              {/* Credits badge */}
+          {loggedIn && role === "brand" && (
+            <>
+              {navLink("/dashboard", "Dashboard")}
+              {navLink("/profile", "Profile")}
+              <DiscoverDropdown />
+              {navLink("/campaigns", "Campaigns")}
+              {navLink("/contact", "Contact Us")}
+              <span className="w-px h-4 bg-[#1E1E2E]" />
               <div className="flex items-center bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-full">
                 <span className="text-xs text-purple-400 font-medium">
                   {credits !== null ? `${credits} credits` : "…"}
                 </span>
               </div>
-
-              {/* Verified / Get Verified (brand only) */}
-              {role === "brand" && (
-                brandVerified ? (
-                  <span className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-full">
-                    ✓ Verified
-                  </span>
-                ) : (
-                  <a
-                    href="/verify-brand"
-                    className="text-xs bg-[#1E1E2E] text-[#64748B] border border-[#1E1E2E] px-3 py-1.5 rounded-full hover:border-blue-500/30 hover:text-blue-400 transition-colors"
-                  >
-                    Get Verified
-                  </a>
-                )
-              )}
-
-              {link("/dashboard", "Dashboard")}
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
                 className="text-sm text-[#64748B] hover:text-[#94A3B8] transition-colors"
@@ -129,16 +153,26 @@ export default function Navbar() {
                 Sign out
               </button>
             </>
-          ) : (
+          )}
+
+          {loggedIn && role === "influencer" && (
             <>
+              {navLink("/dashboard", "Dashboard")}
+              {navLink("/profile", "Profile")}
+              {navLink("/campaigns", "Campaigns")}
+              {navLink("/contact", "Contact Us")}
               <span className="w-px h-4 bg-[#1E1E2E]" />
-              {link("/login", "Log in")}
-              <a
-                href="/signup"
-                className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20"
+              <div className="flex items-center bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-full">
+                <span className="text-xs text-purple-400 font-medium">
+                  {credits !== null ? `${credits} credits` : "…"}
+                </span>
+              </div>
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="text-sm text-[#64748B] hover:text-[#94A3B8] transition-colors"
               >
-                Sign up
-              </a>
+                Sign out
+              </button>
             </>
           )}
         </div>
@@ -155,53 +189,69 @@ export default function Navbar() {
         </button>
       </nav>
 
+      {/* Brand unverified banner */}
+      {loggedIn && role === "brand" && !brandVerified && (
+        <div className="sticky top-[65px] z-40 bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 text-center text-xs text-amber-400">
+          Your brand is not verified yet. Verification builds trust with influencers.{" "}
+          <a href="/profile" className="underline hover:text-amber-300 font-medium">Apply for verification →</a>
+        </div>
+      )}
+
       {/* Mobile dropdown */}
       {mobileOpen && (
         <div className="md:hidden sticky top-[65px] z-40 border-b border-[#1E1E2E] bg-[#0A0A0F] px-4 py-4 flex flex-col gap-1">
-          {navLinks.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              className={`text-sm py-2.5 border-b border-[#1E1E2E] transition-colors ${pathname === l.href ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8]"}`}
-            >
-              {l.label}
-            </a>
-          ))}
-          {loggedIn ? (
+          {!loggedIn && (
             <>
+              {[
+                { href: "/about", label: "About Us" },
+                { href: "/why", label: "Why InfluenceIQ" },
+                { href: "/pricing", label: "Pricing" },
+                { href: "/contact", label: "Contact Us" },
+              ].map(l => (
+                <a key={l.href} href={l.href} className={`text-sm py-2.5 border-b border-[#1E1E2E] ${pathname === l.href ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8]"}`}>{l.label}</a>
+              ))}
+              <div className="py-1">
+                <DiscoverDropdown mobile />
+              </div>
+              <a href="/login" className="text-sm text-[#94A3B8] py-2.5 border-b border-[#1E1E2E]">Log in</a>
+              <a href="/signup" className="mt-2 text-sm bg-purple-600 text-white px-4 py-2.5 rounded-lg text-center hover:bg-purple-500 transition-colors">Sign up</a>
+            </>
+          )}
+
+          {loggedIn && role === "brand" && (
+            <>
+              {[
+                { href: "/dashboard", label: "Dashboard" },
+                { href: "/profile", label: "Profile" },
+                { href: "/campaigns", label: "Campaigns" },
+                { href: "/contact", label: "Contact Us" },
+              ].map(l => (
+                <a key={l.href} href={l.href} className={`text-sm py-2.5 border-b border-[#1E1E2E] ${pathname === l.href ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8]"}`}>{l.label}</a>
+              ))}
+              <div className="py-1 border-b border-[#1E1E2E]">
+                <DiscoverDropdown mobile />
+              </div>
               <div className="text-xs text-purple-400 font-medium py-2.5 border-b border-[#1E1E2E]">
                 {credits !== null ? `${credits} credits` : "…"}
               </div>
-              {role === "brand" && (
-                brandVerified ? (
-                  <span className="text-sm text-blue-400 py-2.5 border-b border-[#1E1E2E]">✓ Verified</span>
-                ) : (
-                  <a href="/verify-brand" className="text-sm text-[#64748B] py-2.5 border-b border-[#1E1E2E]">
-                    Get Verified
-                  </a>
-                )
-              )}
-              <a href="/dashboard" className="text-sm text-[#94A3B8] py-2.5 border-b border-[#1E1E2E]">
-                Dashboard
-              </a>
-              <button
-                onClick={() => signOut({ callbackUrl: "/" })}
-                className="text-sm text-red-400 py-2.5 text-left"
-              >
-                Sign out
-              </button>
+              <button onClick={() => signOut({ callbackUrl: "/" })} className="text-sm text-red-400 py-2.5 text-left">Sign out</button>
             </>
-          ) : (
+          )}
+
+          {loggedIn && role === "influencer" && (
             <>
-              <a href="/login" className="text-sm text-[#94A3B8] py-2.5 border-b border-[#1E1E2E]">
-                Log in
-              </a>
-              <a
-                href="/signup"
-                className="mt-2 text-sm bg-purple-600 text-white px-4 py-2.5 rounded-lg text-center hover:bg-purple-500 transition-colors"
-              >
-                Sign up
-              </a>
+              {[
+                { href: "/dashboard", label: "Dashboard" },
+                { href: "/profile", label: "Profile" },
+                { href: "/campaigns", label: "Campaigns" },
+                { href: "/contact", label: "Contact Us" },
+              ].map(l => (
+                <a key={l.href} href={l.href} className={`text-sm py-2.5 border-b border-[#1E1E2E] ${pathname === l.href ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8]"}`}>{l.label}</a>
+              ))}
+              <div className="text-xs text-purple-400 font-medium py-2.5 border-b border-[#1E1E2E]">
+                {credits !== null ? `${credits} credits` : "…"}
+              </div>
+              <button onClick={() => signOut({ callbackUrl: "/" })} className="text-sm text-red-400 py-2.5 text-left">Sign out</button>
             </>
           )}
         </div>

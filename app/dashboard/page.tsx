@@ -316,6 +316,17 @@ export default function Dashboard() {
           </p>
         </div>
 
+        {/* Influencer handle warning */}
+        {user.role === "influencer" && myInfluencerProfile !== null && !myInfluencerProfile?.instagramHandle && !myInfluencerProfile?.youtubeHandle && (
+          <div className="mb-6 flex items-start gap-3 px-4 py-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-400">
+            <span className="text-base mt-0.5">⚠️</span>
+            <span>
+              Your AI Score and AI Report require your real social media data.{" "}
+              <a href="/profile" className="underline hover:text-yellow-300 font-medium">Go to Profile → Fetch your handle first.</a>
+            </span>
+          </div>
+        )}
+
         {/* Brand verification banner */}
         {user.role === "brand" && brandVerified !== null && (
           brandVerified ? (
