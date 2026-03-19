@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { getInfluencerForUser } from "@/lib/getInfluencerForUser"
 
 const USER_SELECT = {
   id: true, name: true, email: true, role: true,
@@ -22,7 +23,7 @@ export async function GET() {
 
     let influencer = null
     if (user.role === "influencer") {
-      influencer = await prisma.influencer.findFirst({ where: { userId: session.user.id } })
+      influencer = await getInfluencerForUser({ userId: session.user.id, email: user.email })
     }
 
     return Response.json({ user, influencer })
@@ -62,7 +63,7 @@ export async function PATCH(request) {
     let updatedInfluencer = null
     if (role === "influencer") {
       const { name, niche, platform, bio, location, instagramHandle, youtubeHandle } = body
-      const existing = await prisma.influencer.findFirst({ where: { userId: session.user.id } })
+      const existing = await getInfluencerForUser({ userId: session.user.id, email: session.user.email })
       if (existing) {
         updatedInfluencer = await prisma.influencer.update({
           where: { id: existing.id },

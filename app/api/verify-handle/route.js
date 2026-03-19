@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { getInfluencerForUser } from "@/lib/getInfluencerForUser"
 
 const APIFY_TOKEN = process.env.APIFY_API_TOKEN
 
@@ -96,7 +97,7 @@ export async function POST(request) {
     if (!platform || !handle || !step) return Response.json({ error: "platform, handle and step are required" }, { status: 400 })
 
     console.log("verify-handle: session.user.id =", session?.user?.id)
-    const influencer = await prisma.influencer.findFirst({ where: { userId: session.user.id } })
+    const influencer = await getInfluencerForUser({ userId: session.user.id, email: session.user.email })
     console.log("verify-handle: influencer found =", JSON.stringify(influencer))
     if (!influencer) return Response.json({ error: "No influencer profile found" }, { status: 404 })
 

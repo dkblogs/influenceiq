@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { getInfluencerForUser } from "@/lib/getInfluencerForUser"
 
 export async function GET(request) {
   try {
@@ -34,9 +35,7 @@ export async function POST(request) {
       return Response.json({ error: "brandName and campaignTitle are required" }, { status: 400 })
     }
 
-    const influencer = await prisma.influencer.findFirst({
-      where: { userId: session.user.id },
-    })
+    const influencer = await getInfluencerForUser({ userId: session.user.id, email: session.user.email })
     if (!influencer) {
       return Response.json({ error: "No influencer profile linked to your account" }, { status: 403 })
     }
