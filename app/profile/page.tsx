@@ -178,9 +178,11 @@ export default function ProfilePage() {
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/login"); return }
     if (status === "loading") return
+    console.log("profile page: session.user.id =", (session?.user as any)?.id)
     fetch("/api/profile")
       .then(r => r.json())
       .then(d => {
+        console.log("profile page: influencer fetch response =", JSON.stringify(d))
         setProfile(d.user)
         setInfluencer(d.influencer)
         setName(d.user?.name || "")

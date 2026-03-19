@@ -95,7 +95,9 @@ export async function POST(request) {
     const { platform, handle, step } = await request.json()
     if (!platform || !handle || !step) return Response.json({ error: "platform, handle and step are required" }, { status: 400 })
 
+    console.log("verify-handle: session.user.id =", session?.user?.id)
     const influencer = await prisma.influencer.findFirst({ where: { userId: session.user.id } })
+    console.log("verify-handle: influencer found =", JSON.stringify(influencer))
     if (!influencer) return Response.json({ error: "No influencer profile found" }, { status: 404 })
 
     const normalHandle = handle.startsWith("@") ? handle : `@${handle}`
