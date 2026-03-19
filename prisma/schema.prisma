@@ -86,15 +86,19 @@ model Influencer {
   email        String?
   phone        String?
   instagramHandle      String?
-  instagramVerified    Boolean  @default(false)
-  instagramFollowers   Int?
-  instagramBio         String?
-  instagramProfilePic  String?
-  youtubeHandle        String?
-  youtubeVerified      Boolean  @default(false)
-  youtubeFollowers     Int?
-  youtubeBio           String?
-  youtubeProfilePic    String?
+  instagramVerified      Boolean   @default(false)
+  instagramFollowers     Int?
+  instagramBio           String?
+  instagramProfilePic    String?
+  instagramVerifyCode    String?
+  instagramVerifyExpiry  DateTime?
+  youtubeHandle          String?
+  youtubeVerified        Boolean   @default(false)
+  youtubeFollowers       Int?
+  youtubeBio             String?
+  youtubeProfilePic      String?
+  youtubeVerifyCode      String?
+  youtubeVerifyExpiry    DateTime?
   verified             Boolean  @default(false)
   userId           String?
   user             User?    @relation(fields: [userId], references: [id])

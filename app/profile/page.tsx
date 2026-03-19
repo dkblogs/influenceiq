@@ -9,6 +9,128 @@ const readonlyClass = "w-full px-4 py-2.5 bg-[#0D0D1A] border border-[#1E1E2E] r
 const selectClass = `${inputClass} text-[#94A3B8]`
 const labelClass = "block text-sm font-medium text-[#94A3B8] mb-1.5"
 
+function Spinner() {
+  return (
+    <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+    </svg>
+  )
+}
+
+function HandleVerifier({
+  label, placeholder, platform, handle, onHandleChange,
+  step, code, error, followers, generating,
+  onGenerate, onCheck, onReset,
+}: {
+  label: string; placeholder: string; platform: string; handle: string
+  onHandleChange: (v: string) => void
+  step: "idle" | "generated" | "checking" | "verified"
+  code: string; error: string; followers: number | null; generating: boolean
+  onGenerate: () => void; onCheck: () => void; onReset: () => void
+}) {
+  const [copied, setCopied] = useState(false)
+  function copy() {
+    navigator.clipboard.writeText(code).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
+  }
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-sm font-medium text-[#94A3B8]">{label}</span>
+        {step === "verified" && (
+          <span className="text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded-full">
+            ✓ Verified{followers ? ` · ${followers.toLocaleString()} followers` : ""}
+          </span>
+        )}
+        {step !== "verified" && (
+          <span className="text-xs bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-0.5 rounded-full">⚠ Not Verified</span>
+        )}
+      </div>
+
+      {/* Handle input row */}
+      <div className="flex gap-2 mb-3">
+        <input
+          type="text"
+          value={handle}
+          onChange={e => onHandleChange(e.target.value)}
+          className={`${inputClass} flex-1`}
+          placeholder={placeholder}
+          disabled={step === "verified"}
+        />
+        {step === "idle" && (
+          <button
+            type="button"
+            onClick={onGenerate}
+            disabled={generating || !handle}
+            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-500 disabled:opacity-40 transition-colors"
+          >
+            {generating ? <><Spinner /> Generating...</> : "Start Verification"}
+          </button>
+        )}
+        {(step === "generated" || step === "checking") && (
+          <button
+            type="button"
+            onClick={onReset}
+            className="flex-shrink-0 px-3 py-2 bg-[#1E1E2E] text-[#64748B] text-sm rounded-lg hover:text-[#94A3B8] transition-colors border border-[#1E1E2E]"
+          >
+            Reset
+          </button>
+        )}
+        {step === "verified" && (
+          <button
+            type="button"
+            onClick={onReset}
+            className="flex-shrink-0 px-3 py-2 bg-[#1E1E2E] text-[#64748B] text-xs rounded-lg hover:text-[#94A3B8] transition-colors border border-[#1E1E2E]"
+          >
+            Re-verify
+          </button>
+        )}
+      </div>
+
+      {/* Code box */}
+      {(step === "generated" || step === "checking") && code && (
+        <div className="mb-3 bg-[#0A0A0F] border border-purple-500/30 rounded-xl p-4">
+          <p className="text-xs text-[#64748B] mb-2">
+            Add this code to your {platform === "instagram" ? "Instagram" : "YouTube"} bio:
+          </p>
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <span className="font-mono text-lg font-bold text-purple-300 tracking-widest">{code}</span>
+            <button
+              type="button"
+              onClick={copy}
+              className="text-xs bg-purple-600/20 text-purple-400 border border-purple-500/30 px-3 py-1.5 rounded-lg hover:bg-purple-600 hover:text-white transition-colors"
+            >
+              {copied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+          <ol className="text-xs text-[#94A3B8] space-y-1 mb-4 list-decimal list-inside">
+            {platform === "instagram"
+              ? <><li>Open Instagram → Edit Profile → Bio</li><li>Paste the code → Save</li></>
+              : <><li>Open YouTube Studio → Customisation → Basic Info → Description</li><li>Paste the code → Publish</li></>
+            }
+            <li>Come back here and click the button below</li>
+          </ol>
+          <button
+            type="button"
+            onClick={onCheck}
+            disabled={step === "checking"}
+            className="w-full flex items-center justify-center gap-2 bg-[#10B981] text-white py-2.5 rounded-lg text-sm font-medium hover:bg-[#059669] disabled:opacity-60 transition-colors"
+          >
+            {step === "checking"
+              ? <><Spinner /> Checking your bio via Apify...</>
+              : "I've Added It — Verify Now"}
+          </button>
+        </div>
+      )}
+
+      {error && (
+        <p className="text-xs text-red-400 mt-1">{error}</p>
+      )}
+    </div>
+  )
+}
+
 export default function ProfilePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -40,15 +162,18 @@ export default function ProfilePage() {
   // Apify fetch state (auto-fill)
   const [fetchingProfile, setFetchingProfile] = useState(false)
   const [fetchStatus, setFetchStatus] = useState<"" | "success" | "error">("")
-  // Per-handle verification state
-  const [verifyingIG, setVerifyingIG] = useState(false)
-  const [verifyingYT, setVerifyingYT] = useState(false)
-  const [igVerified, setIgVerified] = useState(false)
-  const [ytVerified, setYtVerified] = useState(false)
+  // Per-handle two-step verification state
+  type VerifyStep = "idle" | "generated" | "checking" | "verified"
+  const [igStep, setIgStep] = useState<VerifyStep>("idle")
+  const [igCode, setIgCode] = useState("")
+  const [igError, setIgError] = useState("")
   const [igFollowers, setIgFollowers] = useState<number | null>(null)
+  const [igGenerating, setIgGenerating] = useState(false)
+  const [ytStep, setYtStep] = useState<VerifyStep>("idle")
+  const [ytCode, setYtCode] = useState("")
+  const [ytError, setYtError] = useState("")
   const [ytFollowers, setYtFollowers] = useState<number | null>(null)
-  const [igVerifyError, setIgVerifyError] = useState("")
-  const [ytVerifyError, setYtVerifyError] = useState("")
+  const [ytGenerating, setYtGenerating] = useState(false)
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/login"); return }
@@ -72,10 +197,20 @@ export default function ProfilePage() {
           setLocation(d.influencer.location || "")
           setInstagramHandle(d.influencer.instagramHandle || "")
           setYoutubeHandle(d.influencer.youtubeHandle || "")
-          setIgVerified(d.influencer.instagramVerified || false)
-          setYtVerified(d.influencer.youtubeVerified || false)
           setIgFollowers(d.influencer.instagramFollowers ?? null)
           setYtFollowers(d.influencer.youtubeFollowers ?? null)
+          if (d.influencer.instagramVerified) {
+            setIgStep("verified")
+          } else if (d.influencer.instagramVerifyCode) {
+            setIgStep("generated")
+            setIgCode(d.influencer.instagramVerifyCode)
+          }
+          if (d.influencer.youtubeVerified) {
+            setYtStep("verified")
+          } else if (d.influencer.youtubeVerifyCode) {
+            setYtStep("generated")
+            setYtCode(d.influencer.youtubeVerifyCode)
+          }
         }
         setLoading(false)
       })
@@ -101,38 +236,65 @@ export default function ProfilePage() {
     setTimeout(() => setSaved(false), 3000)
   }
 
-  async function handleVerify(platform: "instagram" | "youtube") {
+  async function handleGenerateCode(platform: "instagram" | "youtube") {
     const handle = platform === "instagram" ? instagramHandle : youtubeHandle
     if (!handle) return
-    if (platform === "instagram") { setVerifyingIG(true); setIgVerifyError("") }
-    else { setVerifyingYT(true); setYtVerifyError("") }
+    if (platform === "instagram") { setIgGenerating(true); setIgError("") }
+    else { setYtGenerating(true); setYtError("") }
     try {
       const res = await fetch("/api/verify-handle", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ platform, handle }),
+        body: JSON.stringify({ platform, handle, step: "generate" }),
+      })
+      const data = await res.json()
+      if (data.code) {
+        if (platform === "instagram") { setIgCode(data.code); setIgStep("generated") }
+        else { setYtCode(data.code); setYtStep("generated") }
+      } else {
+        const msg = data.error || "Failed to generate code"
+        if (platform === "instagram") setIgError(msg)
+        else setYtError(msg)
+      }
+    } catch {
+      const msg = "Failed to generate code — try again"
+      if (platform === "instagram") setIgError(msg)
+      else setYtError(msg)
+    } finally {
+      if (platform === "instagram") setIgGenerating(false)
+      else setYtGenerating(false)
+    }
+  }
+
+  async function handleCheckCode(platform: "instagram" | "youtube") {
+    const handle = platform === "instagram" ? instagramHandle : youtubeHandle
+    if (!handle) return
+    if (platform === "instagram") { setIgStep("checking"); setIgError("") }
+    else { setYtStep("checking"); setYtError("") }
+    try {
+      const res = await fetch("/api/verify-handle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ platform, handle, step: "check" }),
       })
       const data = await res.json()
       if (data.verified) {
         if (platform === "instagram") {
-          setIgVerified(true)
+          setIgStep("verified")
           setIgFollowers(data.followers ?? null)
         } else {
-          setYtVerified(true)
+          setYtStep("verified")
           setYtFollowers(data.followers ?? null)
         }
       } else {
-        const msg = "Could not verify — check your handle and try again"
-        if (platform === "instagram") setIgVerifyError(msg)
-        else setYtVerifyError(msg)
+        const msg = data.error || "Code not found in bio"
+        if (platform === "instagram") { setIgStep("generated"); setIgError(msg) }
+        else { setYtStep("generated"); setYtError(msg) }
       }
     } catch {
       const msg = "Verification failed — try again"
-      if (platform === "instagram") setIgVerifyError(msg)
-      else setYtVerifyError(msg)
-    } finally {
-      if (platform === "instagram") setVerifyingIG(false)
-      else setVerifyingYT(false)
+      if (platform === "instagram") { setIgStep("generated"); setIgError(msg) }
+      else { setYtStep("generated"); setYtError(msg) }
     }
   }
 
@@ -312,83 +474,43 @@ export default function ProfilePage() {
             <>
               <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6">
                 <h2 className="font-semibold text-[#F8FAFC] mb-1 text-sm uppercase tracking-wide">Social Handles</h2>
-                <p className="text-xs text-[#64748B] mb-5">Verified handles build trust with brands and unlock AI Score generation. Save your handle first, then click Verify.</p>
+                <p className="text-xs text-[#64748B] mb-6">Verify ownership by adding a unique code to your bio. Verified handles build trust with brands and unlock AI Score.</p>
 
-                {/* Instagram */}
-                <div className="mb-5">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <label className="text-sm font-medium text-[#94A3B8]">Instagram Handle</label>
-                    {igVerified
-                      ? <span className="text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded-full">✓ Verified{igFollowers ? ` · ${igFollowers.toLocaleString()} followers` : ""}</span>
-                      : <span className="text-xs bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-0.5 rounded-full">⚠ Not Verified</span>
-                    }
-                  </div>
-                  <div className="flex gap-2">
-                    <input type="text" value={instagramHandle} onChange={e => { setInstagramHandle(e.target.value); setIgVerified(false) }}
-                      className={`${inputClass} flex-1`} placeholder="@instagram_username" />
-                    <button
-                      type="button"
-                      onClick={() => handleVerify("instagram")}
-                      disabled={verifyingIG || !instagramHandle}
-                      className="flex-shrink-0 px-3 py-2 bg-[#1E1E2E] text-[#94A3B8] text-sm rounded-lg hover:bg-purple-600 hover:text-white disabled:opacity-40 transition-colors border border-[#1E1E2E]"
-                    >
-                      {verifyingIG ? (
-                        <span className="flex items-center gap-1.5">
-                          <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
-                          Verifying...
-                        </span>
-                      ) : "Verify"}
-                    </button>
-                  </div>
-                  {igVerifyError && <p className="text-xs text-red-400 mt-1.5">{igVerifyError}</p>}
-                </div>
+                {/* ── Instagram ── */}
+                <HandleVerifier
+                  label="Instagram Handle"
+                  placeholder="@instagram_username"
+                  platform="instagram"
+                  handle={instagramHandle}
+                  onHandleChange={v => { setInstagramHandle(v); setIgStep("idle"); setIgCode(""); setIgError("") }}
+                  step={igStep}
+                  code={igCode}
+                  error={igError}
+                  followers={igFollowers}
+                  generating={igGenerating}
+                  onGenerate={() => handleGenerateCode("instagram")}
+                  onCheck={() => handleCheckCode("instagram")}
+                  onReset={() => { setIgStep("idle"); setIgCode(""); setIgError("") }}
+                />
 
-                {/* YouTube */}
-                <div className="mb-4">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <label className="text-sm font-medium text-[#94A3B8]">YouTube Channel</label>
-                    {ytVerified
-                      ? <span className="text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded-full">✓ Verified{ytFollowers ? ` · ${ytFollowers.toLocaleString()} followers` : ""}</span>
-                      : <span className="text-xs bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-0.5 rounded-full">⚠ Not Verified</span>
-                    }
-                  </div>
-                  <div className="flex gap-2">
-                    <input type="text" value={youtubeHandle} onChange={e => { setYoutubeHandle(e.target.value); setYtVerified(false) }}
-                      className={`${inputClass} flex-1`} placeholder="@youtube_channel" />
-                    <button
-                      type="button"
-                      onClick={() => handleVerify("youtube")}
-                      disabled={verifyingYT || !youtubeHandle}
-                      className="flex-shrink-0 px-3 py-2 bg-[#1E1E2E] text-[#94A3B8] text-sm rounded-lg hover:bg-purple-600 hover:text-white disabled:opacity-40 transition-colors border border-[#1E1E2E]"
-                    >
-                      {verifyingYT ? (
-                        <span className="flex items-center gap-1.5">
-                          <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
-                          Verifying...
-                        </span>
-                      ) : "Verify"}
-                    </button>
-                  </div>
-                  {ytVerifyError && <p className="text-xs text-red-400 mt-1.5">{ytVerifyError}</p>}
-                </div>
+                <div className="my-5 border-t border-[#1E1E2E]" />
 
-                {/* Auto-fill */}
-                <div className="pt-3 border-t border-[#1E1E2E]">
-                  <button
-                    type="button"
-                    onClick={handleFetchProfile}
-                    disabled={fetchingProfile || (!instagramHandle && !youtubeHandle)}
-                    className="px-4 py-2 bg-purple-600/20 text-purple-400 text-sm rounded-lg hover:bg-purple-600 hover:text-white disabled:opacity-40 transition-colors border border-purple-500/20"
-                  >
-                    {fetchingProfile ? "Fetching..." : "Auto-fill bio & name from profile"}
-                  </button>
-                  {fetchStatus === "success" && !fetchingProfile && (
-                    <p className="text-xs text-[#10B981] mt-1.5">Profile data fetched — name and bio updated below.</p>
-                  )}
-                  {fetchStatus === "error" && !fetchingProfile && (
-                    <p className="text-xs text-red-400 mt-1.5">Could not fetch profile — please fill manually.</p>
-                  )}
-                </div>
+                {/* ── YouTube ── */}
+                <HandleVerifier
+                  label="YouTube Channel"
+                  placeholder="@youtube_channel"
+                  platform="youtube"
+                  handle={youtubeHandle}
+                  onHandleChange={v => { setYoutubeHandle(v); setYtStep("idle"); setYtCode(""); setYtError("") }}
+                  step={ytStep}
+                  code={ytCode}
+                  error={ytError}
+                  followers={ytFollowers}
+                  generating={ytGenerating}
+                  onGenerate={() => handleGenerateCode("youtube")}
+                  onCheck={() => handleCheckCode("youtube")}
+                  onReset={() => { setYtStep("idle"); setYtCode(""); setYtError("") }}
+                />
               </div>
 
               <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6">
