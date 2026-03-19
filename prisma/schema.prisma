@@ -17,6 +17,12 @@ model User {
   credits          Int       @default(5)
   brandVerified    Boolean   @default(false)
   brandVerifiedAt  DateTime?
+  companyName      String?
+  industry         String?
+  location         String?
+  website          String?
+  phone            String?
+  about            String?
   createdAt        DateTime  @default(now())
   sessions         Session[]
   accounts         Account[]

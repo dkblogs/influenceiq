@@ -21,12 +21,19 @@ export default function ProfilePage() {
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState("")
 
-  // Editable fields
+  // Editable fields — shared
   const [name, setName] = useState("")
+  // Brand fields
+  const [companyName, setCompanyName] = useState("")
+  const [industry, setIndustry] = useState("")
+  const [location, setLocation] = useState("")
+  const [website, setWebsite] = useState("")
+  const [phone, setPhone] = useState("")
+  const [about, setAbout] = useState("")
+  // Influencer fields
   const [niche, setNiche] = useState("")
   const [platform, setPlatform] = useState("")
   const [bio, setBio] = useState("")
-  const [location, setLocation] = useState("")
   const [instagramHandle, setInstagramHandle] = useState("")
   const [youtubeHandle, setYoutubeHandle] = useState("")
 
@@ -43,6 +50,12 @@ export default function ProfilePage() {
         setProfile(d.user)
         setInfluencer(d.influencer)
         setName(d.user?.name || "")
+        setCompanyName(d.user?.companyName || "")
+        setIndustry(d.user?.industry || "")
+        setLocation(d.user?.location || "")
+        setWebsite(d.user?.website || "")
+        setPhone(d.user?.phone || "")
+        setAbout(d.user?.about || "")
         if (d.influencer) {
           setNiche(d.influencer.niche || "")
           setPlatform(d.influencer.platform || "")
@@ -64,7 +77,7 @@ export default function ProfilePage() {
     const res = await fetch("/api/profile", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, niche, platform, bio, location, instagramHandle, youtubeHandle }),
+      body: JSON.stringify({ name, companyName, industry, location, website, phone, about, niche, platform, bio, instagramHandle, youtubeHandle }),
     })
     const data = await res.json()
     setSaving(false)
@@ -158,6 +171,61 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+
+          {/* Brand-specific: Company Details */}
+          {isBrand && (
+            <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6">
+              <h2 className="font-semibold text-[#F8FAFC] mb-5 text-sm uppercase tracking-wide">Company Details</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className={labelClass}>Brand / Company Name</label>
+                  <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)}
+                    className={inputClass} placeholder="Your company or brand name" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Industry / Niche</label>
+                    <select value={industry} onChange={e => setIndustry(e.target.value)} className={selectClass}>
+                      <option value="">Select industry</option>
+                      <option>Fashion</option>
+                      <option>Beauty</option>
+                      <option>Tech</option>
+                      <option>Food & Beverage</option>
+                      <option>Health & Fitness</option>
+                      <option>Travel</option>
+                      <option>Education</option>
+                      <option>Finance</option>
+                      <option>Entertainment</option>
+                      <option>Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Location</label>
+                    <input type="text" value={location} onChange={e => setLocation(e.target.value)}
+                      className={inputClass} placeholder="City, State" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Website URL</label>
+                    <input type="url" value={website} onChange={e => setWebsite(e.target.value)}
+                      className={inputClass} placeholder="https://yourbrand.com" />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Phone Number</label>
+                    <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+                      className={inputClass} placeholder="+91 98765 43210" />
+                  </div>
+                </div>
+                <div>
+                  <label className={labelClass}>About / Description</label>
+                  <textarea value={about} onChange={e => setAbout(e.target.value)}
+                    rows={3} className={`${inputClass} resize-none`}
+                    placeholder="Brief description of your brand, what you do, and what kind of influencers you're looking for..." />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Brand-specific: Verification section */}
           {isBrand && (
