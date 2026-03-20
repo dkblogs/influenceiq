@@ -3,6 +3,7 @@ import { useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
+import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
 
 export default function PostCampaign() {
   const { data: session } = useSession()
@@ -48,7 +49,7 @@ export default function PostCampaign() {
     const data = await res.json()
 
     if (!res.ok) {
-      setError(data.error)
+      setError(res.status === 402 ? "CREDITS" : (data.error || "Failed to post campaign"))
       setLoading(false)
       return
     }
@@ -87,8 +88,10 @@ export default function PostCampaign() {
           <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 md:p-8">
 
             {error && (
-              <div className="bg-red-500/10 text-red-400 text-sm px-4 py-3 rounded-lg mb-6 border border-red-500/20">
-                {error}
+              <div className="bg-red-500/10 px-4 py-3 rounded-lg mb-6 border border-red-500/20">
+                {error === "CREDITS"
+                  ? <InsufficientCreditsError action="post a campaign" />
+                  : <span className="text-sm text-red-400">{error}</span>}
               </div>
             )}
 

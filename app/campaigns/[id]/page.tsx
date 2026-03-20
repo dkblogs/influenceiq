@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useParams, useRouter } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
+import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
 
 export default function CampaignDetailPage() {
   const params = useParams()
@@ -42,7 +43,7 @@ export default function CampaignDetailPage() {
     setApplying(false)
     if (!res.ok) {
       if (data.error?.includes("already applied")) { setApplied(true); return }
-      setApplyError(data.error || "Failed to apply")
+      setApplyError(res.status === 402 ? "CREDITS" : (data.error || "Failed to apply"))
       return
     }
     setApplied(true)
@@ -156,8 +157,10 @@ export default function CampaignDetailPage() {
           </div>
         )}
         {applyError && (
-          <div className="bg-red-500/10 text-red-400 px-4 py-3 rounded-xl border border-red-500/20 text-sm mb-4">
-            {applyError}
+          <div className="bg-red-500/10 px-4 py-3 rounded-xl border border-red-500/20 mb-4">
+            {applyError === "CREDITS"
+              ? <InsufficientCreditsError action="apply to this campaign" />
+              : <span className="text-sm text-red-400">{applyError}</span>}
           </div>
         )}
 

@@ -14,7 +14,7 @@ export async function POST(request) {
 
     const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { credits: true } })
     if (!user || user.credits < 1) {
-      return Response.json({ error: "Insufficient credits. You need 1 credit to generate a bio." }, { status: 402 })
+      return Response.json({ error: "Insufficient credits", redirectTo: "/pricing" }, { status: 402 })
     }
 
     const body = await request.json()

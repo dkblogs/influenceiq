@@ -18,7 +18,7 @@ export async function POST(request) {
     }
 
     if (user.credits < 5) {
-      return Response.json({ error: "Not enough credits. You need 5 credits to unlock a contact." }, { status: 400 })
+      return Response.json({ error: "Insufficient credits", redirectTo: "/pricing" }, { status: 402 })
     }
 
     const existing = await prisma.unlockedContact.findUnique({

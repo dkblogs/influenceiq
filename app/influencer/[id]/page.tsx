@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useParams, useRouter } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
+import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
 
 function firstName(name: string) {
   return name?.split(" ")[0] || name
@@ -128,7 +129,7 @@ export default function InfluencerProfile() {
       body: JSON.stringify({ influencerId: params.id, userId: session.user.id }),
     })
     const data = await res.json()
-    if (!res.ok) { setError(data.error); setUnlocking(false); return }
+    if (!res.ok) { setError(res.status === 402 ? "CREDITS" : (data.error || "Failed to unlock")); setUnlocking(false); return }
     setUnlocked(true)
     setCredits(data.newCredits)
     setInfluencer((prev: any) => ({ ...prev, email: data.email, phone: data.phone }))
@@ -138,15 +139,14 @@ export default function InfluencerProfile() {
   async function generateScore() {
     if (!session) { router.push("/login"); return }
     setScoring(true)
-    if (credits < 3) { alert("You need 3 credits to generate an AI score."); setScoring(false); return }
     const res = await fetch("/api/ai-score", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ influencerId: params.id }),
     })
     const data = await res.json()
-    if (data.success) { setAiScores(data.scores); setCredits((prev) => prev - 3) }
-    else { alert("Failed to generate score. Please try again.") }
+    if (data.success) { setAiScores(data.scores); setCredits((prev: number) => prev - 3) }
+    else { setError(res.status === 402 ? "CREDITS" : (data.error || "Failed to generate score")) }
     setScoring(false)
   }
 
@@ -510,7 +510,11 @@ export default function InfluencerProfile() {
                   Unlock this influencer's email and phone number to contact them directly.
                 </p>
                 {error && (
-                  <div className="bg-red-500/10 text-red-400 text-sm px-4 py-3 rounded-lg mb-4 border border-red-500/20">{error}</div>
+                  <div className="bg-red-500/10 px-4 py-3 rounded-lg mb-4 border border-red-500/20">
+                    {error === "CREDITS"
+                      ? <InsufficientCreditsError action="unlock this contact" />
+                      : <span className="text-sm text-red-400">{error}</span>}
+                  </div>
                 )}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-[#0D0D1A] border border-[#1E1E2E] rounded-xl mb-4">
                   <div className="flex-1">

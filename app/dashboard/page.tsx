@@ -1,6 +1,7 @@
 "use client"
 import { useSession } from "next-auth/react"
 import Navbar from "@/app/components/Navbar"
+import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
@@ -280,7 +281,7 @@ export default function Dashboard() {
     const data = await res.json()
     setAiLoading(false)
     if (!res.ok) {
-      setAiError(data.error || "Failed to generate report")
+      setAiError(res.status === 402 ? "CREDITS" : (data.error || "Failed to generate report"))
       return
     }
     setAiReport(data.report)
@@ -473,7 +474,11 @@ export default function Dashboard() {
 
             {/* Error */}
             {aiError && (
-              <div className="bg-red-500/10 text-red-400 text-sm px-4 py-3 rounded-lg border border-red-500/20 mb-4">{aiError}</div>
+              <div className="bg-red-500/10 px-4 py-3 rounded-lg border border-red-500/20 mb-4">
+                {aiError === "CREDITS"
+                  ? <InsufficientCreditsError action="generate AI report" />
+                  : <span className="text-sm text-red-400">{aiError}</span>}
+              </div>
             )}
 
             {/* Report exists */}

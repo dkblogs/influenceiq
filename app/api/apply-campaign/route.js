@@ -18,7 +18,7 @@ export async function POST(request) {
     }
 
     if (user.credits < 2) {
-      return Response.json({ error: "Not enough credits. You need 2 credits to apply." }, { status: 400 })
+      return Response.json({ error: "Insufficient credits", redirectTo: "/pricing" }, { status: 402 })
     }
 
     const existing = await prisma.campaignApplication.findUnique({

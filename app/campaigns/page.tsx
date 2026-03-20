@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import Navbar from "@/app/components/Navbar"
+import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
 
 const hardcodedCampaigns = [
   { id: "seed-1", brand: "FreshKart", brandInitials: "FK", brandColor: "bg-orange-500", title: "Summer grocery launch campaign", description: "Looking for food and lifestyle influencers to promote our new summer grocery collection. Must create 2 Instagram reels and 3 stories.", niche: "Food", platform: "Instagram", budget: "₹15,000", deadline: "15 days left", applicants: 12, slots: 3, location: "Pan India", minFollowers: "10K", status: "Open" },
@@ -80,7 +81,7 @@ export default function Campaigns() {
     const data = await res.json()
 
     if (!res.ok) {
-      setError(data.error)
+      setError(res.status === 402 ? "CREDITS" : (data.error || "Failed to apply"))
       return
     }
 
@@ -103,8 +104,10 @@ export default function Campaigns() {
         </div>
 
         {error && (
-          <div className="bg-red-500/10 text-red-400 text-sm px-4 py-3 rounded-lg mb-6 border border-red-500/20">
-            {error}
+          <div className="bg-red-500/10 px-4 py-3 rounded-lg mb-6 border border-red-500/20">
+            {error === "CREDITS"
+              ? <InsufficientCreditsError action="apply to campaigns" />
+              : <span className="text-sm text-red-400">{error}</span>}
           </div>
         )}
 

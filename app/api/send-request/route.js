@@ -18,7 +18,7 @@ export async function POST(request) {
     }
 
     if (user.credits < 10) {
-      return Response.json({ error: "Not enough credits. You need 10 credits to send a request." }, { status: 400 })
+      return Response.json({ error: "Insufficient credits", redirectTo: "/pricing" }, { status: 402 })
     }
 
     await prisma.user.update({

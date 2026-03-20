@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
+import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
 
 const inputClass = "w-full px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm focus:outline-none focus:border-purple-500 bg-[#0A0A0F] text-[#F8FAFC] placeholder-[#64748B] transition-colors"
 const readonlyClass = "w-full px-4 py-2.5 bg-[#0D0D1A] border border-[#1E1E2E] rounded-lg text-sm text-[#64748B] cursor-not-allowed"
@@ -236,7 +237,7 @@ export default function ProfilePage() {
     })
     const data = await res.json()
     setBioModalLoading(false)
-    if (!res.ok) { setBioModalError(data.error || "Failed to generate bio"); return }
+    if (!res.ok) { setBioModalError(res.status === 402 ? "CREDITS" : (data.error || "Failed to generate bio")); return }
     setBioModalResult(data)
   }
 
@@ -701,7 +702,11 @@ export default function ProfilePage() {
                   </div>
 
                   {bioModalError && (
-                    <div className="bg-red-500/10 text-red-400 text-xs px-3 py-2 rounded-lg border border-red-500/20">{bioModalError}</div>
+                    <div className="bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20">
+                      {bioModalError === "CREDITS"
+                        ? <InsufficientCreditsError action="generate a bio" />
+                        : <span className="text-xs text-red-400">{bioModalError}</span>}
+                    </div>
                   )}
 
                   <button
