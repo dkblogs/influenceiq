@@ -15,7 +15,6 @@ const influencerActions: [string, string][] = [
   ["Browse and discover brands", "Free"],
   ["Receive collaboration requests", "Free"],
   ["Send collaboration request to brand", "10 credits"],
-  ["See who viewed your profile", "5 credits"],
   ["Apply to open brand campaign", "2 credits"],
   ["Get verified badge", "20 credits"],
 ]
