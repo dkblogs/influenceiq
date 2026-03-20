@@ -24,6 +24,8 @@ export default function Join() {
   })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
+  const [message, setMessage] = useState("")
+  const [messageType, setMessageType] = useState<"success" | "error">("success")
   const [fetchingProfile, setFetchingProfile] = useState(false)
   const [fetchStatus, setFetchStatus] = useState<"" | "success" | "error">("")
 
@@ -107,8 +109,9 @@ export default function Join() {
     const data = await res.json()
 
     if (res.status === 409) {
-      setError("Profile already exists — redirecting to dashboard")
-      setTimeout(() => router.push("/dashboard"), 1500)
+      setMessage("Your profile is already set up! Redirecting to your dashboard...")
+      setMessageType("success")
+      setTimeout(() => router.push("/dashboard"), 2500)
       return
     }
     if (!res.ok) {
@@ -289,6 +292,9 @@ export default function Join() {
                 placeholder="Tell brands about yourself, your content style, and audience..." />
             </div>
 
+            {message && (
+              <div className={`text-sm px-4 py-3 rounded-lg border ${messageType === "success" ? "bg-cyan-500/10 text-cyan-300 border-cyan-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{message}</div>
+            )}
             {error && (
               <div className="bg-red-500/10 text-red-400 text-sm px-4 py-3 rounded-lg border border-red-500/20">{error}</div>
             )}

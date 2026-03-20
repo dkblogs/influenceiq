@@ -9,14 +9,6 @@ export async function POST(request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Prevent duplicate profiles
-    const existing = await prisma.influencer.findFirst({
-      where: { userId: session.user.id },
-    })
-    if (existing) {
-      return Response.json({ error: "Influencer profile already exists", influencer: existing }, { status: 409 })
-    }
-
     const body = await request.json()
     const { name, niche, platform, bio, location, followers, engagementRate, handle, email, phone, pricePerPost, instagramHandle, youtubeHandle } = body
 
@@ -30,26 +22,49 @@ export async function POST(request) {
       ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
       : (name.slice(0, 2)).toUpperCase()
 
-    const influencer = await prisma.influencer.create({
-      data: {
-        userId: session.user.id,
-        name,
-        handle: handle ? (handle.startsWith("@") ? handle : `@${handle}`) : `@${(email || name || "user").split("@")[0].replace(/[^a-z0-9]/gi, "_")}`,
-        location: location || "",
-        niche: niche || "Other",
-        platform: platform || "Instagram",
-        followers: followers ? String(followers) : "0",
-        engagement: engagementRate ? `${engagementRate}%` : "0%",
-        score: 50,
-        rate: pricePerPost ? `₹${pricePerPost}/post` : "₹0/post",
-        initials,
-        about: bio || null,
-        email: email || null,
-        phone: phone || null,
-        instagramHandle: instagramHandle ? (instagramHandle.startsWith("@") ? instagramHandle : `@${instagramHandle}`) : null,
-        youtubeHandle: youtubeHandle ? (youtubeHandle.startsWith("@") ? youtubeHandle : `@${youtubeHandle}`) : null,
-      },
+    const derivedHandle = handle
+      ? (handle.startsWith("@") ? handle : `@${handle}`)
+      : `@${(email || name || "user").split("@")[0].replace(/[^a-z0-9]/gi, "_")}`
+
+    const profileData = {
+      name,
+      location: location || "",
+      niche: niche || "Other",
+      platform: platform || "Instagram",
+      followers: followers ? String(followers) : "0",
+      engagement: engagementRate ? `${engagementRate}%` : "0%",
+      rate: pricePerPost ? `₹${pricePerPost}/post` : "₹0/post",
+      initials,
+      about: bio || null,
+      email: email || null,
+      phone: phone || null,
+      instagramHandle: instagramHandle ? (instagramHandle.startsWith("@") ? instagramHandle : `@${instagramHandle}`) : null,
+      youtubeHandle: youtubeHandle ? (youtubeHandle.startsWith("@") ? youtubeHandle : `@${youtubeHandle}`) : null,
+    }
+
+    // Check if a profile already exists for this user
+    const existing = await prisma.influencer.findFirst({
+      where: { userId: session.user.id },
     })
+
+    let influencer
+    if (existing) {
+      // Update existing profile with submitted data
+      influencer = await prisma.influencer.update({
+        where: { id: existing.id },
+        data: profileData,
+      })
+    } else {
+      // Create new profile
+      influencer = await prisma.influencer.create({
+        data: {
+          userId: session.user.id,
+          handle: derivedHandle,
+          score: 50,
+          ...profileData,
+        },
+      })
+    }
 
     return Response.json({ influencer })
   } catch (error) {
