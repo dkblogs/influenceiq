@@ -326,8 +326,13 @@ export default function Dashboard() {
 
         {/* Welcome */}
         <div className="mb-6 md:mb-8">
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-[#F8FAFC]">
-            Welcome back, {user.name} 👋
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-[#F8FAFC] flex flex-wrap items-center gap-2">
+            <span>Welcome back, {user.name} 👋</span>
+            {myInfluencerProfile?.verified && (
+              <span className="inline-flex items-center gap-1 text-sm bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-full px-2 py-0.5 ml-2">
+                ✓ Verified
+              </span>
+            )}
           </h1>
           <p className="text-[#94A3B8] text-sm mt-1">
             You are signed in as {user.role === "brand" ? "a Brand" : "an Influencer"} · {user.email}
