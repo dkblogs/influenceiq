@@ -21,9 +21,12 @@ export default function CampaignDetailPage() {
     if (!id) return
     fetch(`/api/campaigns/${id}`)
       .then(r => r.json())
-      .then(data => setCampaign(data.campaign ?? null))
+      .then(data => {
+        setCampaign(data.campaign ?? null)
+        if (data.alreadyApplied) setApplied(true)
+      })
       .finally(() => setLoading(false))
-  }, [id])
+  }, [id, status])
 
   async function handleApply() {
     const userId = (session?.user as any)?.id
@@ -157,13 +160,12 @@ export default function CampaignDetailPage() {
             {applyError}
           </div>
         )}
-        {applied && !applySuccess && (
-          <div className="bg-[#10B981]/10 text-[#10B981] px-4 py-3 rounded-xl border border-[#10B981]/20 text-sm mb-4">
-            ✓ You have already applied to this campaign.
-          </div>
-        )}
 
-        {canApply && campaign.status === "Open" && (
+        {applied ? (
+          <div className="flex items-center justify-center gap-2 w-full bg-[#10B981]/10 text-[#10B981] py-3 rounded-xl border border-[#10B981]/20 text-sm font-medium">
+            ✅ Already Applied
+          </div>
+        ) : canApply && campaign.status === "Open" ? (
           <button
             onClick={handleApply}
             disabled={applying}
@@ -171,17 +173,15 @@ export default function CampaignDetailPage() {
           >
             {applying ? "Applying..." : "Apply to Campaign — 2 credits"}
           </button>
-        )}
-        {status === "unauthenticated" && (
+        ) : status === "unauthenticated" ? (
           <a href="/login" className="block w-full text-center bg-purple-600 text-white py-3 rounded-xl text-sm font-medium hover:bg-purple-500 transition-colors">
             Log in to apply
           </a>
-        )}
-        {status === "authenticated" && role === "brand" && (
+        ) : status === "authenticated" && role === "brand" ? (
           <div className="text-center text-sm text-[#64748B] py-3">
             Only influencer accounts can apply to campaigns.
           </div>
-        )}
+        ) : null}
 
       </div>
     </main>
