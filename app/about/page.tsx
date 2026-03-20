@@ -1,4 +1,5 @@
 import Navbar from "@/app/components/Navbar"
+import PlatformComparison from "@/app/components/PlatformComparison"
 
 export default function About() {
   return (
@@ -103,6 +104,11 @@ export default function About() {
           </div>
         </div>
       </section>
+
+      <PlatformComparison
+        heading="The InfluenceIQ Difference"
+        subheading="See exactly how much you save compared to other platforms."
+      />
 
       {/* CTA */}
       <section className="px-8 py-16 text-center">

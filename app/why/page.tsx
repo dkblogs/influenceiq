@@ -1,4 +1,5 @@
 import Navbar from "@/app/components/Navbar"
+import PlatformComparison from "@/app/components/PlatformComparison"
 
 export default function Why() {
   return (
@@ -81,6 +82,11 @@ export default function Why() {
           </div>
         </div>
       </section>
+
+      <PlatformComparison
+        heading="Why We're Different"
+        subheading="No commissions. No hidden fees. Ever."
+      />
 
       {/* Comparison */}
       <section className="bg-gray-50 px-8 py-16">
