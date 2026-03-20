@@ -160,6 +160,8 @@ export default function Dashboard() {
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState("")
   const [aiReportsCount, setAiReportsCount] = useState(0)
+  const [campaignApplicationCount, setCampaignApplicationCount] = useState<number | null>(null)
+  const [collaborationRequestCount, setCollaborationRequestCount] = useState<number | null>(null)
   const [portfolioForm, setPortfolioForm] = useState({
     brandName: "", campaignTitle: "", description: "",
     deliverables: "", results: "", mediaUrl: "", completedAt: "",
@@ -195,6 +197,12 @@ export default function Dashboard() {
         .then(data => setBrandCampaigns(data.campaigns || []))
     }
     if (u?.role === "influencer" && u?.id) {
+      fetch("/api/influencer-stats")
+        .then(res => res.json())
+        .then(data => {
+          if (typeof data.campaignApplicationCount === "number") setCampaignApplicationCount(data.campaignApplicationCount)
+          if (typeof data.collaborationRequestCount === "number") setCollaborationRequestCount(data.collaborationRequestCount)
+        })
       fetch(`/api/influencers?userId=${u.id}`)
         .then(res => res.json())
         .then(data => {
@@ -377,21 +385,48 @@ export default function Dashboard() {
             <div className="text-2xl font-bold text-purple-400">{credits ?? "…"}</div>
             <div className="text-xs text-[#64748B] mt-1">Never expire</div>
           </div>
-          <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
-            <div className="text-sm text-[#94A3B8] mb-1">Influencers unlocked</div>
-            <div className="text-2xl font-bold text-[#F8FAFC]">0</div>
-            <div className="text-xs text-[#64748B] mt-1">Unlock for 5 credits</div>
-          </div>
-          <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
-            <div className="text-sm text-[#94A3B8] mb-1">Proposals sent</div>
-            <div className="text-2xl font-bold text-[#F8FAFC]">0</div>
-            <div className="text-xs text-[#64748B] mt-1">Send for 10 credits</div>
-          </div>
-          <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
-            <div className="text-sm text-[#94A3B8] mb-1">AI reports</div>
-            <div className="text-2xl font-bold text-[#F8FAFC]">{aiReportsCount}</div>
-            <div className="text-xs text-[#64748B] mt-1">Get one for 3 credits</div>
-          </div>
+          {user.role === "brand" ? (
+            <>
+              <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+                <div className="text-sm text-[#94A3B8] mb-1">Influencers unlocked</div>
+                <div className="text-2xl font-bold text-[#F8FAFC]">0</div>
+                <div className="text-xs text-[#64748B] mt-1">Unlock for 5 credits</div>
+              </div>
+              <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+                <div className="text-sm text-[#94A3B8] mb-1">Proposals sent</div>
+                <div className="text-2xl font-bold text-[#F8FAFC]">0</div>
+                <div className="text-xs text-[#64748B] mt-1">Send for 10 credits</div>
+              </div>
+              <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+                <div className="text-sm text-[#94A3B8] mb-1">AI reports</div>
+                <div className="text-2xl font-bold text-[#F8FAFC]">{aiReportsCount}</div>
+                <div className="text-xs text-[#64748B] mt-1">Get one for 3 credits</div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+                <div className="text-sm text-[#94A3B8] mb-1">Campaigns applied</div>
+                <div className="text-2xl font-bold text-[#F8FAFC]">{campaignApplicationCount ?? "…"}</div>
+                <div className="text-xs text-[#64748B] mt-1">2 credits per application</div>
+              </div>
+              <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+                <div className="text-sm text-[#94A3B8] mb-1">Collaboration requests</div>
+                <div className="text-2xl font-bold text-[#F8FAFC]">{collaborationRequestCount ?? "…"}</div>
+                <div className="text-xs text-[#64748B] mt-1">Sent by you</div>
+              </div>
+              <a
+                href={myInfluencerProfile?.id ? `/report/${myInfluencerProfile.id}` : "#"}
+                className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block"
+              >
+                <div className="text-sm text-[#94A3B8] mb-1">AI reports generated</div>
+                <div className="text-2xl font-bold text-[#F8FAFC]">
+                  {myInfluencerProfile?.aiReportGeneratedAt ? 1 + aiReportsCount : aiReportsCount}
+                </div>
+                <div className="text-xs text-purple-400 mt-1">View report →</div>
+              </a>
+            </>
+          )}
         </div>
 
         {/* AI Score — influencers only */}
