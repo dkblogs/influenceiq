@@ -165,8 +165,12 @@ export default function DiscoverInfluencers() {
                     <div className="flex gap-1 flex-wrap mb-3">
                       <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full">{inf.niche}</span>
                       <span className="text-xs bg-[#1E1E2E] text-[#94A3B8] px-2 py-0.5 rounded-full">{inf.platform}</span>
-                      {inf.instagramVerified && <span className="text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded-full">IG ✓</span>}
-                      {inf.youtubeVerified && <span className="text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded-full">YT ✓</span>}
+                      {inf.instagramVerified && (
+                        <span className="text-xs bg-green-500/20 border border-green-500/40 text-green-300 px-2 py-0.5 rounded-full flex items-center gap-0.5">Instagram <span className="text-green-400">✓</span></span>
+                      )}
+                      {inf.youtubeVerified && (
+                        <span className="text-xs bg-green-500/20 border border-green-500/40 text-green-300 px-2 py-0.5 rounded-full flex items-center gap-0.5">YouTube <span className="text-green-400">✓</span></span>
+                      )}
                       {!inf.instagramVerified && !inf.youtubeVerified && (
                         <span className="text-xs bg-[#1E1E2E] text-[#64748B] px-2 py-0.5 rounded-full">Unverified</span>
                       )}
@@ -222,8 +226,12 @@ export default function DiscoverInfluencers() {
                     <div className="flex gap-1 flex-wrap mb-3">
                       <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full">{inf.niche}</span>
                       <span className="text-xs bg-[#1E1E2E] text-[#94A3B8] px-2 py-0.5 rounded-full">{inf.platform}</span>
-                      {inf.instagramVerified && <span className="text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded-full">IG ✓</span>}
-                      {inf.youtubeVerified && <span className="text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded-full">YT ✓</span>}
+                      {inf.instagramVerified && (
+                        <span className="text-xs bg-green-500/20 border border-green-500/40 text-green-300 px-2 py-0.5 rounded-full flex items-center gap-0.5">Instagram <span className="text-green-400">✓</span></span>
+                      )}
+                      {inf.youtubeVerified && (
+                        <span className="text-xs bg-green-500/20 border border-green-500/40 text-green-300 px-2 py-0.5 rounded-full flex items-center gap-0.5">YouTube <span className="text-green-400">✓</span></span>
+                      )}
                       {!inf.instagramVerified && !inf.youtubeVerified && (
                         <span className="text-xs bg-[#1E1E2E] text-[#64748B] px-2 py-0.5 rounded-full">Unverified</span>
                       )}

@@ -256,32 +256,38 @@ export default function InfluencerProfile() {
                 <span className="text-sm bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full border border-purple-500/20">{influencer.niche}</span>
                 <span className="text-sm bg-[#1E1E2E] text-[#94A3B8] px-3 py-1 rounded-full">{influencer.platform}</span>
                 {(influencer.instagramHandle || influencer.instagramVerified) && (
-                  influencer.instagramVerified ? (
-                    <span className="text-sm bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-3 py-1 rounded-full">
-                      {tier3
-                        ? <>{influencer.instagramHandle} ✓{influencer.instagramFollowers ? ` · ${influencer.instagramFollowers.toLocaleString()}` : ""}</>
-                        : <>IG ✓ <span className="blur-sm select-none text-xs">••••••••</span></>
-                      }
-                    </span>
-                  ) : tier3 ? (
-                    <span className="text-sm bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-3 py-1 rounded-full">
-                      {influencer.instagramHandle} ⚠ Unverified
-                    </span>
-                  ) : null
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${
+                    influencer.instagramVerified
+                      ? "bg-green-500/20 border border-green-500/40 text-green-300"
+                      : "bg-[#1E1E2E] border border-[#1E1E2E] text-[#94A3B8]"
+                  }`}>
+                    {tier3
+                      ? influencer.instagramHandle || "Instagram"
+                      : "Instagram"}
+                    {influencer.instagramVerified
+                      ? <span className="text-green-400 text-xs">✓</span>
+                      : tier3 && <span className="text-yellow-500 text-xs">⚠</span>}
+                    {tier3 && influencer.instagramVerified && influencer.instagramFollowers
+                      ? <span className="text-green-400/70 text-xs">· {influencer.instagramFollowers.toLocaleString()}</span>
+                      : !tier3 && <span className="blur-sm select-none text-xs">••••</span>}
+                  </span>
                 )}
                 {(influencer.youtubeHandle || influencer.youtubeVerified) && (
-                  influencer.youtubeVerified ? (
-                    <span className="text-sm bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-3 py-1 rounded-full">
-                      {tier3
-                        ? <>{influencer.youtubeHandle} ✓{influencer.youtubeFollowers ? ` · ${influencer.youtubeFollowers.toLocaleString()}` : ""}</>
-                        : <>YT ✓ <span className="blur-sm select-none text-xs">••••••••</span></>
-                      }
-                    </span>
-                  ) : tier3 ? (
-                    <span className="text-sm bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-3 py-1 rounded-full">
-                      {influencer.youtubeHandle} ⚠ Unverified
-                    </span>
-                  ) : null
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${
+                    influencer.youtubeVerified
+                      ? "bg-green-500/20 border border-green-500/40 text-green-300"
+                      : "bg-[#1E1E2E] border border-[#1E1E2E] text-[#94A3B8]"
+                  }`}>
+                    {tier3
+                      ? influencer.youtubeHandle || "YouTube"
+                      : "YouTube"}
+                    {influencer.youtubeVerified
+                      ? <span className="text-green-400 text-xs">✓</span>
+                      : tier3 && <span className="text-yellow-500 text-xs">⚠</span>}
+                    {tier3 && influencer.youtubeVerified && influencer.youtubeFollowers
+                      ? <span className="text-green-400/70 text-xs">· {influencer.youtubeFollowers.toLocaleString()}</span>
+                      : !tier3 && <span className="blur-sm select-none text-xs">••••</span>}
+                  </span>
                 )}
               </div>
               <p className="text-[#94A3B8] text-sm leading-relaxed">{influencer.about}</p>
