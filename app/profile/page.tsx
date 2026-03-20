@@ -151,7 +151,8 @@ export default function ProfilePage() {
   const [industry, setIndustry] = useState("")
   const [location, setLocation] = useState("")
   const [website, setWebsite] = useState("")
-  const [phone, setPhone] = useState("")
+  const [phoneCode, setPhoneCode] = useState("+91")
+  const [phoneNumber, setPhoneNumber] = useState("")
   const [about, setAbout] = useState("")
   // Influencer fields
   const [niche, setNiche] = useState("")
@@ -202,7 +203,11 @@ export default function ProfilePage() {
         setIndustry(d.user?.industry || "")
         setLocation(d.user?.location || "")
         setWebsite(d.user?.website || "")
-        setPhone(d.user?.phone || "")
+        const rawPhone = d.user?.phone || ""
+        const knownCodes = ["+880", "+971", "+977", "+94", "+92", "+91", "+65", "+66", "+63", "+62", "+61", "+60", "+55", "+49", "+44", "+33", "+27", "+86", "+81", "+1"]
+        const matchedCode = knownCodes.find(c => rawPhone.startsWith(c))
+        if (matchedCode) { setPhoneCode(matchedCode); setPhoneNumber(rawPhone.slice(matchedCode.length)) }
+        else { setPhoneCode("+91"); setPhoneNumber(rawPhone) }
         setAbout(d.user?.about || "")
         if (d.influencer) {
           setNiche(d.influencer.niche || "")
@@ -280,7 +285,7 @@ export default function ProfilePage() {
     const res = await fetch("/api/profile", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, companyName, industry, location, website, phone, about, niche, platform, bio, instagramHandle, youtubeHandle }),
+      body: JSON.stringify({ name, companyName, industry, location, website, phone: phoneCode + phoneNumber, about, niche, platform, bio, instagramHandle, youtubeHandle }),
     })
     const data = await res.json()
     setSaving(false)
@@ -419,7 +424,7 @@ export default function ProfilePage() {
           const fields = [
             { label: "Bio", done: !!bio?.trim(), weight: 15, fieldId: "bio-field" },
             { label: "Location", done: !!location?.trim(), weight: 15, fieldId: "location-field" },
-            { label: "Phone number", done: !!phone?.trim(), weight: 20, fieldId: "phone-field" },
+            { label: "Phone number", done: !!phoneNumber?.trim(), weight: 20, fieldId: "phone-field" },
             { label: "Social handle verified", done: hasVerifiedHandle, weight: 25, href: "#social-handles" },
             { label: "AI Score & Report", done: !!influencer?.aiReportGeneratedAt, weight: 25, href: "/dashboard" },
           ]
@@ -437,7 +442,7 @@ export default function ProfilePage() {
                   style={{ width: `${score}%` }}
                 />
               </div>
-              {!phone?.trim() && (
+              {!phoneNumber?.trim() && (
                 <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mb-3">
                   <span className="text-red-400 flex-shrink-0 mt-0.5">⚠️</span>
                   <p className="text-sm text-red-400">
@@ -537,8 +542,31 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <label className={labelClass}>Phone Number</label>
-                    <input id="phone-field" type="tel" value={phone} onChange={e => setPhone(e.target.value)}
-                      className={inputClass} placeholder="+91 98765 43210" />
+                    <div className="flex gap-2">
+                      <select value={phoneCode} onChange={e => setPhoneCode(e.target.value)} className="bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-[#F8FAFC] text-sm w-32 shrink-0 focus:outline-none focus:border-purple-500">
+                        <option value="+91">🇮🇳 +91</option>
+                        <option value="+1">🇺🇸 +1</option>
+                        <option value="+44">🇬🇧 +44</option>
+                        <option value="+61">🇦🇺 +61</option>
+                        <option value="+971">🇦🇪 +971</option>
+                        <option value="+65">🇸🇬 +65</option>
+                        <option value="+60">🇲🇾 +60</option>
+                        <option value="+62">🇮🇩 +62</option>
+                        <option value="+63">🇵🇭 +63</option>
+                        <option value="+66">🇹🇭 +66</option>
+                        <option value="+880">🇧🇩 +880</option>
+                        <option value="+92">🇵🇰 +92</option>
+                        <option value="+94">🇱🇰 +94</option>
+                        <option value="+977">🇳🇵 +977</option>
+                        <option value="+27">🇿🇦 +27</option>
+                        <option value="+55">🇧🇷 +55</option>
+                        <option value="+49">🇩🇪 +49</option>
+                        <option value="+33">🇫🇷 +33</option>
+                        <option value="+81">🇯🇵 +81</option>
+                        <option value="+86">🇨🇳 +86</option>
+                      </select>
+                      <input id="phone-field" type="tel" inputMode="numeric" maxLength={10} value={phoneNumber} onChange={e => setPhoneNumber(e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="10-digit number" className="flex-1 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-[#F8FAFC] text-sm focus:outline-none focus:border-purple-500 placeholder-[#64748B]" />
+                    </div>
                   </div>
                 </div>
                 <div>
@@ -666,8 +694,31 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <label className={labelClass}>Phone Number</label>
-                    <input id="phone-field" type="tel" value={phone} onChange={e => setPhone(e.target.value)}
-                      className={inputClass} placeholder="+91 98765 43210" />
+                    <div className="flex gap-2">
+                      <select value={phoneCode} onChange={e => setPhoneCode(e.target.value)} className="bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-[#F8FAFC] text-sm w-32 shrink-0 focus:outline-none focus:border-purple-500">
+                        <option value="+91">🇮🇳 +91</option>
+                        <option value="+1">🇺🇸 +1</option>
+                        <option value="+44">🇬🇧 +44</option>
+                        <option value="+61">🇦🇺 +61</option>
+                        <option value="+971">🇦🇪 +971</option>
+                        <option value="+65">🇸🇬 +65</option>
+                        <option value="+60">🇲🇾 +60</option>
+                        <option value="+62">🇮🇩 +62</option>
+                        <option value="+63">🇵🇭 +63</option>
+                        <option value="+66">🇹🇭 +66</option>
+                        <option value="+880">🇧🇩 +880</option>
+                        <option value="+92">🇵🇰 +92</option>
+                        <option value="+94">🇱🇰 +94</option>
+                        <option value="+977">🇳🇵 +977</option>
+                        <option value="+27">🇿🇦 +27</option>
+                        <option value="+55">🇧🇷 +55</option>
+                        <option value="+49">🇩🇪 +49</option>
+                        <option value="+33">🇫🇷 +33</option>
+                        <option value="+81">🇯🇵 +81</option>
+                        <option value="+86">🇨🇳 +86</option>
+                      </select>
+                      <input id="phone-field" type="tel" inputMode="numeric" maxLength={10} value={phoneNumber} onChange={e => setPhoneNumber(e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="10-digit number" className="flex-1 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-[#F8FAFC] text-sm focus:outline-none focus:border-purple-500 placeholder-[#64748B]" />
+                    </div>
                   </div>
                   <div id="bio">
                     <div className="flex items-center justify-between mb-1.5">
