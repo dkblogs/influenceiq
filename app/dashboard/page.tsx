@@ -167,60 +167,65 @@ export default function Dashboard() {
     brandName: "", campaignTitle: "", description: "",
     deliverables: "", results: "", mediaUrl: "", completedAt: "",
   })
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login")
+      return
     }
-  }, [status, router])
-
-  useEffect(() => {
-    async function loadCredits() {
-      if (!session?.user?.id) return
-      console.log("Loading credits for userId:", session?.user?.id)
-      try {
-        const res = await fetch(`/api/user-credits?userId=${(session.user as any).id}`)
-        const data = await res.json()
-        if (typeof data.credits === "number") {
-          setCredits(data.credits)
-        }
-        setBrandVerified(data.brandVerified ?? false)
-      } catch (err) {
-        console.error("Failed to load credits:", err)
-      }
-    }
-    loadCredits()
+    if (status !== "authenticated") return
 
     const u = session?.user as any
-    if (u?.role === "brand" && u?.id) {
-      fetch(`/api/campaigns?brandId=${u.id}`)
-        .then(res => res.json())
-        .then(data => setBrandCampaigns(data.campaigns || []))
-    }
-    if (u?.role === "influencer" && u?.id) {
-      fetch("/api/influencer-stats")
-        .then(res => res.json())
-        .then(data => {
-          if (typeof data.campaignApplicationCount === "number") setCampaignApplicationCount(data.campaignApplicationCount)
-          if (typeof data.collaborationRequestCount === "number") setCollaborationRequestCount(data.collaborationRequestCount)
-        })
-      fetch(`/api/influencers?userId=${u.id}`)
-        .then(res => res.json())
-        .then(data => {
-          console.log("Influencer profile lookup for userId:", u.id, "result:", data.influencers)
-          const inf = (data.influencers || [])[0] || null
+    if (!u?.id) return
+
+    async function loadDashboard() {
+      setLoading(true)
+      try {
+        const [creditsRes, influencerRes, statsRes, brandCampaignsRes] = await Promise.all([
+          fetch(`/api/user-credits?userId=${u.id}`),
+          u.role === "influencer" ? fetch(`/api/influencers?userId=${u.id}`) : Promise.resolve(null),
+          u.role === "influencer" ? fetch(`/api/influencer-stats`) : Promise.resolve(null),
+          u.role === "brand" ? fetch(`/api/campaigns?brandId=${u.id}`) : Promise.resolve(null),
+        ])
+
+        const creditsData = await creditsRes.json()
+        if (typeof creditsData.credits === "number") setCredits(creditsData.credits)
+        setBrandVerified(creditsData.brandVerified ?? false)
+
+        if (influencerRes) {
+          const influencerData = await influencerRes.json()
+          const inf = (influencerData.influencers || [])[0] ?? null
           setMyInfluencerProfile(inf)
           if (inf?.aiReportFull) {
             try { setAiReport(JSON.parse(inf.aiReportFull)) } catch {}
           }
           if (inf?.id) {
-            fetch(`/api/portfolio?influencerId=${inf.id}`)
-              .then(r => r.json())
-              .then(d => setPortfolioItems(d.items || []))
+            const portfolioRes = await fetch(`/api/portfolio?influencerId=${inf.id}`)
+            const portfolioData = await portfolioRes.json()
+            setPortfolioItems(portfolioData.items || [])
           }
-        })
+        }
+
+        if (statsRes) {
+          const statsData = await statsRes.json()
+          if (typeof statsData.campaignApplicationCount === "number") setCampaignApplicationCount(statsData.campaignApplicationCount)
+          if (typeof statsData.collaborationRequestCount === "number") setCollaborationRequestCount(statsData.collaborationRequestCount)
+        }
+
+        if (brandCampaignsRes) {
+          const brandCampaignsData = await brandCampaignsRes.json()
+          setBrandCampaigns(brandCampaignsData.campaigns || [])
+        }
+      } catch (error) {
+        console.error("Dashboard load error:", error)
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [session?.user?.id])
+
+    loadDashboard()
+  }, [session?.user?.id, session?.user?.role, status])
 
   function showToast(msg: string) {
     setPortfolioToast(msg)
@@ -385,55 +390,67 @@ export default function Dashboard() {
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
-          <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
-            <div className="text-sm text-[#94A3B8] mb-1">Credits remaining</div>
-            <div className="text-2xl font-bold text-purple-400">{credits ?? "…"}</div>
-            <div className="text-xs text-[#64748B] mt-1">Never expire</div>
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+            {[1, 2, 3, 4].map(n => (
+              <div key={n} className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] animate-pulse">
+                <div className="h-3 bg-[#1E1E2E] rounded w-3/4 mb-3" />
+                <div className="h-8 bg-[#1E1E2E] rounded w-1/2 mb-2" />
+                <div className="h-2.5 bg-[#1E1E2E] rounded w-2/3" />
+              </div>
+            ))}
           </div>
-          {user.role === "brand" ? (
-            <>
-              <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
-                <div className="text-sm text-[#94A3B8] mb-1">Influencers unlocked</div>
-                <div className="text-2xl font-bold text-[#F8FAFC]">0</div>
-                <div className="text-xs text-[#64748B] mt-1">Unlock for 5 credits</div>
-              </div>
-              <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
-                <div className="text-sm text-[#94A3B8] mb-1">Proposals sent</div>
-                <div className="text-2xl font-bold text-[#F8FAFC]">0</div>
-                <div className="text-xs text-[#64748B] mt-1">Send for 10 credits</div>
-              </div>
-              <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
-                <div className="text-sm text-[#94A3B8] mb-1">AI reports</div>
-                <div className="text-2xl font-bold text-[#F8FAFC]">{aiReportsCount}</div>
-                <div className="text-xs text-[#64748B] mt-1">Get one for 3 credits</div>
-              </div>
-            </>
-          ) : (
-            <>
-              <a href="/dashboard/campaigns-applied" className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block">
-                <div className="text-sm text-[#94A3B8] mb-1">Campaigns applied</div>
-                <div className="text-2xl font-bold text-[#F8FAFC]">{campaignApplicationCount ?? "…"}</div>
-                <div className="text-xs text-purple-400 mt-1">View history →</div>
-              </a>
-              <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
-                <div className="text-sm text-[#94A3B8] mb-1">Collaboration requests</div>
-                <div className="text-2xl font-bold text-[#F8FAFC]">{collaborationRequestCount ?? "…"}</div>
-                <div className="text-xs text-[#64748B] mt-1">Sent by you</div>
-              </div>
-              <a
-                href={myInfluencerProfile?.id ? `/report/${myInfluencerProfile.id}` : "#"}
-                className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block"
-              >
-                <div className="text-sm text-[#94A3B8] mb-1">AI reports generated</div>
-                <div className="text-2xl font-bold text-[#F8FAFC]">
-                  {myInfluencerProfile?.aiReportGeneratedAt ? 1 + aiReportsCount : aiReportsCount}
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+            <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+              <div className="text-sm text-[#94A3B8] mb-1">Credits remaining</div>
+              <div className="text-2xl font-bold text-purple-400">{credits ?? 0}</div>
+              <div className="text-xs text-[#64748B] mt-1">Never expire</div>
+            </div>
+            {user.role === "brand" ? (
+              <>
+                <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+                  <div className="text-sm text-[#94A3B8] mb-1">Influencers unlocked</div>
+                  <div className="text-2xl font-bold text-[#F8FAFC]">0</div>
+                  <div className="text-xs text-[#64748B] mt-1">Unlock for 5 credits</div>
                 </div>
-                <div className="text-xs text-purple-400 mt-1">View report →</div>
-              </a>
-            </>
-          )}
-        </div>
+                <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+                  <div className="text-sm text-[#94A3B8] mb-1">Proposals sent</div>
+                  <div className="text-2xl font-bold text-[#F8FAFC]">0</div>
+                  <div className="text-xs text-[#64748B] mt-1">Send for 10 credits</div>
+                </div>
+                <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+                  <div className="text-sm text-[#94A3B8] mb-1">AI reports</div>
+                  <div className="text-2xl font-bold text-[#F8FAFC]">{aiReportsCount}</div>
+                  <div className="text-xs text-[#64748B] mt-1">Get one for 3 credits</div>
+                </div>
+              </>
+            ) : (
+              <>
+                <a href="/dashboard/campaigns-applied" className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block">
+                  <div className="text-sm text-[#94A3B8] mb-1">Campaigns applied</div>
+                  <div className="text-2xl font-bold text-[#F8FAFC]">{campaignApplicationCount ?? 0}</div>
+                  <div className="text-xs text-purple-400 mt-1">View history →</div>
+                </a>
+                <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+                  <div className="text-sm text-[#94A3B8] mb-1">Collaboration requests</div>
+                  <div className="text-2xl font-bold text-[#F8FAFC]">{collaborationRequestCount ?? 0}</div>
+                  <div className="text-xs text-[#64748B] mt-1">Sent by you</div>
+                </div>
+                <a
+                  href={myInfluencerProfile?.id ? `/report/${myInfluencerProfile.id}` : "#"}
+                  className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block"
+                >
+                  <div className="text-sm text-[#94A3B8] mb-1">AI reports generated</div>
+                  <div className="text-2xl font-bold text-[#F8FAFC]">
+                    {myInfluencerProfile?.aiReportGeneratedAt ? 1 + aiReportsCount : aiReportsCount}
+                  </div>
+                  <div className="text-xs text-purple-400 mt-1">View report →</div>
+                </a>
+              </>
+            )}
+          </div>
+        )}
 
         {/* AI Score — influencers only */}
         {user.role === "influencer" && (
@@ -611,7 +628,7 @@ export default function Dashboard() {
           <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6">
             <h2 className="font-medium text-[#F8FAFC] mb-4">Your credits</h2>
             <div className="text-center py-4">
-              <div className="text-5xl font-bold text-purple-400 mb-1">{credits ?? "…"}</div>
+              <div className="text-5xl font-bold text-purple-400 mb-1">{loading ? <span className="inline-block w-16 h-10 bg-[#1E1E2E] rounded animate-pulse" /> : (credits ?? 0)}</div>
               <div className="text-sm text-[#64748B] mb-6">credits remaining</div>
               <a href="/pricing" className="block w-full bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 text-center transition-colors shadow-lg shadow-purple-500/20">
                 Buy credits
