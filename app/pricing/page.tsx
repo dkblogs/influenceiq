@@ -2,6 +2,75 @@
 import { useSession } from "next-auth/react"
 import Navbar from "@/app/components/Navbar"
 
+const brandActions: [string, string][] = [
+  ["Browse and search influencers", "Free"],
+  ["Unlock influencer contact details", "5 credits"],
+  ["Full AI scoring report", "3 credits"],
+  ["Send collaboration request", "10 credits"],
+  ["Post an open campaign", "15 credits"],
+]
+
+const influencerActions: [string, string][] = [
+  ["List your profile", "Free"],
+  ["Browse and discover brands", "Free"],
+  ["Receive collaboration requests", "Free"],
+  ["Send collaboration request to brand", "10 credits"],
+  ["See who viewed your profile", "5 credits"],
+  ["Apply to open brand campaign", "2 credits"],
+  ["Get verified badge", "20 credits"],
+]
+
+function ActionRow({ action, cost }: { action: string; cost: string }) {
+  return (
+    <div className="flex justify-between items-center py-2 border-b border-[#1E1E2E]">
+      <span className="text-sm text-[#94A3B8]">{action}</span>
+      <span className={`text-sm font-medium whitespace-nowrap ml-4 ${cost === "Free" ? "text-[#10B981]" : "text-purple-400"}`}>{cost}</span>
+    </div>
+  )
+}
+
+function ActionCosts() {
+  const { data: session, status } = useSession()
+  const role = status === "authenticated" ? session?.user?.role : null
+
+  const showBrand = !role || role === "brand"
+  const showInfluencer = !role || role === "influencer"
+  const singleColumn = role === "brand" || role === "influencer"
+  const heading = role ? "What each action costs you" : "What each action costs"
+  const subheading = role ? "" : "One credit system for both brands and influencers."
+
+  return (
+    <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6 md:p-8 mb-8">
+      <h2 className="text-xl font-bold tracking-tight text-[#F8FAFC] mb-2">{heading}</h2>
+      {subheading && <p className="text-sm text-[#64748B] mb-6">{subheading}</p>}
+      <div className={`grid grid-cols-1 gap-6 md:gap-8 ${!singleColumn ? "md:grid-cols-2" : "max-w-lg mx-auto"}`}>
+        {showBrand && (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-6 h-6 bg-cyan-500/10 rounded-md flex items-center justify-center text-xs font-medium text-cyan-400 border border-cyan-500/20">B</div>
+              <span className="font-medium text-[#F8FAFC] text-sm">For Brands</span>
+            </div>
+            <div className="space-y-3">
+              {brandActions.map(([action, cost]) => <ActionRow key={action} action={action} cost={cost} />)}
+            </div>
+          </div>
+        )}
+        {showInfluencer && (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-6 h-6 bg-purple-500/10 rounded-md flex items-center justify-center text-xs font-medium text-purple-400 border border-purple-500/20">I</div>
+              <span className="font-medium text-[#F8FAFC] text-sm">For Influencers</span>
+            </div>
+            <div className="space-y-3">
+              {influencerActions.map(([action, cost]) => <ActionRow key={action} action={action} cost={cost} />)}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function InfluencerNote() {
   const { data: session } = useSession()
   if (session?.user?.role !== "influencer") return null
@@ -152,54 +221,7 @@ export default function Pricing() {
 
         </div>
 
-        <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6 md:p-8 mb-8">
-          <h2 className="text-xl font-bold tracking-tight text-[#F8FAFC] mb-2">What each action costs</h2>
-          <p className="text-sm text-[#64748B] mb-6">One credit system for both brands and influencers.</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-6 h-6 bg-cyan-500/10 rounded-md flex items-center justify-center text-xs font-medium text-cyan-400 border border-cyan-500/20">B</div>
-                <span className="font-medium text-[#F8FAFC] text-sm">For Brands</span>
-              </div>
-              <div className="space-y-3">
-                {[
-                  ["Browse and search influencers", "Free"],
-                  ["Unlock influencer contact details", "5 credits"],
-                  ["Full AI scoring report", "3 credits"],
-                  ["Send collaboration request", "10 credits"],
-                  ["Post an open campaign", "15 credits"],
-                ].map(([action, cost]) => (
-                  <div key={action} className="flex justify-between items-center py-2 border-b border-[#1E1E2E]">
-                    <span className="text-sm text-[#94A3B8]">{action}</span>
-                    <span className={`text-sm font-medium whitespace-nowrap ml-4 ${cost === "Free" ? "text-[#10B981]" : "text-purple-400"}`}>{cost}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-6 h-6 bg-purple-500/10 rounded-md flex items-center justify-center text-xs font-medium text-purple-400 border border-purple-500/20">I</div>
-                <span className="font-medium text-[#F8FAFC] text-sm">For Influencers</span>
-              </div>
-              <div className="space-y-3">
-                {[
-                  ["List your profile", "Free"],
-                  ["Browse and discover brands", "Free"],
-                  ["Receive collaboration requests", "Free"],
-                  ["Send collaboration request to brand", "10 credits"],
-                  ["See who viewed your profile", "5 credits"],
-                  ["Apply to open brand campaign", "2 credits"],
-                  ["Get verified badge", "20 credits"],
-                ].map(([action, cost]) => (
-                  <div key={action} className="flex justify-between items-center py-2 border-b border-[#1E1E2E]">
-                    <span className="text-sm text-[#94A3B8]">{action}</span>
-                    <span className={`text-sm font-medium whitespace-nowrap ml-4 ${cost === "Free" ? "text-[#10B981]" : "text-purple-400"}`}>{cost}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+        <ActionCosts />
 
         <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-6 text-center">
           <div className="text-2xl mb-2">🎁</div>
