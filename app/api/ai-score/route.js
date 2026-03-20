@@ -34,7 +34,7 @@ export async function POST(request) {
 
     const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { credits: true } })
     if (!user || user.credits < 2) {
-      return Response.json({ error: "Insufficient credits" }, { status: 402 })
+      return Response.json({ error: "Insufficient credits", redirectTo: "/pricing" }, { status: 402 })
     }
 
     await prisma.user.update({ where: { id: session.user.id }, data: { credits: { decrement: 2 } } })

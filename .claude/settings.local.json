@@ -7,7 +7,12 @@
       "Bash(npx prisma:*)",
       "Bash(npx tsc:*)",
       "Bash(node -e \"const p = require\\(''./package.json''\\); console.log\\(''next:'', p.dependencies.next\\)\")",
-      "Bash(node -e \"const p = require\\(''./package.json''\\); console.log\\(JSON.stringify\\(p.dependencies, null, 2\\)\\)\")"
+      "Bash(node -e \"const p = require\\(''./package.json''\\); console.log\\(JSON.stringify\\(p.dependencies, null, 2\\)\\)\")",
+      "Bash(mkdir -p \"c:/Users/admin/Desktop/influenceiq/app/api/campaigns/[id]\")",
+      "Bash(mkdir -p \"c:/Users/admin/Desktop/influenceiq/app/campaigns/[id]\")",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git add:*)"
     ]
   }
 }
