@@ -415,10 +415,11 @@ export default function ProfilePage() {
 
         {isInfluencer && (() => {
           const hasVerifiedHandle = igStep === "verified" || ytStep === "verified"
+          const scrollFocus = (id: string) => { const el = document.getElementById(id); if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); el.focus() } }
           const fields = [
-            { label: "Bio", done: !!bio?.trim(), weight: 15, href: "#bio" },
-            { label: "Location", done: !!location?.trim(), weight: 15, href: undefined },
-            { label: "Phone number", done: !!phone?.trim(), weight: 20, href: undefined },
+            { label: "Bio", done: !!bio?.trim(), weight: 15, fieldId: "bio-field" },
+            { label: "Location", done: !!location?.trim(), weight: 15, fieldId: "location-field" },
+            { label: "Phone number", done: !!phone?.trim(), weight: 20, fieldId: "phone-field" },
             { label: "Social handle verified", done: hasVerifiedHandle, weight: 25, href: "#social-handles" },
             { label: "AI Score & Report", done: !!influencer?.aiReportGeneratedAt, weight: 25, href: "/dashboard" },
           ]
@@ -441,7 +442,7 @@ export default function ProfilePage() {
                   <span className="text-red-400 flex-shrink-0 mt-0.5">⚠️</span>
                   <p className="text-sm text-red-400">
                     Brands can't contact you without a phone number.{" "}
-                    <button type="button" onClick={() => document.getElementById("phone-field")?.focus()} className="underline hover:text-red-300 font-medium">Add it now.</button>
+                    <button type="button" onClick={() => scrollFocus("phone-field")} className="underline hover:text-red-300 font-medium">Add it now.</button>
                   </p>
                 </div>
               )}
@@ -453,9 +454,11 @@ export default function ProfilePage() {
                         <span className="text-red-400 text-xs">✕</span> {f.label}
                         <span className="text-xs text-[#334155]">+{f.weight}%</span>
                       </span>
-                      {f.href && (
+                      {(f as any).fieldId ? (
+                        <button type="button" onClick={() => scrollFocus((f as any).fieldId)} className="text-xs text-purple-400 hover:text-purple-300 hover:underline">Add now →</button>
+                      ) : f.href ? (
                         <a href={f.href} className="text-xs text-purple-400 hover:text-purple-300 hover:underline">Add now →</a>
-                      )}
+                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -658,8 +661,13 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <label className={labelClass}>City / Location</label>
-                    <input type="text" value={location} onChange={e => setLocation(e.target.value)}
+                    <input id="location-field" type="text" value={location} onChange={e => setLocation(e.target.value)}
                       className={inputClass} placeholder="Mumbai, Delhi, Bangalore..." />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Phone Number</label>
+                    <input id="phone-field" type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+                      className={inputClass} placeholder="+91 98765 43210" />
                   </div>
                   <div id="bio">
                     <div className="flex items-center justify-between mb-1.5">
@@ -672,7 +680,7 @@ export default function ProfilePage() {
                         ✨ Generate with AI
                       </button>
                     </div>
-                    <textarea value={bio} onChange={e => setBio(e.target.value)}
+                    <textarea id="bio-field" value={bio} onChange={e => setBio(e.target.value)}
                       rows={3} className={`${inputClass} resize-none`}
                       placeholder="Tell brands about yourself and your content..." />
                   </div>
