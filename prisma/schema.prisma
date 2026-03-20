@@ -99,6 +99,10 @@ model Influencer {
   youtubeProfilePic      String?
   youtubeVerifyCode      String?
   youtubeVerifyExpiry    DateTime?
+  aiScore              Int?
+  aiReportSummary      String?
+  aiReportFull         String?
+  aiReportGeneratedAt  DateTime?
   verified             Boolean  @default(false)
   userId           String?
   user             User?    @relation(fields: [userId], references: [id])

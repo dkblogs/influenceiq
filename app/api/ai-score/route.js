@@ -1,92 +1,101 @@
 import Groq from "groq-sdk"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-})
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 export async function POST(request) {
   try {
-    const body = await request.json()
-    const { influencerId } = body
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
+    const { influencerId } = await request.json()
     if (!influencerId) {
       return Response.json({ error: "Missing influencerId" }, { status: 400 })
     }
 
-    const influencer = await prisma.influencer.findFirst({
-      where: { id: influencerId },
-    })
-
+    const influencer = await prisma.influencer.findFirst({ where: { id: influencerId } })
     if (!influencer) {
       return Response.json({ error: "Influencer not found" }, { status: 404 })
     }
+    if (influencer.userId !== session.user.id) {
+      return Response.json({ error: "Forbidden" }, { status: 403 })
+    }
 
-    const prompt = `You are an influencer marketing analyst. Based on the following influencer data, provide a detailed scoring analysis.
+    if (!influencer.instagramVerified && !influencer.youtubeVerified) {
+      return Response.json(
+        { error: "Please verify at least one social handle first" },
+        { status: 403 }
+      )
+    }
 
-Influencer Profile:
+    const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { credits: true } })
+    if (!user || user.credits < 1) {
+      return Response.json({ error: "Insufficient credits" }, { status: 402 })
+    }
+
+    await prisma.user.update({ where: { id: session.user.id }, data: { credits: { decrement: 1 } } })
+    await prisma.creditTransaction.create({ data: { userId: session.user.id, type: "ai_report", amount: -1 } })
+
+    const bio = influencer.instagramBio || influencer.youtubeBio || "Not provided"
+
+    const prompt = `You are an expert influencer marketing analyst. Analyze this influencer and provide a detailed report.
+
+Influencer Data:
 - Name: ${influencer.name}
-- Platform: ${influencer.platform}
 - Niche: ${influencer.niche}
-- Followers: ${influencer.followers}
-- Engagement Rate: ${influencer.engagement}
-- Location: ${influencer.location}
-- Average Rate: ${influencer.rate}
-- Verified: ${influencer.verified}
-
-Please provide scores out of 100 for each of these 6 factors and a brief explanation for each:
-
-1. Engagement Rate Score - based on ${influencer.engagement} engagement rate
-2. Audience Quality Score - based on platform and niche
-3. Content Consistency Score - based on posting patterns for ${influencer.platform}
-4. Niche Authority Score - based on ${influencer.niche} niche expertise
-5. Growth Trend Score - estimated growth potential
-6. Brand Safety Score - suitability for brand partnerships
+- Platform: ${influencer.platform}
+- Instagram: ${influencer.instagramHandle || "N/A"} | Verified: ${influencer.instagramVerified} | Followers: ${influencer.instagramFollowers ?? "N/A"}
+- YouTube: ${influencer.youtubeHandle || "N/A"} | Verified: ${influencer.youtubeVerified} | Subscribers: ${influencer.youtubeFollowers ?? "N/A"}
+- Bio: ${bio}
+- Location: ${influencer.location || "Not provided"}
 
 Respond in this exact JSON format with no other text:
 {
-  "engagement": <number>,
-  "audienceQuality": <number>,
-  "contentConsistency": <number>,
-  "nicheAuthority": <number>,
-  "growthTrend": <number>,
-  "brandSafety": <number>,
-  "engagementNote": "<brief explanation>",
-  "audienceQualityNote": "<brief explanation>",
-  "contentConsistencyNote": "<brief explanation>",
-  "nicheAuthorityNote": "<brief explanation>",
-  "growthTrendNote": "<brief explanation>",
-  "brandSafetyNote": "<brief explanation>",
-  "overallScore": <weighted average>,
-  "summary": "<2 sentence overall assessment>"
+  "score": <number 0-100>,
+  "summary": "<2-3 sentence overall assessment>",
+  "engagementAnalysis": "<analysis of engagement rate and quality>",
+  "nicheStrength": "<analysis of niche authority and content focus>",
+  "contentConsistency": "<assessment of posting consistency and content quality>",
+  "growthPotential": "<growth trajectory and future potential>",
+  "brandCollaborationReadiness": "<readiness for brand deals, professionalism>",
+  "strengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
+  "improvements": ["<improvement 1>", "<improvement 2>"],
+  "idealBrandCategories": ["<category 1>", "<category 2>", "<category 3>"]
 }`
 
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
       model: "llama-3.3-70b-versatile",
       temperature: 0.3,
-      max_tokens: 1000,
+      max_tokens: 1200,
     })
 
     const responseText = completion.choices[0]?.message?.content || ""
 
-    let scoreData
+    let report
     try {
       const jsonMatch = responseText.match(/\{[\s\S]*\}/)
-      scoreData = JSON.parse(jsonMatch[0])
-    } catch (e) {
+      report = JSON.parse(jsonMatch[0])
+    } catch {
       return Response.json({ error: "Failed to parse AI response" }, { status: 500 })
     }
 
     await prisma.influencer.update({
       where: { id: influencerId },
-      data: { score: scoreData.overallScore },
+      data: {
+        score: report.score,
+        aiScore: report.score,
+        aiReportSummary: report.summary,
+        aiReportFull: JSON.stringify(report),
+        aiReportGeneratedAt: new Date(),
+      },
     })
 
-    return Response.json({
-      success: true,
-      scores: scoreData,
-    })
+    return Response.json({ success: true, report })
 
   } catch (error) {
     console.error("AI score error:", error.message)

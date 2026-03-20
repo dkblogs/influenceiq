@@ -17,6 +17,7 @@ export async function GET(request, context) {
       email: null,
       phone: null,
     }
+    // AI fields already included via spread
 
     return Response.json({ influencer: safeInfluencer, unlocked: false })
 

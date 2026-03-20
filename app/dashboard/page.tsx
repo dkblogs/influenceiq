@@ -201,6 +201,9 @@ export default function Dashboard() {
           console.log("Influencer profile lookup for userId:", u.id, "result:", data.influencers)
           const inf = (data.influencers || [])[0] || null
           setMyInfluencerProfile(inf)
+          if (inf?.aiReportFull) {
+            try { setAiReport(JSON.parse(inf.aiReportFull)) } catch {}
+          }
           if (inf?.id) {
             fetch(`/api/portfolio?influencerId=${inf.id}`)
               .then(r => r.json())
@@ -272,9 +275,15 @@ export default function Dashboard() {
       setAiError(data.error || "Failed to generate report")
       return
     }
-    setAiReport(data.scores)
+    setAiReport(data.report)
     setAiReportsCount(c => c + 1)
-    setMyInfluencerProfile((p: any) => ({ ...p, score: data.scores.overallScore }))
+    setMyInfluencerProfile((p: any) => ({
+      ...p,
+      score: data.report.score,
+      aiScore: data.report.score,
+      aiReportSummary: data.report.summary,
+      aiReportGeneratedAt: new Date().toISOString(),
+    }))
   }
 
   async function handleReviewSubmit(data: any) {
@@ -388,40 +397,37 @@ export default function Dashboard() {
         {/* AI Score — influencers only */}
         {user.role === "influencer" && (
           <div className="mb-6 bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
-              <div>
-                <h2 className="font-medium text-[#F8FAFC]">Your AI Score</h2>
-                <p className="text-xs text-[#64748B] mt-0.5">AI-analysed score based on your profile data</p>
+            <h2 className="font-medium text-[#F8FAFC] mb-1">Your AI Score</h2>
+            <p className="text-xs text-[#64748B] mb-5">AI-analysed score based on your verified social data</p>
+
+            {/* No handle verified */}
+            {myInfluencerProfile && !myInfluencerProfile.instagramVerified && !myInfluencerProfile.youtubeVerified && (
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-sm text-amber-300">
+                ⚠️ Verify a social handle first to generate your AI Score.
+                <a href="/profile" className="underline ml-1 hover:text-amber-200">Go to Profile →</a>
               </div>
-              <button
-                onClick={handleGenerateAiReport}
-                disabled={aiLoading || !myInfluencerProfile?.id}
-                className="flex-shrink-0 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors shadow-lg shadow-purple-500/20"
-              >
-                {aiLoading ? "Analyzing..." : "Generate AI Report"}
-              </button>
-            </div>
+            )}
 
-            {/* Current score display */}
-            <div className="flex items-center gap-4 mb-4">
-              {(() => {
-                const score = myInfluencerProfile?.score ?? null
-                const color = score === null ? "text-[#64748B]" : score >= 70 ? "text-[#10B981]" : score >= 40 ? "text-yellow-400" : "text-red-400"
-                return (
-                  <>
-                    <div className={`text-6xl font-bold ${color}`}>{score ?? "—"}</div>
-                    <div className="text-[#64748B] text-sm leading-snug">
-                      <span className="text-[#94A3B8]">/ 100</span><br />
-                      {score === null ? "No score yet" : score >= 70 ? "Strong profile" : score >= 40 ? "Room to grow" : "Needs improvement"}
-                    </div>
-                  </>
-                )
-              })()}
-            </div>
+            {/* Handle verified, no report yet */}
+            {myInfluencerProfile && (myInfluencerProfile.instagramVerified || myInfluencerProfile.youtubeVerified) && !aiReport && !aiLoading && (
+              <div className="text-center py-6">
+                <div className="text-4xl mb-3">🤖</div>
+                <div className="text-sm text-[#94A3B8] mb-1">
+                  Get an AI-powered analysis of your influence,<br />engagement, and brand readiness
+                </div>
+                <div className="text-xs text-[#64748B] mb-4">Costs 1 credit</div>
+                <button
+                  onClick={handleGenerateAiReport}
+                  className="bg-purple-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20"
+                >
+                  Generate AI Score
+                </button>
+              </div>
+            )}
 
-            {/* Loading state */}
+            {/* Loading */}
             {aiLoading && (
-              <div className="flex items-center gap-3 py-4 text-purple-400 text-sm">
+              <div className="flex items-center justify-center gap-3 py-6 text-purple-400 text-sm">
                 <svg className="animate-spin h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
@@ -435,84 +441,63 @@ export default function Dashboard() {
               <div className="bg-red-500/10 text-red-400 text-sm px-4 py-3 rounded-lg border border-red-500/20 mb-4">{aiError}</div>
             )}
 
-            {/* Report */}
+            {/* Report exists */}
             {aiReport && (
-              <div className="mt-4 space-y-4">
-                <div className="bg-[#0D0D1A] rounded-xl border border-[#1E1E2E] p-4">
-                  <div className="text-xs font-medium text-purple-400 uppercase tracking-wider mb-2">Overall Score</div>
-                  <div className="flex items-center gap-3">
-                    <span className={`text-3xl font-bold ${aiReport.overallScore >= 70 ? "text-[#10B981]" : aiReport.overallScore >= 40 ? "text-yellow-400" : "text-red-400"}`}>
-                      {aiReport.overallScore}
-                    </span>
-                    <span className="text-sm text-[#94A3B8]">{aiReport.summary}</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {[
-                    { label: "Engagement", key: "engagement", note: "engagementNote" },
-                    { label: "Audience Quality", key: "audienceQuality", note: "audienceQualityNote" },
-                    { label: "Content Consistency", key: "contentConsistency", note: "contentConsistencyNote" },
-                    { label: "Niche Authority", key: "nicheAuthority", note: "nicheAuthorityNote" },
-                    { label: "Growth Trend", key: "growthTrend", note: "growthTrendNote" },
-                    { label: "Brand Safety", key: "brandSafety", note: "brandSafetyNote" },
-                  ].map(({ label, key, note }) => {
-                    const val = aiReport[key]
-                    const barColor = val >= 70 ? "bg-[#10B981]" : val >= 40 ? "bg-yellow-400" : "bg-red-400"
+              <div>
+                <div className="flex items-center gap-5 mb-5">
+                  {(() => {
+                    const s = aiReport.score
+                    const hex = s >= 70 ? "#10B981" : s >= 40 ? "#FBBF24" : "#F87171"
+                    const ringClass = s >= 70 ? "stroke-[#10B981]" : s >= 40 ? "stroke-yellow-400" : "stroke-red-400"
+                    const pct = (s / 100) * 251.2
                     return (
-                      <div key={key} className="bg-[#0D0D1A] rounded-xl border border-[#1E1E2E] p-3">
-                        <div className="flex justify-between text-xs mb-1.5">
-                          <span className="text-[#94A3B8]">{label}</span>
-                          <span className={`font-semibold ${val >= 70 ? "text-[#10B981]" : val >= 40 ? "text-yellow-400" : "text-red-400"}`}>{val}</span>
+                      <div className="relative flex-shrink-0">
+                        <svg className="w-20 h-20 -rotate-90" viewBox="0 0 100 100">
+                          <circle cx="50" cy="50" r="40" fill="none" stroke="#1E1E2E" strokeWidth="8" />
+                          <circle cx="50" cy="50" r="40" fill="none" strokeWidth="8"
+                            strokeDasharray={`${pct} 251.2`} strokeLinecap="round" className={ringClass} />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-xl font-bold" style={{ color: hex }}>{s}</span>
                         </div>
-                        <div className="h-1.5 bg-[#1E1E2E] rounded-full overflow-hidden mb-1.5">
-                          <div className={`h-full rounded-full ${barColor}`} style={{ width: `${val}%` }} />
-                        </div>
-                        <p className="text-xs text-[#64748B]">{aiReport[note]}</p>
                       </div>
                     )
-                  })}
+                  })()}
+                  <div>
+                    <div className="text-sm text-[#F8FAFC] font-medium mb-1">
+                      {aiReport.score >= 70 ? "Strong profile" : aiReport.score >= 40 ? "Room to grow" : "Needs improvement"}
+                    </div>
+                    <div className="text-xs text-[#94A3B8] leading-relaxed">{aiReport.summary}</div>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="bg-[#10B981]/5 border border-[#10B981]/20 rounded-xl p-4">
-                    <div className="text-xs font-medium text-[#10B981] mb-2">Strengths</div>
-                    <ul className="space-y-1">
-                      {[
-                        { label: "Engagement", val: aiReport.engagement },
-                        { label: "Audience Quality", val: aiReport.audienceQuality },
-                        { label: "Content Consistency", val: aiReport.contentConsistency },
-                        { label: "Niche Authority", val: aiReport.nicheAuthority },
-                        { label: "Growth Trend", val: aiReport.growthTrend },
-                        { label: "Brand Safety", val: aiReport.brandSafety },
-                      ].filter(i => i.val >= 70).map(i => (
-                        <li key={i.label} className="text-xs text-[#94A3B8] flex items-center gap-1.5">
-                          <span className="text-[#10B981]">✓</span> {i.label} ({i.val}/100)
-                        </li>
-                      ))}
-                      {[aiReport.engagement, aiReport.audienceQuality, aiReport.contentConsistency, aiReport.nicheAuthority, aiReport.growthTrend, aiReport.brandSafety].every(v => v < 70) && (
-                        <li className="text-xs text-[#64748B]">Keep improving — no standout strengths yet</li>
-                      )}
-                    </ul>
+                {aiReport.strengths?.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-5">
+                    {aiReport.strengths.map((s: string, i: number) => (
+                      <span key={i} className="bg-[#10B981]/10 text-[#10B981] text-xs px-3 py-1 rounded-full border border-[#10B981]/20">{s}</span>
+                    ))}
                   </div>
-                  <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
-                    <div className="text-xs font-medium text-amber-400 mb-2">Tips to Improve</div>
-                    <ul className="space-y-1">
-                      {[
-                        { label: "Engagement", val: aiReport.engagement, note: aiReport.engagementNote },
-                        { label: "Audience Quality", val: aiReport.audienceQuality, note: aiReport.audienceQualityNote },
-                        { label: "Niche Authority", val: aiReport.nicheAuthority, note: aiReport.nicheAuthorityNote },
-                        { label: "Growth Trend", val: aiReport.growthTrend, note: aiReport.growthTrendNote },
-                      ].filter(i => i.val < 70).slice(0, 3).map(i => (
-                        <li key={i.label} className="text-xs text-[#94A3B8] flex items-start gap-1.5">
-                          <span className="text-amber-400 flex-shrink-0">→</span> {i.note}
-                        </li>
-                      ))}
-                      {[aiReport.engagement, aiReport.audienceQuality, aiReport.nicheAuthority, aiReport.growthTrend].every(v => v >= 70) && (
-                        <li className="text-xs text-[#64748B]">Great profile — keep up the consistency!</li>
-                      )}
-                    </ul>
-                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <a
+                    href={`/report/${myInfluencerProfile?.id}`}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20"
+                  >
+                    View Full Report →
+                  </a>
+                  <button
+                    onClick={handleGenerateAiReport}
+                    disabled={aiLoading}
+                    className="border border-[#1E1E2E] text-[#94A3B8] px-4 py-2 rounded-lg text-sm hover:border-purple-500/30 hover:text-[#F8FAFC] transition-colors disabled:opacity-50"
+                  >
+                    Regenerate (1 credit)
+                  </button>
+                  {myInfluencerProfile?.aiReportGeneratedAt && (
+                    <span className="text-xs text-[#64748B]">
+                      Last generated {new Date(myInfluencerProfile.aiReportGeneratedAt).toLocaleDateString("en-IN")}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
