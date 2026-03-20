@@ -16,10 +16,45 @@ export default function About() {
           We are building India's most trusted influencer marketplace
         </h1>
         <p className="text-gray-500 text-lg leading-relaxed">
-          InfluenceIQ was built to solve a real problem — brands wasting money on influencers 
-          with fake followers, and genuine creators struggling to get discovered. We use AI to 
+          InfluenceIQ was built to solve a real problem — brands wasting money on influencers
+          with fake followers, and genuine creators struggling to get discovered. We use AI to
           bring transparency, trust, and efficiency to influencer marketing in India.
         </p>
+      </section>
+
+      {/* Zero Commission Hero Card */}
+      <section className="px-8 pb-12">
+        <div className="max-w-4xl mx-auto relative rounded-2xl bg-[#0A0A0F] p-8 md:p-10"
+          style={{ boxShadow: "0 0 0 1.5px #7c3aed, 0 0 40px 0 #7c3aed33, 0 0 80px 0 #22c55e18" }}>
+          {/* Pulsing badge */}
+          <span className="absolute top-5 right-5 flex items-center gap-1.5 bg-green-500/10 border border-green-500/40 text-green-400 text-xs font-bold px-3 py-1 rounded-full">
+            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse inline-block" />
+            NO COMMISSION
+          </span>
+          <div className="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
+            0% Commission. <span className="text-green-400">Always.</span>
+          </div>
+          <p className="text-gray-300 text-lg mb-8 max-w-2xl">
+            While other platforms take 10%–30% of every deal, InfluenceIQ charges nothing. Zero. Keep every rupee you earn or save.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-5 py-4">
+              <div className="text-xl mb-2">💰</div>
+              <div className="text-sm text-red-300 font-medium">Other platforms</div>
+              <div className="text-xs text-gray-400 mt-1">Take ₹10,000–₹30,000 on every ₹1L deal</div>
+            </div>
+            <div className="bg-green-500/10 border border-green-500/20 rounded-xl px-5 py-4">
+              <div className="text-xl mb-2">✅</div>
+              <div className="text-sm text-green-300 font-medium">InfluenceIQ</div>
+              <div className="text-xs text-gray-400 mt-1">₹0 commission on every deal, forever</div>
+            </div>
+            <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl px-5 py-4">
+              <div className="text-xl mb-2">📈</div>
+              <div className="text-sm text-purple-300 font-medium">You save</div>
+              <div className="text-xs text-gray-400 mt-1">Up to 30% more per campaign — reinvest it in growth</div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Mission */}

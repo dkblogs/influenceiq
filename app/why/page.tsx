@@ -20,6 +20,64 @@ export default function Why() {
         </p>
       </section>
 
+      {/* Zero Commission Hero Card */}
+      <section className="px-8 pb-12">
+        <div className="max-w-4xl mx-auto relative rounded-2xl bg-[#0A0A0F] p-8 md:p-10"
+          style={{ boxShadow: "0 0 0 1.5px #7c3aed, 0 0 40px 0 #7c3aed33, 0 0 80px 0 #22c55e18" }}>
+          <span className="absolute top-5 right-5 flex items-center gap-1.5 bg-green-500/10 border border-green-500/40 text-green-400 text-xs font-bold px-3 py-1 rounded-full">
+            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse inline-block" />
+            NO COMMISSION
+          </span>
+          <div className="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
+            0% Commission. <span className="text-green-400">Always.</span>
+          </div>
+          <p className="text-gray-300 text-lg mb-8 max-w-2xl">
+            While other platforms take 10%–30% of every deal, InfluenceIQ charges nothing. Zero. Keep every rupee you earn or save.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-5 py-4">
+              <div className="text-xl mb-2">💰</div>
+              <div className="text-sm text-red-300 font-medium">Other platforms</div>
+              <div className="text-xs text-gray-400 mt-1">Take ₹10,000–₹30,000 on every ₹1L deal</div>
+            </div>
+            <div className="bg-green-500/10 border border-green-500/20 rounded-xl px-5 py-4">
+              <div className="text-xl mb-2">✅</div>
+              <div className="text-sm text-green-300 font-medium">InfluenceIQ</div>
+              <div className="text-xs text-gray-400 mt-1">₹0 commission on every deal, forever</div>
+            </div>
+            <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl px-5 py-4">
+              <div className="text-xl mb-2">📈</div>
+              <div className="text-sm text-purple-300 font-medium">You save</div>
+              <div className="text-xs text-gray-400 mt-1">Up to 30% more per campaign — reinvest it in growth</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What makes us different */}
+      <section className="px-8 pb-12">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-8">What makes us different</h2>
+          <div className="space-y-4">
+            {[
+              { icon: "🚫", text: "No commission on brand-influencer deals", sub: "Other platforms charge 10–30% on every deal you close.", red: true },
+              { icon: "🚫", text: "No hidden fees or surprise charges", sub: "What you see is what you pay. No fine print.", red: true },
+              { icon: "✅", text: "Credits never expire — use them at your own pace", sub: "Buy once, use whenever. No monthly reset pressure.", red: false },
+              { icon: "✅", text: "AI-powered matching included — not a premium add-on", sub: "Every user gets AI scoring and matching by default.", red: false },
+              { icon: "✅", text: "Free profile listing for every influencer", sub: "Influencers join and list their profiles at zero cost.", red: false },
+            ].map(({ icon, text, sub, red }, i) => (
+              <div key={i} className={`flex items-start gap-5 p-5 rounded-xl border ${red ? "border-red-100 bg-red-50" : "border-green-100 bg-green-50"}`}>
+                <div className="text-2xl flex-shrink-0">{icon}</div>
+                <div>
+                  <div className={`font-semibold text-gray-900 mb-0.5`}>{text}</div>
+                  <div className="text-sm text-gray-500">{sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Problem */}
       <section className="bg-red-50 px-8 py-16">
         <div className="max-w-4xl mx-auto">
