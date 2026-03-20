@@ -60,13 +60,15 @@ export default function InfluencerProfile() {
   }
 
   useEffect(() => {
-    fetchInfluencer()
-    if (session?.user?.id) {
-      fetch(`/api/user-credits?userId=${session.user.id}`)
-        .then(res => res.json())
-        .then(data => setCredits(data.credits))
-    }
-  }, [params.id, session])
+    if (params.id) fetchInfluencer()
+  }, [params.id])
+
+  useEffect(() => {
+    if (!session?.user?.id) return
+    fetch(`/api/user-credits?userId=${session.user.id}`)
+      .then(res => res.json())
+      .then(data => setCredits(data.credits))
+  }, [session?.user?.id])
 
   useEffect(() => {
     if (!params.id) return
@@ -99,12 +101,22 @@ export default function InfluencerProfile() {
   }
 
   async function fetchInfluencer() {
-    const res = await fetch(`/api/influencers/${params.id}`)
-    const data = await res.json()
-    setInfluencer(data.influencer)
-    setUnlocked(data.unlocked)
-    setFollowersPublic(data.influencer?.followersPublic ?? true)
-    setLoading(false)
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/influencers/${params.id}`)
+      const data = await res.json()
+      if (res.ok && data.influencer) {
+        setInfluencer(data.influencer)
+        setUnlocked(data.unlocked ?? false)
+        setFollowersPublic(data.influencer.followersPublic ?? true)
+      } else {
+        setInfluencer(null)
+      }
+    } catch {
+      setInfluencer(null)
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function saveSettings() {
