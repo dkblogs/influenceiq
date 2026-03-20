@@ -431,7 +431,7 @@ export default function ProfilePage() {
   const initials = name
     ? name.split(" ").filter(Boolean).map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
     : "?"
-  const maskedPhone = phoneNumber ? `${phoneCode} ••••••${phoneNumber.slice(-4)}` : "Not provided"
+  const displayPhone = phoneNumber ? `${phoneCode} ${phoneNumber}` : "Not provided"
   const hasVerifiedHandleView = igStep === "verified" || ytStep === "verified"
   const completenessFields = [
     { label: "Bio", done: !!bio?.trim(), weight: 15, fieldId: "bio-field" },
@@ -490,7 +490,7 @@ export default function ProfilePage() {
                 )}
                 <div className="flex gap-3">
                   <span className="text-[#64748B] w-20 shrink-0">Phone</span>
-                  <span className="text-[#F8FAFC] font-mono tracking-wide">{maskedPhone}</span>
+                  <span className="text-[#F8FAFC] font-mono tracking-wide">{displayPhone}</span>
                 </div>
                 {bio && (
                   <div className="flex gap-3">
