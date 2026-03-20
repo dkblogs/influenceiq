@@ -405,11 +405,11 @@ export default function Dashboard() {
             </>
           ) : (
             <>
-              <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+              <a href="/dashboard/campaigns-applied" className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block">
                 <div className="text-sm text-[#94A3B8] mb-1">Campaigns applied</div>
                 <div className="text-2xl font-bold text-[#F8FAFC]">{campaignApplicationCount ?? "…"}</div>
-                <div className="text-xs text-[#64748B] mt-1">2 credits per application</div>
-              </div>
+                <div className="text-xs text-purple-400 mt-1">View history →</div>
+              </a>
               <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
                 <div className="text-sm text-[#94A3B8] mb-1">Collaboration requests</div>
                 <div className="text-2xl font-bold text-[#F8FAFC]">{collaborationRequestCount ?? "…"}</div>
