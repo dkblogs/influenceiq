@@ -203,7 +203,7 @@ export default function ProfilePage() {
         setIndustry(d.user?.industry || "")
         setLocation(d.user?.location || "")
         setWebsite(d.user?.website || "")
-        const rawPhone = d.user?.phone || ""
+        const rawPhone = (d.influencer?.phone ?? d.user?.phone) || ""
         const knownCodes = ["+880", "+971", "+977", "+94", "+92", "+91", "+65", "+66", "+63", "+62", "+61", "+60", "+55", "+49", "+44", "+33", "+27", "+86", "+81", "+1"]
         const matchedCode = knownCodes.find(c => rawPhone.startsWith(c))
         if (matchedCode) { setPhoneCode(matchedCode); setPhoneNumber(rawPhone.slice(matchedCode.length)) }

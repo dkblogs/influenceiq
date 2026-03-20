@@ -62,7 +62,7 @@ export async function PATCH(request) {
 
     let updatedInfluencer = null
     if (role === "influencer") {
-      const { name, niche, platform, bio, location, instagramHandle, youtubeHandle } = body
+      const { name, niche, platform, bio, location, phone, instagramHandle, youtubeHandle } = body
       const existing = await getInfluencerForUser({ userId: session.user.id, email: session.user.email })
       if (existing) {
         updatedInfluencer = await prisma.influencer.update({
@@ -73,6 +73,7 @@ export async function PATCH(request) {
             platform: platform || undefined,
             about: bio !== undefined ? bio : undefined,
             location: location !== undefined ? location : undefined,
+            phone: phone !== undefined ? (phone || null) : undefined,
             instagramHandle: instagramHandle !== undefined
               ? (instagramHandle ? (instagramHandle.startsWith("@") ? instagramHandle : `@${instagramHandle}`) : null)
               : undefined,
