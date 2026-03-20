@@ -11,6 +11,7 @@ const BUCKET = "avatars"
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions)
+    console.log("1. Auth check - userId:", session?.user?.id)
     if (!session?.user?.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -33,6 +34,7 @@ export async function POST(request) {
     }
 
     const file = formData.get("file")
+    console.log("2. File received:", file?.name, file?.size, file?.type)
     if (!file || typeof file === "string") {
       return Response.json({ error: "No file provided" }, { status: 400 })
     }
@@ -49,10 +51,14 @@ export async function POST(request) {
     const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg"
     const filename = `${session.user.id}-${Date.now()}.${ext}`
 
-    const { error: uploadError } = await supabase.storage
+    console.log("3. Uploading to Supabase bucket: avatars, filename:", filename)
+    const uploadResult = await supabase.storage
       .from(BUCKET)
       .upload(filename, bytes, { contentType: file.type, upsert: true })
+    console.log("4. Supabase upload result:", JSON.stringify(uploadResult))
+    console.log("5. Supabase error:", JSON.stringify(uploadResult.error))
 
+    const uploadError = uploadResult.error
     if (uploadError) {
       console.error("Supabase upload error:", uploadError.message)
       return Response.json({ error: "Upload failed" }, { status: 500 })
@@ -60,6 +66,7 @@ export async function POST(request) {
 
     const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(filename)
     const publicUrl = urlData.publicUrl
+    console.log("6. Public URL:", publicUrl)
 
     const influencer = await getInfluencerForUser({
       userId: session.user.id,
