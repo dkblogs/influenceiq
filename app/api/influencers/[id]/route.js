@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 
-export async function GET(request, context) {
+export async function GET(_request, context) {
   try {
     const { id } = await context.params
 
@@ -16,6 +16,7 @@ export async function GET(request, context) {
       ...influencer,
       email: null,
       phone: null,
+      hasPhone: !!influencer.phone,
     }
     // AI fields already included via spread
 

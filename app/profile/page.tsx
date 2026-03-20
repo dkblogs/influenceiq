@@ -413,6 +413,62 @@ export default function ProfilePage() {
           </p>
         </div>
 
+        {isInfluencer && (() => {
+          const hasVerifiedHandle = igStep === "verified" || ytStep === "verified"
+          const fields = [
+            { label: "Bio", done: !!bio?.trim(), weight: 15, href: "#bio" },
+            { label: "Location", done: !!location?.trim(), weight: 15, href: undefined },
+            { label: "Phone number", done: !!phone?.trim(), weight: 20, href: undefined },
+            { label: "Social handle verified", done: hasVerifiedHandle, weight: 25, href: "#social-handles" },
+            { label: "AI Score & Report", done: !!influencer?.aiReportGeneratedAt, weight: 25, href: "/dashboard" },
+          ]
+          const score = fields.reduce((acc, f) => acc + (f.done ? f.weight : 0), 0)
+          const missing = fields.filter(f => !f.done)
+          return (
+            <div className="mb-6 bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold text-[#F8FAFC]">Profile completeness</span>
+                <span className={`text-sm font-bold ${score === 100 ? "text-[#10B981]" : score >= 60 ? "text-yellow-400" : "text-red-400"}`}>{score}%</span>
+              </div>
+              <div className="w-full bg-[#1E1E2E] rounded-full h-2 mb-4 overflow-hidden">
+                <div
+                  className={`h-2 rounded-full transition-all ${score === 100 ? "bg-[#10B981]" : score >= 60 ? "bg-yellow-400" : "bg-red-400"}`}
+                  style={{ width: `${score}%` }}
+                />
+              </div>
+              {!phone?.trim() && (
+                <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mb-3">
+                  <span className="text-red-400 flex-shrink-0 mt-0.5">⚠️</span>
+                  <p className="text-sm text-red-400">
+                    Brands can't contact you without a phone number.{" "}
+                    <button type="button" onClick={() => document.getElementById("phone-field")?.focus()} className="underline hover:text-red-300 font-medium">Add it now.</button>
+                  </p>
+                </div>
+              )}
+              {missing.length > 0 && (
+                <div className="space-y-1.5">
+                  {missing.map(f => (
+                    <div key={f.label} className="flex items-center justify-between text-sm">
+                      <span className="flex items-center gap-1.5 text-[#64748B]">
+                        <span className="text-red-400 text-xs">✕</span> {f.label}
+                        <span className="text-xs text-[#334155]">+{f.weight}%</span>
+                      </span>
+                      {f.href && (
+                        <a href={f.href} className="text-xs text-purple-400 hover:text-purple-300 hover:underline">Add now →</a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {score === 100 && (
+                <div className="flex items-center gap-2 text-sm text-[#10B981]">
+                  <span>✓</span> Profile is complete
+                </div>
+              )}
+            </div>
+          )
+        })()}
+
         <form onSubmit={handleSave} className="space-y-6">
 
           {/* Account Info */}
@@ -478,7 +534,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <label className={labelClass}>Phone Number</label>
-                    <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+                    <input id="phone-field" type="tel" value={phone} onChange={e => setPhone(e.target.value)}
                       className={inputClass} placeholder="+91 98765 43210" />
                   </div>
                 </div>

@@ -39,6 +39,7 @@ export default function InfluencerProfile() {
   const [loading, setLoading] = useState(true)
   const [unlocked, setUnlocked] = useState(false)
   const [unlocking, setUnlocking] = useState(false)
+  const [showPhoneWarning, setShowPhoneWarning] = useState(false)
   const [error, setError] = useState("")
   const [credits, setCredits] = useState(0)
   const [aiScores, setAiScores] = useState<any>(null)
@@ -133,12 +134,20 @@ export default function InfluencerProfile() {
 
   async function handleUnlock() {
     if (!session) { router.push("/login"); return }
+    if (!influencer?.hasPhone) {
+      setShowPhoneWarning(true)
+      return
+    }
+    doUnlock()
+  }
+
+  async function doUnlock() {
     setUnlocking(true)
     setError("")
     const res = await fetch("/api/unlock-contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ influencerId: params.id, userId: session.user.id }),
+      body: JSON.stringify({ influencerId: params.id, userId: (session?.user as any)?.id }),
     })
     const data = await res.json()
     if (!res.ok) { setError(res.status === 402 ? "CREDITS" : (data.error || "Failed to unlock")); setUnlocking(false); return }
@@ -537,11 +546,13 @@ export default function InfluencerProfile() {
                     <div className="font-medium text-[#F8FAFC]">{influencer.email}</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-4 bg-[#10B981]/10 border border-[#10B981]/20 rounded-xl">
+                <div className={`flex items-center gap-3 p-4 rounded-xl border ${influencer.phone ? "bg-[#10B981]/10 border-[#10B981]/20" : "bg-[#1E1E2E] border-[#1E1E2E]"}`}>
                   <span className="text-lg">📱</span>
                   <div>
                     <div className="text-xs text-[#64748B] mb-0.5">Phone</div>
-                    <div className="font-medium text-[#F8FAFC]">{influencer.phone}</div>
+                    {influencer.phone
+                      ? <div className="font-medium text-[#F8FAFC]">{influencer.phone}</div>
+                      : <div className="text-sm text-[#64748B] italic">Not provided</div>}
                   </div>
                 </div>
                 <div className="text-xs text-[#64748B] mt-2">
@@ -656,6 +667,39 @@ export default function InfluencerProfile() {
         )}
 
       </div>
+
+      {/* Phone warning modal */}
+      {showPhoneWarning && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+          <div className="bg-[#12121A] border border-[#1E1E2E] rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <div className="text-3xl mb-3">⚠️</div>
+            <h3 className="font-semibold text-[#F8FAFC] mb-2">Phone number not added</h3>
+            <p className="text-sm text-[#94A3B8] mb-2">
+              This influencer hasn't added a phone number yet.
+            </p>
+            <p className="text-sm text-[#94A3B8] mb-5">
+              You will receive their <strong className="text-[#F8FAFC]">email address only</strong>.
+            </p>
+            <p className="text-sm font-medium text-[#F8FAFC] mb-4">Still unlock for 5 credits?</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowPhoneWarning(false)}
+                className="flex-1 border border-[#1E1E2E] text-[#94A3B8] py-2.5 rounded-lg text-sm hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { setShowPhoneWarning(false); doUnlock() }}
+                disabled={unlocking}
+                className="flex-1 bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors"
+              >
+                Unlock Email Only
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </main>
   )
 }
