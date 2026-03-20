@@ -33,12 +33,12 @@ export async function POST(request) {
     }
 
     const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { credits: true } })
-    if (!user || user.credits < 1) {
+    if (!user || user.credits < 2) {
       return Response.json({ error: "Insufficient credits" }, { status: 402 })
     }
 
-    await prisma.user.update({ where: { id: session.user.id }, data: { credits: { decrement: 1 } } })
-    await prisma.creditTransaction.create({ data: { userId: session.user.id, type: "ai_report", amount: -1 } })
+    await prisma.user.update({ where: { id: session.user.id }, data: { credits: { decrement: 2 } } })
+    await prisma.creditTransaction.create({ data: { userId: session.user.id, type: "ai_report", amount: -2 } })
 
     const bio = influencer.instagramBio || influencer.youtubeBio || "Not provided"
 
