@@ -5,7 +5,6 @@ import { useState } from "react"
 const rows = [
   ["Commission on deals", "✅ 0% — Forever free", "❌ 10%–30% per deal"],
   ["Hidden fees", "✅ None", "❌ Monthly subscriptions + fees"],
-  ["Influencer discovery", "✅ Free to browse", "❌ Paid plans required"],
   ["Profile listing", "✅ Free for influencers", "❌ Paid or commission-based"],
   ["Credits expiry", "✅ Never expire", "❌ Monthly reset"],
   ["AI-powered matching", "✅ Included", "❌ Premium add-on"],
