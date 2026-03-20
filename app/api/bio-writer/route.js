@@ -1,15 +1,31 @@
 import Groq from "groq-sdk"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { prisma } from "@/lib/prisma"
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 export async function POST(request) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { credits: true } })
+    if (!user || user.credits < 1) {
+      return Response.json({ error: "Insufficient credits. You need 1 credit to generate a bio." }, { status: 402 })
+    }
+
     const body = await request.json()
     const { name, niche, platform, achievements, style, location } = body
 
     if (!name || !niche || !platform) {
       return Response.json({ error: "Name, niche, and platform are required" }, { status: 400 })
     }
+
+    await prisma.user.update({ where: { id: session.user.id }, data: { credits: { decrement: 1 } } })
+    await prisma.creditTransaction.create({ data: { userId: session.user.id, type: "bio_writer", amount: -1 } })
 
     const prompt = `You are a professional copywriter who specialises in writing compelling influencer bios for brand partnerships.
 

@@ -159,6 +159,14 @@ export default function ProfilePage() {
   const [instagramHandle, setInstagramHandle] = useState("")
   const [youtubeHandle, setYoutubeHandle] = useState("")
 
+  // Bio Writer modal state
+  const [bioModalOpen, setBioModalOpen] = useState(false)
+  const [bioModalTone, setBioModalTone] = useState("Professional")
+  const [bioModalAchievements, setBioModalAchievements] = useState("")
+  const [bioModalLoading, setBioModalLoading] = useState(false)
+  const [bioModalResult, setBioModalResult] = useState<any>(null)
+  const [bioModalError, setBioModalError] = useState("")
+
   // Apify fetch state (auto-fill)
   const [fetchingProfile, setFetchingProfile] = useState(false)
   const [fetchStatus, setFetchStatus] = useState<"" | "success" | "error">("")
@@ -216,6 +224,29 @@ export default function ProfilePage() {
       })
       .catch(() => setLoading(false))
   }, [status])
+
+  async function handleGenerateBio() {
+    setBioModalLoading(true)
+    setBioModalError("")
+    setBioModalResult(null)
+    const res = await fetch("/api/bio-writer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, niche, platform, location, achievements: bioModalAchievements, style: bioModalTone }),
+    })
+    const data = await res.json()
+    setBioModalLoading(false)
+    if (!res.ok) { setBioModalError(data.error || "Failed to generate bio"); return }
+    setBioModalResult(data)
+  }
+
+  function closeBioModal() {
+    setBioModalOpen(false)
+    setBioModalResult(null)
+    setBioModalError("")
+    setBioModalAchievements("")
+    setBioModalTone("Professional")
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
@@ -550,8 +581,17 @@ export default function ProfilePage() {
                     <input type="text" value={location} onChange={e => setLocation(e.target.value)}
                       className={inputClass} placeholder="Mumbai, Delhi, Bangalore..." />
                   </div>
-                  <div>
-                    <label className={labelClass}>Bio</label>
+                  <div id="bio">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className={labelClass.replace("mb-1.5", "mb-0")}>Bio</label>
+                      <button
+                        type="button"
+                        onClick={() => setBioModalOpen(true)}
+                        className="flex items-center gap-1.5 text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 px-3 py-1 rounded-lg hover:bg-purple-500/20 transition-colors"
+                      >
+                        ✨ Generate with AI
+                      </button>
+                    </div>
                     <textarea value={bio} onChange={e => setBio(e.target.value)}
                       rows={3} className={`${inputClass} resize-none`}
                       placeholder="Tell brands about yourself and your content..." />
@@ -605,6 +645,119 @@ export default function ProfilePage() {
 
         </form>
       </div>
+
+      {/* Bio Writer Modal */}
+      {bioModalOpen && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={closeBioModal}>
+          <div
+            className="bg-[#12121A] border border-[#1E1E2E] rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/50"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-lg font-bold text-[#F8FAFC]">✨ AI Bio Writer</h3>
+                <button onClick={closeBioModal} className="text-[#64748B] hover:text-[#F8FAFC] text-2xl leading-none transition-colors">×</button>
+              </div>
+              <p className="text-xs text-[#64748B] mb-5">Tell us about yourself and we&apos;ll write a professional bio for your profile. <span className="text-purple-400">Costs 1 credit.</span></p>
+
+              {!bioModalResult ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs text-[#94A3B8] mb-1">Niche</label>
+                      <div className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#64748B]">{niche || "—"}</div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-[#94A3B8] mb-1">Platform</label>
+                      <div className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#64748B]">{platform || "—"}</div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-[#94A3B8] mb-1.5">Tone</label>
+                    <div className="flex gap-2 flex-wrap">
+                      {["Professional", "Friendly", "Bold", "Creative"].map(t => (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => setBioModalTone(t)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${bioModalTone === t ? "bg-purple-600 text-white" : "bg-[#0A0A0F] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50"}`}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-[#94A3B8] mb-1">Key achievements or highlights <span className="text-[#64748B]">(optional)</span></label>
+                    <textarea
+                      value={bioModalAchievements}
+                      onChange={e => setBioModalAchievements(e.target.value)}
+                      rows={3}
+                      className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500 resize-none"
+                      placeholder="e.g. 50K followers, 6% engagement, collab with Nike, viral reel with 1M views..."
+                    />
+                  </div>
+
+                  {bioModalError && (
+                    <div className="bg-red-500/10 text-red-400 text-xs px-3 py-2 rounded-lg border border-red-500/20">{bioModalError}</div>
+                  )}
+
+                  <button
+                    onClick={handleGenerateBio}
+                    disabled={bioModalLoading}
+                    className="w-full bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  >
+                    {bioModalLoading ? (
+                      <><svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg> Writing your bio...</>
+                    ) : "Generate Bio →"}
+                  </button>
+                  <p className="text-center text-xs text-[#64748B]">Costs 1 credit</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="bg-[#0D0D1A] border border-[#1E1E2E] rounded-xl p-4">
+                    <div className="text-xs font-medium text-purple-400 uppercase tracking-wide mb-2">Generated Bio</div>
+                    <p className="text-sm text-[#F8FAFC] leading-relaxed whitespace-pre-wrap">{bioModalResult.medium}</p>
+                  </div>
+
+                  {bioModalResult.short && (
+                    <div className="bg-[#0D0D1A] border border-[#1E1E2E] rounded-xl p-4">
+                      <div className="text-xs text-[#64748B] mb-1">Short version <span className="text-[#94A3B8]">(for Instagram bio field)</span></div>
+                      <p className="text-xs text-[#94A3B8] leading-relaxed">{bioModalResult.short}</p>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => { setBio(bioModalResult.medium); closeBioModal() }}
+                      className="w-full bg-[#10B981] text-white py-2.5 rounded-lg text-sm font-medium hover:bg-[#0ea57a] transition-colors"
+                    >
+                      Use This Bio
+                    </button>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(bioModalResult.medium)}
+                      className="w-full bg-[#0A0A0F] border border-[#1E1E2E] text-[#94A3B8] py-2.5 rounded-lg text-sm hover:border-purple-500/30 hover:text-[#F8FAFC] transition-colors"
+                    >
+                      Copy to Clipboard
+                    </button>
+                    <button
+                      onClick={() => { setBioModalResult(null); setBioModalError("") }}
+                      className="w-full bg-[#0A0A0F] border border-[#1E1E2E] text-[#94A3B8] py-2.5 rounded-lg text-sm hover:border-purple-500/30 hover:text-[#F8FAFC] transition-colors"
+                    >
+                      Regenerate
+                    </button>
+                    <button onClick={closeBioModal} className="text-xs text-[#64748B] hover:text-[#F8FAFC] transition-colors py-1">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

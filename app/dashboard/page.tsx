@@ -577,7 +577,7 @@ export default function Dashboard() {
                   <span className="text-xs text-purple-400 font-medium whitespace-nowrap">Try →</span>
                 </a>
               ) : (
-                <a href="/bio-writer" className="flex items-center gap-4 p-3 rounded-xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/10 transition-all">
+                <a href="/profile#bio" className="flex items-center gap-4 p-3 rounded-xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/10 transition-all">
                   <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center text-lg flex-shrink-0">✍️</div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-[#F8FAFC]">AI Bio Writer</div>
