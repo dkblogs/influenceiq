@@ -32,7 +32,11 @@ export default function Navbar() {
     retryRef.current = setTimeout(() => {
       setCredits((prev) => { if (prev === null) fetchCredits(); return prev })
     }, 3000)
-    return () => { if (retryRef.current) clearTimeout(retryRef.current) }
+    window.addEventListener('credits-updated', fetchCredits)
+    return () => {
+      if (retryRef.current) clearTimeout(retryRef.current)
+      window.removeEventListener('credits-updated', fetchCredits)
+    }
   }, [user?.id])
 
   // Close discover dropdown on outside click

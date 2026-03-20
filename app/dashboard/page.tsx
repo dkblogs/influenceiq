@@ -289,6 +289,8 @@ export default function Dashboard() {
       setAiError(res.status === 402 ? "CREDITS" : (data.error || "Failed to generate report"))
       return
     }
+    setCredits(prev => prev !== null ? prev - 2 : prev)
+    window.dispatchEvent(new Event('credits-updated'))
     setAiReport(data.report)
     setAiReportsCount(c => c + 1)
     setMyInfluencerProfile((p: any) => ({
