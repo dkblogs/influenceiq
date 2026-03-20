@@ -165,17 +165,9 @@ export default function DiscoverInfluencers() {
                     <div className="flex gap-1 flex-wrap mb-3">
                       <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full">{inf.niche}</span>
                       <span className="text-xs bg-[#1E1E2E] text-[#94A3B8] px-2 py-0.5 rounded-full">{inf.platform}</span>
-                      {inf.instagramHandle && (
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${inf.instagramVerified ? "bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20" : "bg-[#1E1E2E] text-[#64748B]"}`}>
-                          IG {inf.instagramVerified ? "✓" : "·"} {inf.instagramHandle}
-                        </span>
-                      )}
-                      {inf.youtubeHandle && (
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${inf.youtubeVerified ? "bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20" : "bg-[#1E1E2E] text-[#64748B]"}`}>
-                          YT {inf.youtubeVerified ? "✓" : "·"} {inf.youtubeHandle}
-                        </span>
-                      )}
-                      {!inf.instagramHandle && !inf.youtubeHandle && (
+                      {inf.instagramVerified && <span className="text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded-full">IG ✓</span>}
+                      {inf.youtubeVerified && <span className="text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded-full">YT ✓</span>}
+                      {!inf.instagramVerified && !inf.youtubeVerified && (
                         <span className="text-xs bg-[#1E1E2E] text-[#64748B] px-2 py-0.5 rounded-full">Unverified</span>
                       )}
                     </div>

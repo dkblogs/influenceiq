@@ -243,23 +243,33 @@ export default function InfluencerProfile() {
               <div className="flex gap-2 mb-4 flex-wrap">
                 <span className="text-sm bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full border border-purple-500/20">{influencer.niche}</span>
                 <span className="text-sm bg-[#1E1E2E] text-[#94A3B8] px-3 py-1 rounded-full">{influencer.platform}</span>
-                {influencer.instagramHandle && (
-                  influencer.instagramVerified
-                    ? <span className="text-sm bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-3 py-1 rounded-full">
-                        {influencer.instagramHandle} ✓{influencer.instagramFollowers ? ` · ${influencer.instagramFollowers.toLocaleString()}` : ""}
-                      </span>
-                    : <span className="text-sm bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-3 py-1 rounded-full">
-                        {influencer.instagramHandle} ⚠ Unverified
-                      </span>
+                {(influencer.instagramHandle || influencer.instagramVerified) && (
+                  influencer.instagramVerified ? (
+                    <span className="text-sm bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-3 py-1 rounded-full">
+                      {tier3
+                        ? <>{influencer.instagramHandle} ✓{influencer.instagramFollowers ? ` · ${influencer.instagramFollowers.toLocaleString()}` : ""}</>
+                        : <>IG ✓ <span className="blur-sm select-none text-xs">••••••••</span></>
+                      }
+                    </span>
+                  ) : tier3 ? (
+                    <span className="text-sm bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-3 py-1 rounded-full">
+                      {influencer.instagramHandle} ⚠ Unverified
+                    </span>
+                  ) : null
                 )}
-                {influencer.youtubeHandle && (
-                  influencer.youtubeVerified
-                    ? <span className="text-sm bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-3 py-1 rounded-full">
-                        {influencer.youtubeHandle} ✓{influencer.youtubeFollowers ? ` · ${influencer.youtubeFollowers.toLocaleString()}` : ""}
-                      </span>
-                    : <span className="text-sm bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-3 py-1 rounded-full">
-                        {influencer.youtubeHandle} ⚠ Unverified
-                      </span>
+                {(influencer.youtubeHandle || influencer.youtubeVerified) && (
+                  influencer.youtubeVerified ? (
+                    <span className="text-sm bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-3 py-1 rounded-full">
+                      {tier3
+                        ? <>{influencer.youtubeHandle} ✓{influencer.youtubeFollowers ? ` · ${influencer.youtubeFollowers.toLocaleString()}` : ""}</>
+                        : <>YT ✓ <span className="blur-sm select-none text-xs">••••••••</span></>
+                      }
+                    </span>
+                  ) : tier3 ? (
+                    <span className="text-sm bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-3 py-1 rounded-full">
+                      {influencer.youtubeHandle} ⚠ Unverified
+                    </span>
+                  ) : null
                 )}
               </div>
               <p className="text-[#94A3B8] text-sm leading-relaxed">{influencer.about}</p>
