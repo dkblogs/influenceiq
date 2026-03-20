@@ -178,9 +178,9 @@ export default function Leaderboard() {
                         <div className={`${isFirst ? "w-16 h-16" : "w-12 h-12"} rounded-full ${color} flex items-center justify-center text-white font-semibold ${isFirst ? "text-lg" : "text-sm"} mb-3`}>
                           {initials}
                         </div>
-                        <div className="font-semibold text-[#F8FAFC] text-sm mb-1">
-                          {loggedIn ? inf.name : firstName(inf.name)}
-                          {inf.verified && <span className="ml-1 text-cyan-400 text-xs">✓</span>}
+                        <div className="font-semibold text-[#F8FAFC] text-sm mb-1 flex items-center justify-center gap-1.5 flex-wrap">
+                          <span>{loggedIn ? inf.name : firstName(inf.name)}</span>
+                          {inf.verified && <span className="bg-cyan-500/10 text-cyan-400 text-xs px-1.5 py-0.5 rounded-full font-semibold border border-cyan-500/20">✓ Verified</span>}
                         </div>
                         <div className="flex gap-1 justify-center flex-wrap mb-3">
                           <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/20">{inf.niche}</span>
@@ -238,11 +238,11 @@ export default function Leaderboard() {
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 mb-1">
+                          <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                             <span className="font-medium text-[#F8FAFC] text-sm truncate">
                               {loggedIn ? inf.name : firstName(inf.name)}
                             </span>
-                            {inf.verified && <span className="text-cyan-400 text-xs flex-shrink-0">✓</span>}
+                            {inf.verified && <span className="bg-cyan-500/10 text-cyan-400 text-xs px-1.5 py-0.5 rounded-full font-semibold border border-cyan-500/20 flex-shrink-0">✓ Verified</span>}
                           </div>
                           <div className="flex gap-1 flex-wrap">
                             <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full">{inf.niche}</span>

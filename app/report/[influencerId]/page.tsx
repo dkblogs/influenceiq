@@ -117,6 +117,9 @@ export default function ReportPage() {
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 <h1 className="text-2xl font-bold text-[#F8FAFC]">{influencer.name}</h1>
+                {influencer.verified && (
+                  <span className="bg-cyan-500/10 text-cyan-400 text-xs px-2 py-0.5 rounded-full font-semibold border border-cyan-500/20">✓ InfluenceIQ Verified</span>
+                )}
                 {influencer.instagramVerified && (
                   <span className="bg-pink-500/10 border border-pink-500/30 text-pink-300 text-xs px-2 py-0.5 rounded-full">✓ Instagram</span>
                 )}

@@ -149,9 +149,9 @@ export default function DiscoverInfluencers() {
                         {inf.initials}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-medium text-[#F8FAFC] text-sm truncate">{inf.name}</span>
-                          {inf.verified && <span className="text-cyan-400 text-xs flex-shrink-0">✓</span>}
+                          {inf.verified && <span className="bg-cyan-500/10 text-cyan-400 text-xs px-1.5 py-0.5 rounded-full font-semibold border border-cyan-500/20 flex-shrink-0">✓ Verified</span>}
                         </div>
                         <p className="text-xs text-[#64748B] truncate">
                           <span className="blur-sm select-none">••••••••</span> · {inf.location}
@@ -220,9 +220,9 @@ export default function DiscoverInfluencers() {
                         {inf.initials}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 mb-0.5">
+                        <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
                           <span className="font-medium text-[#F8FAFC] text-sm">{firstName(inf.name)}</span>
-                          {inf.verified && <span className="text-cyan-400 text-xs">✓</span>}
+                          {inf.verified && <span className="bg-cyan-500/10 text-cyan-400 text-xs px-1.5 py-0.5 rounded-full font-semibold border border-cyan-500/20">✓ Verified</span>}
                         </div>
                         <p className="text-xs text-[#64748B]">{inf.location}</p>
                       </div>

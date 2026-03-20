@@ -223,7 +223,7 @@ export default function InfluencerProfile() {
                   {tier1 ? firstName(influencer.name) : influencer.name}
                 </h1>
                 {influencer.verified && (
-                  <span className="bg-cyan-500/10 text-cyan-400 text-xs px-2 py-0.5 rounded-full font-medium border border-cyan-500/20">✓ Verified</span>
+                  <span className="bg-cyan-500/10 text-cyan-400 text-xs px-2 py-0.5 rounded-full font-semibold border border-cyan-500/20">✓ InfluenceIQ Verified</span>
                 )}
               </div>
 

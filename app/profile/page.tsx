@@ -168,6 +168,11 @@ export default function ProfilePage() {
   const [bioModalResult, setBioModalResult] = useState<any>(null)
   const [bioModalError, setBioModalError] = useState("")
 
+  // Verification badge state
+  const [verifyLoading, setVerifyLoading] = useState(false)
+  const [verifyError, setVerifyError] = useState("")
+  const [verifySuccess, setVerifySuccess] = useState(false)
+
   // Apify fetch state (auto-fill)
   const [fetchingProfile, setFetchingProfile] = useState(false)
   const [fetchStatus, setFetchStatus] = useState<"" | "success" | "error">("")
@@ -225,6 +230,24 @@ export default function ProfilePage() {
       })
       .catch(() => setLoading(false))
   }, [status])
+
+  async function handleRequestVerification() {
+    setVerifyLoading(true)
+    setVerifyError("")
+    const res = await fetch("/api/request-verification", { method: "POST" })
+    const data = await res.json()
+    setVerifyLoading(false)
+    if (!res.ok) {
+      setVerifyError(res.status === 402 ? "CREDITS" : (data.error || "Verification failed"))
+      return
+    }
+    if (data.verified) {
+      setVerifySuccess(true)
+      setInfluencer((prev: any) => ({ ...prev, verified: true }))
+    } else if (data.missing) {
+      setVerifyError(`Missing requirements: ${data.missing.join(", ")}`)
+    }
+  }
 
   async function handleGenerateBio() {
     setBioModalLoading(true)
@@ -600,28 +623,111 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Influencer verification */}
-              <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6">
-                <h2 className="font-semibold text-[#F8FAFC] mb-5 text-sm uppercase tracking-wide">Verification Badge</h2>
-                {influencer?.verified ? (
-                  <div className="flex items-center gap-3 p-4 bg-[#10B981]/10 border border-[#10B981]/20 rounded-xl">
-                    <span className="text-xl">✓</span>
-                    <p className="text-sm font-medium text-[#10B981]">Your profile is verified</p>
+              {/* InfluenceIQ Verified Badge */}
+              {(() => {
+                const hasVerifiedHandle = igStep === "verified" || ytStep === "verified"
+                const hasAiReport = !!(influencer?.aiReportGeneratedAt)
+                const allConditionsMet = hasVerifiedHandle && hasAiReport
+                const isVerified = influencer?.verified || verifySuccess
+                return (
+                  <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6 relative overflow-hidden">
+                    <h2 className="font-semibold text-[#F8FAFC] mb-4 text-sm uppercase tracking-wide">InfluenceIQ Verified Badge</h2>
+
+                    {isVerified ? (
+                      <div className="relative">
+                        {verifySuccess && (
+                          <style>{`
+                            @keyframes confettiFall {
+                              0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+                              100% { transform: translateY(180px) rotate(720deg); opacity: 0; }
+                            }
+                          `}</style>
+                        )}
+                        {verifySuccess && (
+                          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                            {["#7C3AED","#06B6D4","#10B981","#F59E0B","#EF4444","#EC4899","#8B5CF6","#14B8A6","#F97316","#3B82F6","#7C3AED","#06B6D4","#10B981","#F59E0B","#EF4444","#EC4899"].map((color, i) => (
+                              <div key={i} style={{
+                                position: "absolute", top: "-10px",
+                                left: `${(i / 16) * 100}%`,
+                                width: i % 2 === 0 ? "8px" : "6px",
+                                height: i % 2 === 0 ? "8px" : "10px",
+                                borderRadius: i % 3 === 0 ? "50%" : "2px",
+                                backgroundColor: color,
+                                animation: `confettiFall ${0.7 + (i % 5) * 0.15}s ${i * 0.04}s ease-in forwards`,
+                              }} />
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 bg-gradient-to-r from-[#10B981]/10 to-cyan-500/10 border border-[#10B981]/30 rounded-xl">
+                          <div className="text-3xl">✅</div>
+                          <div className="flex-1">
+                            <p className="text-base font-bold text-[#10B981] mb-0.5">Verified by InfluenceIQ</p>
+                            <p className="text-xs text-[#64748B]">Your profile shows a verified tick to all brands</p>
+                          </div>
+                          <span className="bg-cyan-500/10 text-cyan-400 text-xs px-3 py-1.5 rounded-full font-semibold border border-cyan-500/20 flex-shrink-0">
+                            ✓ InfluenceIQ Verified
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <p className="text-sm text-[#94A3B8]">
+                          Complete the checklist below to earn your InfluenceIQ verified badge. Costs{" "}
+                          <strong className="text-[#F8FAFC]">20 credits</strong> — brands trust verified influencers more.
+                        </p>
+
+                        <div className="space-y-2">
+                          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg border ${hasVerifiedHandle ? "bg-[#10B981]/5 border-[#10B981]/20" : "bg-red-500/5 border-red-500/20"}`}>
+                            <span>{hasVerifiedHandle ? "✅" : "❌"}</span>
+                            <span className="text-sm text-[#94A3B8] flex-1">At least one social handle verified</span>
+                            {!hasVerifiedHandle && (
+                              <span className="text-xs text-purple-400 flex-shrink-0">↑ Verify above</span>
+                            )}
+                          </div>
+                          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg border ${hasAiReport ? "bg-[#10B981]/5 border-[#10B981]/20" : "bg-red-500/5 border-red-500/20"}`}>
+                            <span>{hasAiReport ? "✅" : "❌"}</span>
+                            <span className="text-sm text-[#94A3B8] flex-1">AI Score & Report generated</span>
+                            {!hasAiReport && (
+                              <a href="/dashboard" className="text-xs text-purple-400 hover:underline flex-shrink-0">Generate →</a>
+                            )}
+                          </div>
+                        </div>
+
+                        {verifyError && (
+                          <div className="bg-red-500/10 px-4 py-3 rounded-lg border border-red-500/20">
+                            {verifyError === "CREDITS"
+                              ? <InsufficientCreditsError action="get verified" />
+                              : <span className="text-sm text-red-400">{verifyError}</span>}
+                          </div>
+                        )}
+
+                        {allConditionsMet ? (
+                          <button
+                            type="button"
+                            onClick={handleRequestVerification}
+                            disabled={verifyLoading}
+                            className="w-full bg-gradient-to-r from-cyan-600 to-purple-600 text-white py-3 rounded-xl text-sm font-semibold hover:from-cyan-500 hover:to-purple-500 disabled:opacity-50 transition-all shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2"
+                          >
+                            {verifyLoading ? (
+                              <>
+                                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                </svg>
+                                Requesting verification...
+                              </>
+                            ) : "Request Verification Badge — 20 credits"}
+                          </button>
+                        ) : (
+                          <div className="text-xs text-[#64748B] bg-[#0D0D1A] px-4 py-3 rounded-lg border border-[#1E1E2E]">
+                            Complete the requirements above to unlock verification.
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    <p className="text-sm text-[#94A3B8]">
-                      Get a verification badge by connecting your social media data. Brands trust verified influencers more.
-                    </p>
-                    <p className="text-xs text-[#64748B]">
-                      Verification requires your Instagram or YouTube handle to be fetched above.
-                    </p>
-                    <div className="inline-block text-xs bg-[#1E1E2E] text-[#64748B] px-3 py-2 rounded-lg">
-                      Coming soon — verification flow in progress
-                    </div>
-                  </div>
-                )}
-              </div>
+                )
+              })()}
             </>
           )}
 
