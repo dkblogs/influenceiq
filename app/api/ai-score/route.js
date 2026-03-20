@@ -84,16 +84,28 @@ Respond in this exact JSON format with no other text:
       return Response.json({ error: "Failed to parse AI response" }, { status: 500 })
     }
 
-    await prisma.influencer.update({
-      where: { id: influencerId },
-      data: {
-        score: report.score,
-        aiScore: report.score,
-        aiReportSummary: report.summary,
-        aiReportFull: JSON.stringify(report),
-        aiReportGeneratedAt: new Date(),
-      },
-    })
+    const reportJson = JSON.stringify(report)
+
+    await Promise.all([
+      prisma.influencer.update({
+        where: { id: influencerId },
+        data: {
+          score: report.score,
+          aiScore: report.score,
+          aiReportSummary: report.summary,
+          aiReportFull: reportJson,
+          aiReportGeneratedAt: new Date(),
+        },
+      }),
+      prisma.aiReport.create({
+        data: {
+          influencerId,
+          score: report.score,
+          summary: report.summary,
+          reportFull: reportJson,
+        },
+      }),
+    ])
 
     return Response.json({ success: true, report })
 

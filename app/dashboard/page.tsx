@@ -161,6 +161,9 @@ export default function Dashboard() {
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState("")
   const [aiReportsCount, setAiReportsCount] = useState(0)
+  const [aiReportHistory, setAiReportHistory] = useState<any[]>([])
+  const [expandedReportId, setExpandedReportId] = useState<string | null>(null)
+  const [historyOpen, setHistoryOpen] = useState(false)
   const [campaignApplicationCount, setCampaignApplicationCount] = useState<number | null>(null)
   const [collaborationRequestCount, setCollaborationRequestCount] = useState<number | null>(null)
   const [portfolioForm, setPortfolioForm] = useState({
@@ -201,9 +204,17 @@ export default function Dashboard() {
             try { setAiReport(JSON.parse(inf.aiReportFull)) } catch {}
           }
           if (inf?.id) {
-            const portfolioRes = await fetch(`/api/portfolio?influencerId=${inf.id}`)
+            const [portfolioRes, historyRes] = await Promise.all([
+              fetch(`/api/portfolio?influencerId=${inf.id}`),
+              fetch(`/api/ai-reports`),
+            ])
             const portfolioData = await portfolioRes.json()
             setPortfolioItems(portfolioData.items || [])
+            const historyData = await historyRes.json()
+            const reports = historyData.reports || []
+            setAiReportHistory(reports)
+            setAiReportsCount(reports.length)
+            if (reports.length > 0) setExpandedReportId(reports[0].id)
           }
         }
 
@@ -293,6 +304,20 @@ export default function Dashboard() {
     window.dispatchEvent(new Event('credits-updated'))
     setAiReport(data.report)
     setAiReportsCount(c => c + 1)
+    // Prepend new report to history
+    const newHistoryEntry = {
+      id: `temp-${Date.now()}`,
+      score: data.report.score,
+      summary: data.report.summary,
+      reportFull: JSON.stringify(data.report),
+      createdAt: new Date().toISOString(),
+    }
+    setAiReportHistory(prev => {
+      const updated = [newHistoryEntry, ...prev]
+      setExpandedReportId(newHistoryEntry.id)
+      return updated
+    })
+    setHistoryOpen(true)
     setMyInfluencerProfile((p: any) => ({
       ...p,
       score: data.report.score,
@@ -563,6 +588,92 @@ export default function Dashboard() {
                     </span>
                   )}
                 </div>
+
+                {/* Report History */}
+                {aiReportHistory.length > 0 && (
+                  <div className="mt-6 border-t border-[#1E1E2E] pt-5">
+                    <button
+                      onClick={() => setHistoryOpen(o => !o)}
+                      className="flex items-center gap-2 text-sm font-medium text-[#94A3B8] hover:text-[#F8FAFC] transition-colors w-full text-left"
+                    >
+                      <span className={`transition-transform ${historyOpen ? "rotate-90" : ""}`}>▶</span>
+                      Report History
+                      <span className="ml-1 text-xs bg-[#1E1E2E] text-[#64748B] px-2 py-0.5 rounded-full">{aiReportHistory.length}</span>
+                    </button>
+
+                    {historyOpen && (
+                      <div className="mt-4 space-y-2">
+                        {aiReportHistory.map((entry: any, idx: number) => {
+                          const isLatest = idx === 0
+                          const isExpanded = expandedReportId === entry.id
+                          const entryReport = (() => { try { return JSON.parse(entry.reportFull) } catch { return null } })()
+                          const scoreHex = entry.score >= 70 ? "#10B981" : entry.score >= 40 ? "#FBBF24" : "#F87171"
+                          return (
+                            <div key={entry.id} className="border border-[#1E1E2E] rounded-xl overflow-hidden">
+                              <button
+                                onClick={() => setExpandedReportId(isExpanded ? null : entry.id)}
+                                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#1E1E2E]/50 transition-colors text-left"
+                              >
+                                <span className="text-base font-bold flex-shrink-0" style={{ color: scoreHex }}>{entry.score}</span>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs text-[#94A3B8] truncate">{entry.summary}</p>
+                                </div>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  {isLatest && (
+                                    <span className="text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded-full font-medium">Latest</span>
+                                  )}
+                                  <span className="text-xs text-[#64748B]">
+                                    {new Date(entry.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                                  </span>
+                                  <span className={`text-[#64748B] text-xs transition-transform ${isExpanded ? "rotate-180" : ""}`}>▼</span>
+                                </div>
+                              </button>
+
+                              {isExpanded && entryReport && (
+                                <div className="px-4 pb-4 border-t border-[#1E1E2E] pt-4 space-y-3">
+                                  {[
+                                    { key: "engagementAnalysis", label: "Engagement Analysis" },
+                                    { key: "nicheStrength", label: "Niche Strength" },
+                                    { key: "contentConsistency", label: "Content Consistency" },
+                                    { key: "growthPotential", label: "Growth Potential" },
+                                    { key: "brandCollaborationReadiness", label: "Brand Collaboration Readiness" },
+                                  ].map(({ key, label }) => entryReport[key] ? (
+                                    <div key={key}>
+                                      <p className="text-xs font-medium text-[#F8FAFC] mb-0.5">{label}</p>
+                                      <p className="text-xs text-[#94A3B8] leading-relaxed">{entryReport[key]}</p>
+                                    </div>
+                                  ) : null)}
+                                  {entryReport.strengths?.length > 0 && (
+                                    <div>
+                                      <p className="text-xs font-medium text-[#10B981] mb-1">Strengths</p>
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {entryReport.strengths.map((s: string, i: number) => (
+                                          <span key={i} className="text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded-full">{s}</span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {entryReport.improvements?.length > 0 && (
+                                    <div>
+                                      <p className="text-xs font-medium text-amber-400 mb-1">Areas to Improve</p>
+                                      <ul className="space-y-1">
+                                        {entryReport.improvements.map((s: string, i: number) => (
+                                          <li key={i} className="text-xs text-[#94A3B8] flex items-start gap-1.5">
+                                            <span className="text-amber-400 flex-shrink-0">•</span>{s}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>

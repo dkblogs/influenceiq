@@ -110,7 +110,18 @@ model Influencer {
   followersPublic  Boolean  @default(true)
   createdAt        DateTime @default(now())
   portfolioItems   PortfolioItem[]
+  aiReports        AiReport[]
   @@unique([handle])
+}
+
+model AiReport {
+  id            String     @id @default(cuid())
+  influencerId  String
+  influencer    Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  score         Int
+  summary       String
+  reportFull    String     @db.Text
+  createdAt     DateTime   @default(now())
 }
 
 model PortfolioItem {
