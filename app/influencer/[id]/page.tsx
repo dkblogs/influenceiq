@@ -254,39 +254,55 @@ export default function InfluencerProfile() {
 
               <div className="flex gap-2 mb-4 flex-wrap">
                 <span className="text-sm bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full border border-purple-500/20">{influencer.niche}</span>
-                <span className="text-sm bg-[#1E1E2E] text-[#94A3B8] px-3 py-1 rounded-full">{influencer.platform}</span>
-                {(influencer.instagramHandle || influencer.instagramVerified) && (
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${
-                    influencer.instagramVerified
-                      ? "bg-green-500/20 border border-green-500/40 text-green-300"
-                      : "bg-[#1E1E2E] border border-[#1E1E2E] text-[#94A3B8]"
-                  }`}>
-                    {tier3
-                      ? influencer.instagramHandle || "Instagram"
-                      : "Instagram"}
-                    {influencer.instagramVerified
-                      ? <span className="text-green-400 text-xs">✓</span>
-                      : tier3 && <span className="text-yellow-500 text-xs">⚠</span>}
-                    {tier3 && influencer.instagramVerified && influencer.instagramFollowers
-                      ? <span className="text-green-400/70 text-xs">· {influencer.instagramFollowers.toLocaleString()}</span>
-                      : !tier3 && <span className="blur-sm select-none text-xs">••••</span>}
-                  </span>
-                )}
-                {(influencer.youtubeHandle || influencer.youtubeVerified) && (
+                {(() => {
+                  const p = influencer.platform || ""
+                  const isIg = p.toLowerCase().includes("instagram")
+                  const isYt = p.toLowerCase().includes("youtube")
+                  if (isIg) {
+                    return (
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${
+                        influencer.instagramVerified
+                          ? "bg-green-500/20 border border-green-500/40 text-green-300"
+                          : "bg-[#1E1E2E] text-[#94A3B8]"
+                      }`}>
+                        {tier3 ? (influencer.instagramHandle || "Instagram") : "Instagram"}
+                        {influencer.instagramVerified
+                          ? <span className="text-green-400 text-xs">✓</span>
+                          : tier3 && <span className="text-yellow-500 text-xs">⚠</span>}
+                        {tier3 && influencer.instagramVerified && influencer.instagramFollowers
+                          ? <span className="text-green-400/70 text-xs">· {influencer.instagramFollowers.toLocaleString()}</span>
+                          : !tier3 && influencer.instagramVerified && <span className="blur-sm select-none text-xs">••••</span>}
+                      </span>
+                    )
+                  }
+                  if (isYt) {
+                    return (
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${
+                        influencer.youtubeVerified
+                          ? "bg-green-500/20 border border-green-500/40 text-green-300"
+                          : "bg-[#1E1E2E] text-[#94A3B8]"
+                      }`}>
+                        {tier3 ? (influencer.youtubeHandle || "YouTube") : "YouTube"}
+                        {influencer.youtubeVerified
+                          ? <span className="text-green-400 text-xs">✓</span>
+                          : tier3 && <span className="text-yellow-500 text-xs">⚠</span>}
+                        {tier3 && influencer.youtubeVerified && influencer.youtubeFollowers
+                          ? <span className="text-green-400/70 text-xs">· {influencer.youtubeFollowers.toLocaleString()}</span>
+                          : !tier3 && influencer.youtubeVerified && <span className="blur-sm select-none text-xs">••••</span>}
+                      </span>
+                    )
+                  }
+                  return <span className="text-sm bg-[#1E1E2E] text-[#94A3B8] px-3 py-1 rounded-full">{influencer.platform}</span>
+                })()}
+                {/* Secondary platform tag for multi-platform influencers (e.g. "Instagram + YouTube") */}
+                {influencer.platform?.toLowerCase().includes("instagram") && influencer.platform?.toLowerCase().includes("youtube") && (
                   <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${
                     influencer.youtubeVerified
                       ? "bg-green-500/20 border border-green-500/40 text-green-300"
-                      : "bg-[#1E1E2E] border border-[#1E1E2E] text-[#94A3B8]"
+                      : "bg-[#1E1E2E] text-[#94A3B8]"
                   }`}>
-                    {tier3
-                      ? influencer.youtubeHandle || "YouTube"
-                      : "YouTube"}
-                    {influencer.youtubeVerified
-                      ? <span className="text-green-400 text-xs">✓</span>
-                      : tier3 && <span className="text-yellow-500 text-xs">⚠</span>}
-                    {tier3 && influencer.youtubeVerified && influencer.youtubeFollowers
-                      ? <span className="text-green-400/70 text-xs">· {influencer.youtubeFollowers.toLocaleString()}</span>
-                      : !tier3 && <span className="blur-sm select-none text-xs">••••</span>}
+                    {tier3 ? (influencer.youtubeHandle || "YouTube") : "YouTube"}
+                    {influencer.youtubeVerified && <span className="text-green-400 text-xs">✓</span>}
                   </span>
                 )}
               </div>
