@@ -81,7 +81,7 @@ export async function POST(request) {
 
     return Response.json({ url: publicUrl })
   } catch (error) {
-    console.error("Upload avatar error:", error.message)
-    return Response.json({ error: "Internal server error" }, { status: 500 })
+    console.error("Upload avatar error:", error.message, error.stack)
+    return Response.json({ error: "Internal server error", detail: error.message, stack: error.stack }, { status: 500 })
   }
 }
