@@ -115,7 +115,7 @@ export default function Home() {
             {!loggedIn && (
               <>
                 <a href="/discover" className="bg-purple-600 text-white px-8 py-3 rounded-lg text-base font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/25">
-                  Find Influencers — free
+                  Find Influencers
                 </a>
                 <a href="/signup?role=influencer" className="border border-[#1E1E2E] text-[#94A3B8] px-8 py-3 rounded-lg text-base hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors">
                   Join as Influencer
