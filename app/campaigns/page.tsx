@@ -16,7 +16,7 @@ const niches = ["All", "Food", "Fitness", "Finance", "Fashion", "Education", "Te
 const platforms = ["All", "Instagram", "YouTube", "LinkedIn"]
 
 export default function Campaigns() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [selectedNiche, setSelectedNiche] = useState("All")
   const [selectedPlatform, setSelectedPlatform] = useState("All")
   const [search, setSearch] = useState("")
@@ -24,17 +24,32 @@ export default function Campaigns() {
   const [credits, setCredits] = useState<number | null>(null)
   const [error, setError] = useState("")
   const [dbCampaigns, setDbCampaigns] = useState<any[]>([])
+  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set())
+
+  const isInfluencer = status === "authenticated" && (session?.user as any)?.role === "influencer"
 
   useEffect(() => {
+    fetch(`/api/campaigns`)
+      .then(res => res.json())
+      .then(data => setDbCampaigns(data.campaigns || []))
+
     if (session?.user?.id) {
       fetch(`/api/user-credits?userId=${session.user.id}`)
         .then(res => res.json())
         .then(data => setCredits(data.credits))
-      fetch(`/api/campaigns`)
-        .then(res => res.json())
-        .then(data => setDbCampaigns(data.campaigns || []))
     }
-  }, [session])
+
+    if (isInfluencer) {
+      fetch("/api/my-applications")
+        .then(res => res.json())
+        .then(data => {
+          const ids = new Set<string>(
+            (data.applications || []).map((a: any) => a.campaign?.id).filter(Boolean)
+          )
+          setAppliedIds(ids)
+        })
+    }
+  }, [session?.user?.id, isInfluencer])
 
   const allCampaigns = [...hardcodedCampaigns, ...dbCampaigns]
 
@@ -70,6 +85,7 @@ export default function Campaigns() {
     }
 
     setApplied([...applied, campaignId])
+    setAppliedIds(prev => new Set([...prev, campaignId]))
     setCredits(data.newCredits)
   }
 
@@ -173,16 +189,22 @@ export default function Campaigns() {
                       <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/20">{c.niche}</span>
                     </div>
                     <div className="flex gap-3">
-                      <button
-                        onClick={() => handleApply(c.id)}
-                        className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          applied.includes(c.id)
-                            ? "bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20"
-                            : "bg-purple-600 text-white hover:bg-purple-500 shadow-lg shadow-purple-500/20"
-                        }`}
-                      >
-                        {applied.includes(c.id) ? "✓ Applied" : "Apply now — 2 credits"}
-                      </button>
+                      {isInfluencer && appliedIds.has(c.id) ? (
+                        <span className="px-5 py-2 rounded-lg text-sm font-medium bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20">
+                          ✅ Already Applied
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleApply(c.id)}
+                          className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            applied.includes(c.id)
+                              ? "bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20"
+                              : "bg-purple-600 text-white hover:bg-purple-500 shadow-lg shadow-purple-500/20"
+                          }`}
+                        >
+                          {applied.includes(c.id) ? "✓ Applied" : "Apply now — 2 credits"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
