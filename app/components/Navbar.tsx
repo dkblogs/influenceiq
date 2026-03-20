@@ -12,7 +12,9 @@ export default function Navbar() {
   const user = session?.user as any
   const [credits, setCredits] = useState<number | null>(user?.credits ?? null)
   const [brandVerified, setBrandVerified] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
   const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const notifIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const loggedIn = status === "authenticated"
   const role = user?.role
@@ -33,8 +35,20 @@ export default function Navbar() {
       setCredits((prev) => { if (prev === null) fetchCredits(); return prev })
     }, 3000)
     window.addEventListener('credits-updated', fetchCredits)
+
+    // Fetch notifications unread count
+    function fetchUnread() {
+      fetch('/api/notifications')
+        .then(r => r.json())
+        .then(d => { if (typeof d.unreadCount === 'number') setUnreadCount(d.unreadCount) })
+        .catch(() => {})
+    }
+    fetchUnread()
+    notifIntervalRef.current = setInterval(fetchUnread, 30000)
+
     return () => {
       if (retryRef.current) clearTimeout(retryRef.current)
+      if (notifIntervalRef.current) clearInterval(notifIntervalRef.current)
       window.removeEventListener('credits-updated', fetchCredits)
     }
   }, [user?.id])
@@ -143,8 +157,19 @@ export default function Navbar() {
               {navLink("/profile", "Profile")}
               <DiscoverDropdown />
               {navLink("/campaigns", "Campaigns")}
+              {navLink("/my-campaigns", "My Campaigns")}
               {navLink("/contact", "Contact Us")}
               <span className="w-px h-4 bg-[#1E1E2E]" />
+              <a href="/notifications" className="relative text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 leading-none">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </a>
               <div className="flex items-center bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-full">
                 <span className="text-xs text-purple-400 font-medium">
                   {credits !== null ? `${credits} credits` : "…"}
@@ -166,6 +191,16 @@ export default function Navbar() {
               {navLink("/campaigns", "Campaigns")}
               {navLink("/contact", "Contact Us")}
               <span className="w-px h-4 bg-[#1E1E2E]" />
+              <a href="/notifications" className="relative text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 leading-none">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </a>
               <div className="flex items-center bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-full">
                 <span className="text-xs text-purple-400 font-medium">
                   {credits !== null ? `${credits} credits` : "…"}
@@ -220,6 +255,7 @@ export default function Navbar() {
                 { href: "/dashboard", label: "Dashboard" },
                 { href: "/profile", label: "Profile" },
                 { href: "/campaigns", label: "Campaigns" },
+                { href: "/my-campaigns", label: "My Campaigns" },
                 { href: "/contact", label: "Contact Us" },
               ].map(l => (
                 <a key={l.href} href={l.href} className={`text-sm py-2.5 border-b border-[#1E1E2E] ${pathname === l.href ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8]"}`}>{l.label}</a>
@@ -227,6 +263,10 @@ export default function Navbar() {
               <div className="py-1 border-b border-[#1E1E2E]">
                 <DiscoverDropdown mobile />
               </div>
+              <a href="/notifications" className="flex items-center justify-between text-sm py-2.5 border-b border-[#1E1E2E] text-[#94A3B8]">
+                Notifications
+                {unreadCount > 0 && <span className="bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5">{unreadCount > 9 ? "9+" : unreadCount}</span>}
+              </a>
               <div className="text-xs text-purple-400 font-medium py-2.5 border-b border-[#1E1E2E]">
                 {credits !== null ? `${credits} credits` : "…"}
               </div>
@@ -244,6 +284,10 @@ export default function Navbar() {
               ].map(l => (
                 <a key={l.href} href={l.href} className={`text-sm py-2.5 border-b border-[#1E1E2E] ${pathname === l.href ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8]"}`}>{l.label}</a>
               ))}
+              <a href="/notifications" className="flex items-center justify-between text-sm py-2.5 border-b border-[#1E1E2E] text-[#94A3B8]">
+                Notifications
+                {unreadCount > 0 && <span className="bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5">{unreadCount > 9 ? "9+" : unreadCount}</span>}
+              </a>
               <div className="text-xs text-purple-400 font-medium py-2.5 border-b border-[#1E1E2E]">
                 {credits !== null ? `${credits} credits` : "…"}
               </div>

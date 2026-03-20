@@ -27,6 +27,7 @@ model User {
   sessions         Session[]
   accounts         Account[]
   influencers      Influencer[]
+  notifications    Notification[]
 }
 
 model Account {
@@ -112,6 +113,18 @@ model Influencer {
   portfolioItems   PortfolioItem[]
   aiReports        AiReport[]
   @@unique([handle])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
 }
 
 model AiReport {
