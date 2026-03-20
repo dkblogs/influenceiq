@@ -1,5 +1,33 @@
 "use client"
+import { useSession } from "next-auth/react"
 import Navbar from "@/app/components/Navbar"
+
+function InfluencerNote() {
+  const { data: session } = useSession()
+  if (session?.user?.role !== "influencer") return null
+  return (
+    <div
+      className="mb-10 rounded-2xl bg-[#12100A] p-7 relative overflow-hidden"
+      style={{ boxShadow: "0 0 0 1.5px #f59e0b55, 0 0 40px 0 #f59e0b18, inset 0 0 40px 0 #f59e0b08", borderLeft: "4px solid #f59e0b" }}
+    >
+      <div className="flex items-center gap-3 mb-4">
+        <span className="text-2xl">🧡</span>
+        <span className="text-amber-300 font-bold text-lg tracking-tight">A note from us to you 💛</span>
+      </div>
+      <div className="space-y-3 text-[#e2c97e] italic leading-relaxed text-sm md:text-base">
+        <p>
+          We built InfluenceIQ because we believe creators deserve better. Most platforms take 10–30% of everything you earn — silently, every single deal.
+        </p>
+        <p className="font-semibold not-italic text-amber-300">We don&apos;t do that. We never will.</p>
+        <p>
+          The small credit system you see here exists for one reason only — to keep InfluenceIQ running, improving, and free from investor pressure to monetize your relationships. Every credit you spend goes directly into maintaining the AI, the platform, and the team that fights for creators every day.
+        </p>
+        <p className="font-semibold not-italic text-amber-200">You are not the product here. You are the reason we exist.</p>
+        <p className="not-italic text-amber-400/70 text-sm mt-2">— The InfluenceIQ Team 🧡</p>
+      </div>
+    </div>
+  )
+}
 
 export default function Pricing() {
   async function handlePayment(amount: number, credits: number, plan: string) {
@@ -58,6 +86,8 @@ export default function Pricing() {
       <Navbar />
 
       <div className="px-4 md:px-8 py-12 md:py-16 max-w-5xl mx-auto">
+
+        <InfluencerNote />
 
         <div className="text-center mb-10 md:mb-12">
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#F8FAFC] mb-4">Simple, pay-as-you-go pricing</h1>
