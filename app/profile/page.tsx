@@ -177,6 +177,12 @@ export default function ProfilePage() {
   // View / edit mode toggle for influencers
   const [isEditing, setIsEditing] = useState(false)
 
+  // Photo upload state
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoUploading, setPhotoUploading] = useState(false)
+  const [photoError, setPhotoError] = useState("")
+
   // Apify fetch state (auto-fill)
   const [fetchingProfile, setFetchingProfile] = useState(false)
   const [fetchStatus, setFetchStatus] = useState<"" | "success" | "error">("")
@@ -295,7 +301,65 @@ export default function ProfilePage() {
 
   function handleCancel() {
     resetFormState()
+    setPhotoPreview(null)
+    setPhotoFile(null)
+    setPhotoError("")
     setIsEditing(false)
+  }
+
+  function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPhotoError("")
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setPhotoError("Only JPG, PNG or WebP images allowed")
+      return
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setPhotoError("File must be under 2MB")
+      return
+    }
+    setPhotoFile(file)
+    setPhotoPreview(URL.createObjectURL(file))
+  }
+
+  async function handlePhotoUpload() {
+    if (!photoFile && !photoPreview) return
+    setPhotoUploading(true)
+    setPhotoError("")
+    try {
+      const fd = new FormData()
+      if (photoFile) fd.append("file", photoFile)
+      const res = await fetch("/api/upload-avatar", { method: "POST", body: fd })
+      const data = await res.json()
+      if (!res.ok) { setPhotoError(data.error || "Upload failed"); return }
+      setInfluencer((prev: any) => ({ ...prev, profileImage: data.url }))
+      setPhotoFile(null)
+      setPhotoPreview(null)
+    } catch {
+      setPhotoError("Upload failed — try again")
+    } finally {
+      setPhotoUploading(false)
+    }
+  }
+
+  async function handleUseInstagramPhoto() {
+    const url = influencer?.instagramProfilePic
+    if (!url) return
+    setPhotoUploading(true)
+    setPhotoError("")
+    try {
+      const fd = new FormData()
+      fd.append("instagramUrl", url)
+      const res = await fetch("/api/upload-avatar", { method: "POST", body: fd })
+      const data = await res.json()
+      if (!res.ok) { setPhotoError(data.error || "Failed"); return }
+      setInfluencer((prev: any) => ({ ...prev, profileImage: data.url }))
+    } catch {
+      setPhotoError("Failed — try again")
+    } finally {
+      setPhotoUploading(false)
+    }
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -456,9 +520,22 @@ export default function ProfilePage() {
             <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6">
               {/* Avatar + name */}
               <div className="flex flex-col items-center text-center mb-6">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-cyan-500 flex items-center justify-center text-2xl font-bold text-white mb-3">
-                  {initials}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="relative w-20 h-20 rounded-full mb-3 group focus:outline-none"
+                >
+                  {influencer?.profileImage ? (
+                    <img src={influencer.profileImage} alt={name} className="w-20 h-20 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-cyan-500 flex items-center justify-center text-2xl font-bold text-white">
+                      {initials}
+                    </div>
+                  )}
+                  <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="text-white text-xs font-medium">Edit</span>
+                  </div>
+                </button>
                 <div className="flex items-center gap-2 flex-wrap justify-center">
                   <h2 className="text-xl font-bold text-[#F8FAFC]">{name || "—"}</h2>
                   {(influencer?.verified || verifySuccess) && (
@@ -589,6 +666,63 @@ export default function ProfilePage() {
               <div>
                 <h1 className="text-xl font-bold text-[#F8FAFC]">Edit Profile</h1>
                 <p className="text-xs text-[#64748B]">Changes are saved to your public profile</p>
+              </div>
+            </div>
+
+            {/* Photo upload */}
+            <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5">
+              <h2 className="font-semibold text-[#F8FAFC] mb-4 text-sm uppercase tracking-wide">Profile Photo</h2>
+              <div className="flex items-center gap-4">
+                <div className="relative w-16 h-16 rounded-full shrink-0">
+                  {photoPreview || influencer?.profileImage ? (
+                    <img src={photoPreview || influencer.profileImage} alt={name} className="w-16 h-16 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-cyan-500 flex items-center justify-center text-xl font-bold text-white">
+                      {initials}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2 flex-1">
+                  <div className="flex gap-2 flex-wrap">
+                    <label className="cursor-pointer flex items-center gap-1.5 text-xs bg-[#1E1E2E] border border-[#2A2A3A] text-[#94A3B8] hover:text-[#F8FAFC] hover:border-purple-500/50 px-3 py-1.5 rounded-lg transition-colors">
+                      <input type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
+                      📷 Upload Photo
+                    </label>
+                    {influencer?.instagramProfilePic && (
+                      <button
+                        type="button"
+                        onClick={handleUseInstagramPhoto}
+                        disabled={photoUploading}
+                        className="flex items-center gap-1.5 text-xs bg-[#1E1E2E] border border-[#2A2A3A] text-[#94A3B8] hover:text-[#F8FAFC] hover:border-purple-500/50 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        Use Instagram Photo
+                      </button>
+                    )}
+                  </div>
+                  {photoPreview && (
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handlePhotoUpload}
+                        disabled={photoUploading}
+                        className="flex items-center gap-1.5 text-xs bg-purple-600 text-white px-3 py-1.5 rounded-lg hover:bg-purple-500 disabled:opacity-50 transition-colors"
+                      >
+                        {photoUploading ? "Uploading..." : "Save Photo"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setPhotoPreview(null); setPhotoFile(null) }}
+                        className="text-xs text-[#64748B] hover:text-[#F8FAFC] px-2 py-1.5 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                  {photoUploading && !photoPreview && (
+                    <p className="text-xs text-[#64748B]">Saving...</p>
+                  )}
+                  {photoError && <p className="text-xs text-red-400">{photoError}</p>}
+                </div>
               </div>
             </div>
 

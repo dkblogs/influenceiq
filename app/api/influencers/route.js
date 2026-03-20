@@ -110,6 +110,7 @@ export async function GET(request) {
         score: true,
         rate: true,
         initials: true,
+        profileImage: true,
         verified: true,
         userId: true,
         followersPublic: true,

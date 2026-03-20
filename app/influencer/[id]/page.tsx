@@ -233,9 +233,13 @@ export default function InfluencerProfile() {
         {/* Profile header */}
         <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 md:p-8 mb-6">
           <div className="flex flex-col sm:flex-row items-start gap-4 md:gap-6">
-            <div className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl ${colorMap[influencer.initials] || "bg-purple-500"} flex items-center justify-center text-white font-semibold text-xl md:text-2xl flex-shrink-0`}>
-              {influencer.initials}
-            </div>
+            {influencer.profileImage ? (
+              <img src={influencer.profileImage} alt={influencer.name} className="w-16 h-16 md:w-20 md:h-20 rounded-2xl object-cover flex-shrink-0" />
+            ) : (
+              <div className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl ${colorMap[influencer.initials] || "bg-purple-500"} flex items-center justify-center text-white font-semibold text-xl md:text-2xl flex-shrink-0`}>
+                {influencer.initials}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
 
               {/* Name */}

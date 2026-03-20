@@ -85,6 +85,7 @@ model Influencer {
   about        String?
   email        String?
   phone        String?
+  profileImage String?
   instagramHandle      String?
   instagramVerified      Boolean   @default(false)
   instagramFollowers     Int?
