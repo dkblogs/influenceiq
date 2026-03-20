@@ -473,7 +473,7 @@ export default function Dashboard() {
                 <div className="text-sm text-[#94A3B8] mb-1">
                   Get an AI-powered analysis of your influence,<br />engagement, and brand readiness
                 </div>
-                <div className="text-xs text-[#64748B] mb-4">Costs 1 credit</div>
+                <div className="text-xs text-[#64748B] mb-4">Costs 2 credits</div>
                 <button
                   onClick={handleGenerateAiReport}
                   className="bg-purple-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20"
@@ -553,7 +553,7 @@ export default function Dashboard() {
                     disabled={aiLoading}
                     className="border border-[#1E1E2E] text-[#94A3B8] px-4 py-2 rounded-lg text-sm hover:border-purple-500/30 hover:text-[#F8FAFC] transition-colors disabled:opacity-50"
                   >
-                    Regenerate (1 credit)
+                    Regenerate (2 credits)
                   </button>
                   {myInfluencerProfile?.aiReportGeneratedAt && (
                     <span className="text-xs text-[#64748B]">
