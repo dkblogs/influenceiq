@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { signIn } from "next-auth/react"
 
 function SignupForm() {
   const router = useRouter()
@@ -37,10 +38,16 @@ function SignupForm() {
         return
       }
 
-      if (role === "influencer") {
-        router.push("/login?success=Account created! Please sign in.&next=/onboarding/influencer")
+      const signInResult = await signIn("credentials", {
+        email: email.toLowerCase().trim(),
+        password,
+        redirect: false,
+      })
+
+      if (signInResult?.ok) {
+        router.push(role === "brand" ? "/onboarding/brand" : "/onboarding/influencer")
       } else {
-        router.push("/login?success=Account created! Please sign in.&next=/onboarding/brand")
+        router.push(`/login?next=${role === "brand" ? "/onboarding/brand" : "/onboarding/influencer"}`)
       }
     } catch {
       setError("Something went wrong. Please try again.")
