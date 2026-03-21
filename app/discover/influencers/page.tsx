@@ -3,8 +3,8 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import Navbar from "@/app/components/Navbar"
 
-const niches = ["All", "Food", "Tech", "Fitness", "Finance", "Fashion", "Travel", "Gaming"]
-const platforms = ["All", "Instagram", "YouTube", "LinkedIn"]
+const niches = ["All", "Food", "Tech", "Fashion", "Finance", "Fitness", "Travel", "Gaming", "Education", "Entertainment", "Beauty", "Lifestyle", "Sports", "Health"]
+const platforms = ["All", "Instagram", "YouTube", "Facebook", "LinkedIn", "X (Twitter)"]
 
 const colorMap: Record<string, string> = {
   PS: "bg-purple-500", RK: "bg-orange-500", AN: "bg-green-500",
@@ -163,8 +163,12 @@ export default function DiscoverInfluencers() {
                       </div>
                     </div>
                     <div className="flex gap-1 flex-wrap mb-3">
-                      <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full">{inf.niche}</span>
-                      <span className="text-xs bg-[#1E1E2E] text-[#94A3B8] px-2 py-0.5 rounded-full">{inf.platform}</span>
+                      {(inf.niches?.length ? inf.niches : (inf.niche ? [inf.niche] : [])).map((n: string) => (
+                        <span key={n} className="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full">{n}</span>
+                      ))}
+                      {(inf.platforms?.length ? inf.platforms : (inf.platform ? [inf.platform] : [])).map((p: string) => (
+                        <span key={p} className="text-xs bg-[#1E1E2E] text-[#94A3B8] px-2 py-0.5 rounded-full">{p}</span>
+                      ))}
                       {inf.instagramVerified && (
                         <span className="text-xs bg-green-500/20 border border-green-500/40 text-green-300 px-2 py-0.5 rounded-full flex items-center gap-0.5">Instagram <span className="text-green-400">✓</span></span>
                       )}
@@ -199,14 +203,15 @@ export default function DiscoverInfluencers() {
                         onClick={e => e.stopPropagation()}
                         className="block w-full text-center bg-purple-600 text-white py-2 rounded-lg text-xs font-medium hover:bg-purple-500 transition-colors"
                       >
-                        Unlock contact — 5 cr
+                        Send Proposal →
                       </a>
-                      <button
+                      <a
+                        href={`/influencer/${inf.id}`}
                         onClick={e => e.stopPropagation()}
-                        className="w-full border border-[#1E1E2E] text-[#94A3B8] py-2 rounded-lg text-xs hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors"
+                        className="block w-full text-center border border-[#1E1E2E] text-[#94A3B8] py-2 rounded-lg text-xs hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors"
                       >
-                        AI report — 3 cr
-                      </button>
+                        View profile
+                      </a>
                     </div>
                   </div>
                 ) : (
@@ -224,8 +229,12 @@ export default function DiscoverInfluencers() {
                       </div>
                     </div>
                     <div className="flex gap-1 flex-wrap mb-3">
-                      <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full">{inf.niche}</span>
-                      <span className="text-xs bg-[#1E1E2E] text-[#94A3B8] px-2 py-0.5 rounded-full">{inf.platform}</span>
+                      {(inf.niches?.length ? inf.niches : (inf.niche ? [inf.niche] : [])).map((n: string) => (
+                        <span key={n} className="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full">{n}</span>
+                      ))}
+                      {(inf.platforms?.length ? inf.platforms : (inf.platform ? [inf.platform] : [])).map((p: string) => (
+                        <span key={p} className="text-xs bg-[#1E1E2E] text-[#94A3B8] px-2 py-0.5 rounded-full">{p}</span>
+                      ))}
                       {inf.instagramVerified && (
                         <span className="text-xs bg-green-500/20 border border-green-500/40 text-green-300 px-2 py-0.5 rounded-full flex items-center gap-0.5">Instagram <span className="text-green-400">✓</span></span>
                       )}

@@ -40,10 +40,6 @@ export default function InfluencerProfile() {
   const [influencer, setInfluencer] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [unlocked, setUnlocked] = useState(false)
-  const [unlockedExpiresAt, setUnlockedExpiresAt] = useState<string | null>(null)
-  const [wasExpired, setWasExpired] = useState(false)
-  const [unlocking, setUnlocking] = useState(false)
-  const [showPhoneWarning, setShowPhoneWarning] = useState(false)
   const [error, setError] = useState("")
   const [brandReport, setBrandReport] = useState<any>(null)
   const [scoring, setScoring] = useState(false)
@@ -110,8 +106,6 @@ export default function InfluencerProfile() {
       if (res.ok && data.influencer) {
         setInfluencer(data.influencer)
         setUnlocked(data.unlocked ?? false)
-        setUnlockedExpiresAt(data.unlockedExpiresAt ?? null)
-        setWasExpired(data.wasExpired ?? false)
         setFollowersPublic(data.influencer.followersPublic ?? true)
       } else {
         setInfluencer(null)
@@ -135,32 +129,6 @@ export default function InfluencerProfile() {
     setTimeout(() => setSettingsSaved(false), 3000)
   }
 
-  async function handleUnlock() {
-    if (!session) { router.push("/login"); return }
-    if (!influencer?.hasPhone) {
-      setShowPhoneWarning(true)
-      return
-    }
-    doUnlock()
-  }
-
-  async function doUnlock() {
-    setUnlocking(true)
-    setError("")
-    const res = await fetch("/api/unlock-contact", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ influencerId: params.id, userId: (session?.user as any)?.id }),
-    })
-    const data = await res.json()
-    if (!res.ok) { setError(res.status === 402 ? "CREDITS" : (data.error || "Failed to unlock")); setUnlocking(false); return }
-    setUnlocked(true)
-    setUnlockedExpiresAt(data.expiresAt ?? null)
-    setWasExpired(false)
-    refreshCredits()
-    setInfluencer((prev: any) => ({ ...prev, email: data.email, phone: data.phone }))
-    setUnlocking(false)
-  }
 
   async function generateBrandReport() {
     if (!session) { router.push("/login"); return }
@@ -217,8 +185,8 @@ export default function InfluencerProfile() {
   }
 
   const tier1 = !loggedIn
-  const tier2 = loggedIn && !unlocked
-  const tier3 = loggedIn && unlocked
+  const tier2 = loggedIn && !unlocked  // logged in, no agreed proposal yet
+  const tier3 = loggedIn && unlocked   // agreed proposal exists — full contact access
   const isOwner = !!(loggedIn && influencer?.userId && (session?.user as any)?.id === influencer.userId)
   const isBrand = loggedIn && (session?.user as any)?.role === "brand"
 
@@ -284,7 +252,7 @@ export default function InfluencerProfile() {
                   <>{influencer.location} · <span className="inline-flex items-center gap-1">🔒 <a href="/login" className="text-purple-400 hover:underline">Sign in to view</a></span></>
                 )}
                 {tier2 && (
-                  <>{influencer.location} · <span className="inline-flex items-center gap-1 text-[#64748B]">🔒 <span className="text-purple-400 text-xs">Unlock contact to view handle</span></span></>
+                  <>{influencer.location}</>
                 )}
                 {tier3 && (
                   <>{influencer.handle} · {influencer.location}</>
@@ -292,57 +260,30 @@ export default function InfluencerProfile() {
               </div>
 
               <div className="flex gap-2 mb-4 flex-wrap">
-                <span className="text-sm bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full border border-purple-500/20">{influencer.niche}</span>
-                {(() => {
-                  const p = influencer.platform || ""
+                {(influencer.niches?.length ? influencer.niches : (influencer.niche ? [influencer.niche] : [])).map((n: string) => (
+                  <span key={n} className="text-sm bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full border border-purple-500/20">{n}</span>
+                ))}
+                {(influencer.platforms?.length ? influencer.platforms : (influencer.platform ? [influencer.platform] : [])).map((p: string) => {
                   const isIg = p.toLowerCase().includes("instagram")
                   const isYt = p.toLowerCase().includes("youtube")
-                  if (isIg) {
-                    return (
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${
-                        influencer.instagramVerified
-                          ? "bg-green-500/20 border border-green-500/40 text-green-300"
-                          : "bg-[#1E1E2E] text-[#94A3B8]"
-                      }`}>
-                        {tier3 ? (influencer.instagramHandle || "Instagram") : "Instagram"}
-                        {influencer.instagramVerified
-                          ? <span className="text-green-400 text-xs">✓</span>
-                          : tier3 && <span className="text-yellow-500 text-xs">⚠</span>}
-                        {tier3 && influencer.instagramVerified && influencer.instagramFollowers
-                          ? <span className="text-green-400/70 text-xs">· {influencer.instagramFollowers.toLocaleString()}</span>
-                          : !tier3 && influencer.instagramVerified && <span className="blur-sm select-none text-xs">••••</span>}
-                      </span>
-                    )
-                  }
-                  if (isYt) {
-                    return (
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${
-                        influencer.youtubeVerified
-                          ? "bg-green-500/20 border border-green-500/40 text-green-300"
-                          : "bg-[#1E1E2E] text-[#94A3B8]"
-                      }`}>
-                        {tier3 ? (influencer.youtubeHandle || "YouTube") : "YouTube"}
-                        {influencer.youtubeVerified
-                          ? <span className="text-green-400 text-xs">✓</span>
-                          : tier3 && <span className="text-yellow-500 text-xs">⚠</span>}
-                        {tier3 && influencer.youtubeVerified && influencer.youtubeFollowers
-                          ? <span className="text-green-400/70 text-xs">· {influencer.youtubeFollowers.toLocaleString()}</span>
-                          : !tier3 && influencer.youtubeVerified && <span className="blur-sm select-none text-xs">••••</span>}
-                      </span>
-                    )
-                  }
-                  return <span className="text-sm bg-[#1E1E2E] text-[#94A3B8] px-3 py-1 rounded-full">{influencer.platform}</span>
-                })()}
-                {/* Secondary platform tag for multi-platform influencers (e.g. "Instagram + YouTube") */}
-                {influencer.platform?.toLowerCase().includes("instagram") && influencer.platform?.toLowerCase().includes("youtube") && (
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${
-                    influencer.youtubeVerified
-                      ? "bg-green-500/20 border border-green-500/40 text-green-300"
-                      : "bg-[#1E1E2E] text-[#94A3B8]"
-                  }`}>
-                    {tier3 ? (influencer.youtubeHandle || "YouTube") : "YouTube"}
-                    {influencer.youtubeVerified && <span className="text-green-400 text-xs">✓</span>}
-                  </span>
+                  if (isIg) return (
+                    <span key={p} className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${influencer.instagramVerified ? "bg-green-500/20 border border-green-500/40 text-green-300" : "bg-[#1E1E2E] text-[#94A3B8]"}`}>
+                      {tier3 ? (influencer.instagramHandle || "Instagram") : "Instagram"}
+                      {influencer.instagramVerified ? <span className="text-green-400 text-xs">✓</span> : tier3 && <span className="text-yellow-500 text-xs">⚠</span>}
+                      {tier3 && influencer.instagramVerified && influencer.instagramFollowers ? <span className="text-green-400/70 text-xs">· {influencer.instagramFollowers.toLocaleString()}</span> : !tier3 && influencer.instagramVerified && <span className="blur-sm select-none text-xs">••••</span>}
+                    </span>
+                  )
+                  if (isYt) return (
+                    <span key={p} className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${influencer.youtubeVerified ? "bg-green-500/20 border border-green-500/40 text-green-300" : "bg-[#1E1E2E] text-[#94A3B8]"}`}>
+                      {tier3 ? (influencer.youtubeHandle || "YouTube") : "YouTube"}
+                      {influencer.youtubeVerified ? <span className="text-green-400 text-xs">✓</span> : tier3 && <span className="text-yellow-500 text-xs">⚠</span>}
+                      {tier3 && influencer.youtubeVerified && influencer.youtubeFollowers ? <span className="text-green-400/70 text-xs">· {influencer.youtubeFollowers.toLocaleString()}</span> : !tier3 && influencer.youtubeVerified && <span className="blur-sm select-none text-xs">••••</span>}
+                    </span>
+                  )
+                  return <span key={p} className="text-sm bg-[#1E1E2E] text-[#94A3B8] px-3 py-1 rounded-full">{p}</span>
+                })}
+                {influencer.gender && (
+                  <span className="text-sm bg-[#1E1E2E] text-[#64748B] px-3 py-1 rounded-full">{influencer.gender}</span>
                 )}
               </div>
               <p className="text-[#94A3B8] text-sm leading-relaxed">{influencer.about}</p>
@@ -662,8 +603,8 @@ export default function InfluencerProfile() {
           ) : null
         )}
 
-        {/* Send Proposal — brands only, tier3 (unlocked) */}
-        {tier3 && isBrand && !isOwner && (
+        {/* Send Proposal — brands only */}
+        {isBrand && !isOwner && (
           <div className="bg-[#12121A] rounded-2xl border border-purple-500/20 p-5 md:p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 className="font-semibold text-[#F8FAFC] mb-0.5">Ready to collaborate?</h3>
@@ -683,59 +624,33 @@ export default function InfluencerProfile() {
           <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 md:p-8">
             <h2 className="font-semibold text-[#F8FAFC] mb-2">Contact details</h2>
 
-            {tier3 ? (() => {
-              const daysLeft = unlockedExpiresAt
-                ? Math.ceil((new Date(unlockedExpiresAt).getTime() - Date.now()) / 86400000)
-                : null
-              const expiryColor = daysLeft !== null
-                ? daysLeft > 7 ? "text-[#10B981]" : daysLeft >= 3 ? "text-amber-400" : "text-red-400"
-                : "text-[#64748B]"
-              return (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-4 bg-[#10B981]/10 border border-[#10B981]/20 rounded-xl">
-                    <span className="text-lg">✉️</span>
-                    <div>
-                      <div className="text-xs text-[#64748B] mb-0.5">Email</div>
-                      <div className="font-medium text-[#F8FAFC]">{influencer.email}</div>
-                    </div>
-                  </div>
-                  <div className={`flex items-center gap-3 p-4 rounded-xl border ${influencer.phone ? "bg-[#10B981]/10 border-[#10B981]/20" : "bg-[#1E1E2E] border-[#1E1E2E]"}`}>
-                    <span className="text-lg">📱</span>
-                    <div>
-                      <div className="text-xs text-[#64748B] mb-0.5">Phone</div>
-                      {influencer.phone
-                        ? <div className="font-medium text-[#F8FAFC]">{influencer.phone}</div>
-                        : <div className="text-sm text-[#64748B] italic">Not provided</div>}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-xs mt-2">
-                    <span className="text-[#64748B]">🔓 Contact unlocked · Use responsibly</span>
-                    {daysLeft !== null && (
-                      <span className={`font-medium ${expiryColor}`}>
-                        Expires in {daysLeft} day{daysLeft !== 1 ? "s" : ""}
-                        {unlockedExpiresAt && ` · ${new Date(unlockedExpiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`}
-                      </span>
-                    )}
+            {tier3 ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-4 bg-[#10B981]/10 border border-[#10B981]/20 rounded-xl">
+                  <span className="text-lg">✉️</span>
+                  <div>
+                    <div className="text-xs text-[#64748B] mb-0.5">Email</div>
+                    <div className="font-medium text-[#F8FAFC]">{influencer.email}</div>
                   </div>
                 </div>
-              )
-            })() : (
+                <div className={`flex items-center gap-3 p-4 rounded-xl border ${influencer.phone ? "bg-[#10B981]/10 border-[#10B981]/20" : "bg-[#1E1E2E] border-[#1E1E2E]"}`}>
+                  <span className="text-lg">📱</span>
+                  <div>
+                    <div className="text-xs text-[#64748B] mb-0.5">Phone</div>
+                    {influencer.phone
+                      ? <div className="font-medium text-[#F8FAFC]">{influencer.phone}</div>
+                      : <div className="text-sm text-[#64748B] italic">Not provided</div>}
+                  </div>
+                </div>
+                <div className="text-xs text-[#64748B] mt-2">
+                  🤝 Contact shared via proposal agreement
+                </div>
+              </div>
+            ) : isBrand ? (
               <div>
-                {wasExpired && (
-                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 mb-4 text-sm text-amber-400">
-                    🔒 Your access has expired. Unlock again for 5 credits to regain contact details.
-                  </div>
-                )}
                 <p className="text-sm text-[#94A3B8] mb-4">
-                  Unlock this influencer's email and phone number to contact them directly. Access valid for 30 days.
+                  Send a proposal to connect with this influencer. Contact details are shared once both parties agree.
                 </p>
-                {error && (
-                  <div className="bg-red-500/10 px-4 py-3 rounded-lg mb-4 border border-red-500/20">
-                    {error === "CREDITS"
-                      ? <InsufficientCreditsError action="unlock this contact" />
-                      : <span className="text-sm text-red-400">{error}</span>}
-                  </div>
-                )}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-[#0D0D1A] border border-[#1E1E2E] rounded-xl mb-4">
                   <div className="flex-1">
                     <div className="text-sm font-medium text-[#94A3B8]">Email address</div>
@@ -747,13 +662,16 @@ export default function InfluencerProfile() {
                   </div>
                 </div>
                 <button
-                  onClick={handleUnlock}
-                  disabled={unlocking}
-                  className="w-full bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors shadow-lg shadow-purple-500/20"
+                  onClick={() => setShowProposalModal(true)}
+                  className="w-full bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20"
                 >
-                  {unlocking ? "Unlocking..." : "Unlock contact details — 5 credits · 30 days access"}
+                  Send Proposal →
                 </button>
               </div>
+            ) : (
+              <p className="text-sm text-[#64748B]">
+                Contact details are shared between brands and influencers when a collaboration proposal is agreed upon.
+              </p>
             )}
           </div>
         )}
@@ -833,37 +751,6 @@ export default function InfluencerProfile() {
 
       </div>
 
-      {/* Phone warning modal */}
-      {showPhoneWarning && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#12121A] border border-[#1E1E2E] rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <div className="text-3xl mb-3">⚠️</div>
-            <h3 className="font-semibold text-[#F8FAFC] mb-2">Phone number not added</h3>
-            <p className="text-sm text-[#94A3B8] mb-2">
-              This influencer hasn't added a phone number yet.
-            </p>
-            <p className="text-sm text-[#94A3B8] mb-5">
-              You will receive their <strong className="text-[#F8FAFC]">email address only</strong>.
-            </p>
-            <p className="text-sm font-medium text-[#F8FAFC] mb-4">Still unlock for 5 credits?</p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowPhoneWarning(false)}
-                className="flex-1 border border-[#1E1E2E] text-[#94A3B8] py-2.5 rounded-lg text-sm hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => { setShowPhoneWarning(false); doUnlock() }}
-                disabled={unlocking}
-                className="flex-1 bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors"
-              >
-                Unlock Email Only
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Proposal Modal */}
       {showProposalModal && (

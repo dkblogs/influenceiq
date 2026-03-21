@@ -78,8 +78,11 @@ model Influencer {
   name         String
   handle       String
   location     String
+  gender       String?
   niche        String
+  niches       String[]
   platform     String
+  platforms    String[]
   followers    String
   engagement   String
   score        Int

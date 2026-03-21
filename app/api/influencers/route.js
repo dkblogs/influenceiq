@@ -10,7 +10,7 @@ export async function POST(request) {
     }
 
     const body = await request.json()
-    const { name, niche, platform, bio, location, followers, engagementRate, handle, email, phone, pricePerPost, instagramHandle, youtubeHandle } = body
+    const { name, niche, niches, platform, platforms, gender, bio, location, followers, engagementRate, handle, email, phone, pricePerPost, instagramHandle, youtubeHandle } = body
 
     if (!name) {
       return Response.json({ error: "Name is required" }, { status: 400 })
@@ -26,11 +26,16 @@ export async function POST(request) {
       ? (handle.startsWith("@") ? handle : `@${handle}`)
       : `@${(email || name || "user").split("@")[0].replace(/[^a-z0-9]/gi, "_")}`
 
+    const nichesArr = Array.isArray(niches) && niches.length > 0 ? niches : (niche ? [niche] : ["Other"])
+    const platformsArr = Array.isArray(platforms) && platforms.length > 0 ? platforms : (platform ? [platform] : ["Instagram"])
     const profileData = {
       name,
+      gender: gender || null,
       location: location || "",
-      niche: niche || "Other",
-      platform: platform || "Instagram",
+      niche: nichesArr[0],
+      niches: nichesArr,
+      platform: platformsArr[0],
+      platforms: platformsArr,
       followers: followers ? String(followers) : "0",
       engagement: engagementRate ? `${engagementRate}%` : "0%",
       rate: pricePerPost ? `₹${pricePerPost}/post` : "₹0/post",
@@ -95,11 +100,22 @@ export async function GET(request) {
     const where = {}
 
     if (niche && niche !== "All") {
-      where.niche = niche
+      where.OR = [
+        { niche },
+        { niches: { has: niche } },
+      ]
     }
 
     if (platform && platform !== "All") {
-      where.platform = platform
+      where.AND = [
+        ...(where.AND || []),
+        {
+          OR: [
+            { platform },
+            { platforms: { has: platform } },
+          ],
+        },
+      ]
     }
 
     if (search) {
@@ -118,8 +134,11 @@ export async function GET(request) {
         name: true,
         handle: true,
         location: true,
+        gender: true,
         niche: true,
+        niches: true,
         platform: true,
+        platforms: true,
         followers: true,
         engagement: true,
         score: true,

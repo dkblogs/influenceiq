@@ -172,7 +172,7 @@ export default function Dashboard() {
   })
   const [brandProposalCount, setBrandProposalCount] = useState<number | null>(null)
   const [brandAiReportCount, setBrandAiReportCount] = useState<number | null>(null)
-  const [brandUnlockedCount, setBrandUnlockedCount] = useState<number | null>(null)
+  const [agreedProposalCount, setAgreedProposalCount] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -255,7 +255,7 @@ export default function Dashboard() {
             const brandStatsData = await brandStatsResult.value.json()
             if (typeof brandStatsData.proposalCount === "number") setBrandProposalCount(brandStatsData.proposalCount)
             if (typeof brandStatsData.aiReportCount === "number") setBrandAiReportCount(brandStatsData.aiReportCount)
-            if (typeof brandStatsData.unlockedCount === "number") setBrandUnlockedCount(brandStatsData.unlockedCount)
+            if (typeof brandStatsData.agreedProposalsCount === "number") setAgreedProposalCount(brandStatsData.agreedProposalsCount)
           } catch (e) { console.error("[dashboard] Brand stats parse error:", e) }
         } else if (brandStatsResult.status === "rejected") {
           console.error("[dashboard] Brand stats fetch failed:", brandStatsResult.reason)
@@ -480,9 +480,9 @@ export default function Dashboard() {
             </div>
             {user.role === "brand" ? (
               <>
-                <a href="/my-unlocked" className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block">
-                  <div className="text-sm text-[#94A3B8] mb-1">Influencers unlocked</div>
-                  <div className="text-2xl font-bold text-[#F8FAFC]">{brandUnlockedCount ?? "—"}</div>
+                <a href="/proposals?status=agreed" className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block">
+                  <div className="text-sm text-[#94A3B8] mb-1">Agreed collaborations</div>
+                  <div className="text-2xl font-bold text-[#F8FAFC]">{agreedProposalCount ?? "—"}</div>
                   <div className="text-xs text-purple-400 mt-1">View all →</div>
                 </a>
                 <a href="/proposals" className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block">

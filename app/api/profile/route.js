@@ -62,15 +62,20 @@ export async function PATCH(request) {
 
     let updatedInfluencer = null
     if (role === "influencer") {
-      const { name, niche, platform, bio, location, phone, instagramHandle, youtubeHandle } = body
+      const { name, niche, niches, platform, platforms, gender, bio, location, phone, instagramHandle, youtubeHandle } = body
       const existing = await getInfluencerForUser({ userId: session.user.id, email: session.user.email })
       if (existing) {
+        const nichesArr = Array.isArray(niches) ? niches : undefined
+        const platformsArr = Array.isArray(platforms) ? platforms : undefined
         updatedInfluencer = await prisma.influencer.update({
           where: { id: existing.id },
           data: {
             name: name || undefined,
-            niche: niche || undefined,
-            platform: platform || undefined,
+            gender: gender !== undefined ? (gender || null) : undefined,
+            niche: nichesArr ? (nichesArr[0] || niche || undefined) : (niche || undefined),
+            niches: nichesArr ?? undefined,
+            platform: platformsArr ? (platformsArr[0] || platform || undefined) : (platform || undefined),
+            platforms: platformsArr ?? undefined,
             about: bio !== undefined ? bio : undefined,
             location: location !== undefined ? location : undefined,
             phone: phone !== undefined ? (phone || null) : undefined,

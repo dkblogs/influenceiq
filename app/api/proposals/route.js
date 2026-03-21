@@ -3,28 +3,35 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 import { sendEmail, proposalReceivedEmail } from "@/lib/email"
 
-export async function GET() {
+export async function GET(request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) return Response.json({ error: "Unauthorized" }, { status: 401 })
 
+    const { searchParams } = new URL(request.url)
+    const statusFilter = searchParams.get("status")
+
     const role = session.user.role
 
     if (role === "brand") {
+      const where = { brandId: session.user.id }
+      if (statusFilter) where.status = statusFilter
+
       const proposals = await prisma.proposal.findMany({
-        where: { brandId: session.user.id },
+        where,
         orderBy: { updatedAt: "desc" },
         include: { rounds: { orderBy: { roundNumber: "desc" }, take: 1 } },
       })
       const influencerIds = proposals.map(p => p.influencerId)
       const influencers = await prisma.influencer.findMany({
         where: { id: { in: influencerIds } },
-        select: { id: true, name: true, initials: true },
+        select: { id: true, name: true, initials: true, niche: true, niches: true, platform: true, platforms: true, location: true, verified: true },
       })
       const infMap = Object.fromEntries(influencers.map(i => [i.id, i]))
       return Response.json({
         proposals: proposals.map(p => ({
           ...p,
+          influencer: infMap[p.influencerId] ?? null,
           influencerName: infMap[p.influencerId]?.name ?? "Influencer",
           influencerInitials: infMap[p.influencerId]?.initials ?? "??",
           latestRound: p.rounds[0] ?? null,

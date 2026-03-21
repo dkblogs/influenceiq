@@ -37,9 +37,23 @@ export async function POST(request, context) {
     const finalRemuneration = latestRound?.remunerationCounter || proposal.remuneration
     const finalTimeline = latestRound?.timelineCounter || proposal.timeline
 
+    // Auto-unlock contact for brand — 1 year access via proposal agreement
+    prisma.unlockedContact.upsert({
+      where: { userId_influencerId: { userId: proposal.brandId, influencerId: proposal.influencerId } },
+      create: {
+        userId: proposal.brandId,
+        influencerId: proposal.influencerId,
+        unlockedAt: new Date(),
+        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      },
+      update: {
+        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      },
+    }).catch(() => {})
+
     // Notify both parties
     const notifications = [
-      { userId: proposal.brandId, message: `${influencerName} agreed to your proposal for "${proposal.campaignTitle}"` },
+      { userId: proposal.brandId, message: `🎉 Proposal agreed! Contact details for ${influencerName} are now available on their profile.` },
     ]
     if (influencer?.userId) {
       notifications.push({ userId: influencer.userId, message: `${brandName} — proposal for "${proposal.campaignTitle}" is agreed!` })

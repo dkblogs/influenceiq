@@ -7,9 +7,9 @@ import { useApp } from "@/app/context/AppContext"
 
 const brandActions: [string, string][] = [
   ["Browse and search influencers", "Free"],
-  ["Unlock influencer contact details", "5 credits"],
+  ["Send collaboration proposal", "10 credits"],
   ["Full AI scoring report", "3 credits"],
-  ["Send collaboration request", "10 credits"],
+  ["Contact details revealed on proposal agreement", "Free"],
   ["Post an open campaign", "15 credits"],
 ]
 

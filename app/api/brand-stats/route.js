@@ -9,11 +9,11 @@ export async function GET() {
 
   const userId = session.user.id
 
-  const [proposalCount, aiReportCount, unlockedCount] = await Promise.all([
+  const [proposalCount, aiReportCount, agreedProposalsCount] = await Promise.all([
     prisma.proposal.count({ where: { brandId: userId } }),
     prisma.creditTransaction.count({ where: { userId, type: { contains: "ai_report" } } }),
-    prisma.unlockedContact.count({ where: { userId, expiresAt: { gt: new Date() } } }),
+    prisma.proposal.count({ where: { brandId: userId, status: "agreed" } }),
   ])
 
-  return Response.json({ proposalCount, aiReportCount, unlockedCount })
+  return Response.json({ proposalCount, aiReportCount, agreedProposalsCount })
 }

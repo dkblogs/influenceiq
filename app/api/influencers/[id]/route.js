@@ -12,21 +12,14 @@ export async function GET(_request, context) {
       return Response.json({ error: "Influencer not found" }, { status: 404 })
     }
 
+    // Contact details are revealed when brand has an agreed proposal (UnlockedContact created automatically)
     let isUnlocked = false
-    let unlockedExpiresAt = null
-    let wasExpired = false
-
     if (session?.user?.id) {
       const unlock = await prisma.unlockedContact.findUnique({
         where: { userId_influencerId: { userId: session.user.id, influencerId: id } },
       })
-      if (unlock) {
-        if (unlock.expiresAt > new Date()) {
-          isUnlocked = true
-          unlockedExpiresAt = unlock.expiresAt
-        } else {
-          wasExpired = true
-        }
+      if (unlock && unlock.expiresAt > new Date()) {
+        isUnlocked = true
       }
     }
 
@@ -37,7 +30,7 @@ export async function GET(_request, context) {
       hasPhone: !!influencer.phone,
     }
 
-    return Response.json({ influencer: safeInfluencer, unlocked: isUnlocked, unlockedExpiresAt, wasExpired })
+    return Response.json({ influencer: safeInfluencer, unlocked: isUnlocked })
   } catch (error) {
     console.error("Influencer fetch error:", error.message)
     return Response.json({ error: "Failed to fetch influencer" }, { status: 500 })
