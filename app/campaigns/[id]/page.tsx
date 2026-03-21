@@ -177,13 +177,18 @@ export default function CampaignDetailPage() {
             {applying ? "Applying..." : "Apply to Campaign — 2 credits"}
           </button>
         ) : status === "unauthenticated" ? (
-          <a href="/login" className="block w-full text-center bg-purple-600 text-white py-3 rounded-xl text-sm font-medium hover:bg-purple-500 transition-colors">
-            Log in to apply
+          <a href="/login" className="block w-full text-center bg-[#12121A] border border-[#1E1E2E] text-[#64748B] py-3 rounded-xl text-sm font-medium hover:text-[#94A3B8] transition-colors">
+            Sign in as Influencer to Apply
           </a>
-        ) : status === "authenticated" && role === "brand" ? (
-          <div className="text-center text-sm text-[#64748B] py-3">
-            Only influencer accounts can apply to campaigns.
-          </div>
+        ) : role === "brand" ? (
+          campaign.brandId === (session?.user as any)?.id ? (
+            <a
+              href="/my-campaigns"
+              className="block w-full text-center bg-[#1E1E2E] border border-[#1E1E2E] text-[#94A3B8] py-3 rounded-xl text-sm font-medium hover:text-[#F8FAFC] transition-colors"
+            >
+              View Applicants →
+            </a>
+          ) : null
         ) : null}
 
       </div>

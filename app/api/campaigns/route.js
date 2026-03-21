@@ -26,6 +26,7 @@ export async function GET(request) {
       const brand = brandMap[c.brandId]
       return {
         id: c.id,
+        brandId: c.brandId,
         brand: brand?.name || "Brand",
         brandInitials: brand?.name ? brand.name.slice(0, 2).toUpperCase() : "BR",
         brandColor: "bg-purple-500",

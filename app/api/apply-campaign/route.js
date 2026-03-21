@@ -1,8 +1,18 @@
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 import { sendEmail, applicationReceivedEmail } from "@/lib/email"
 
 export async function POST(request) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    if (session.user.role !== "influencer") {
+      return Response.json({ error: "Only influencers can apply to campaigns" }, { status: 403 })
+    }
+
     const body = await request.json()
     const { campaignId, userId } = body
 

@@ -27,7 +27,10 @@ export default function Campaigns() {
   const [dbCampaigns, setDbCampaigns] = useState<any[]>([])
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set())
 
-  const isInfluencer = status === "authenticated" && (session?.user as any)?.role === "influencer"
+  const role = (session?.user as any)?.role
+  const isInfluencer = status === "authenticated" && role === "influencer"
+  const isBrand = status === "authenticated" && role === "brand"
+  const userId = (session?.user as any)?.id
 
   useEffect(() => {
     fetch(`/api/campaigns`)
@@ -192,22 +195,36 @@ export default function Campaigns() {
                       <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/20">{c.niche}</span>
                     </div>
                     <div className="flex gap-3">
-                      {isInfluencer && appliedIds.has(c.id) ? (
-                        <span className="px-5 py-2 rounded-lg text-sm font-medium bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20">
-                          ✅ Already Applied
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => handleApply(c.id)}
-                          className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            applied.includes(c.id)
-                              ? "bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20"
-                              : "bg-purple-600 text-white hover:bg-purple-500 shadow-lg shadow-purple-500/20"
-                          }`}
+                      {isInfluencer ? (
+                        appliedIds.has(c.id) || applied.includes(c.id) ? (
+                          <span className="px-5 py-2 rounded-lg text-sm font-medium bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20">
+                            ✅ Applied
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => handleApply(c.id)}
+                            className="px-5 py-2 rounded-lg text-sm font-medium transition-colors bg-purple-600 text-white hover:bg-purple-500 shadow-lg shadow-purple-500/20"
+                          >
+                            Apply now — 2 credits
+                          </button>
+                        )
+                      ) : isBrand ? (
+                        c.brandId === userId ? (
+                          <a
+                            href="/my-campaigns"
+                            className="px-5 py-2 rounded-lg text-sm font-medium bg-[#1E1E2E] text-[#94A3B8] hover:text-[#F8FAFC] border border-[#1E1E2E] transition-colors"
+                          >
+                            View Applicants →
+                          </a>
+                        ) : null
+                      ) : status === "unauthenticated" ? (
+                        <a
+                          href="/login"
+                          className="px-5 py-2 rounded-lg text-sm font-medium bg-[#12121A] border border-[#1E1E2E] text-[#64748B] hover:text-[#94A3B8] transition-colors"
                         >
-                          {applied.includes(c.id) ? "✓ Applied" : "Apply now — 2 credits"}
-                        </button>
-                      )}
+                          Sign in as Influencer to Apply
+                        </a>
+                      ) : null}
                     </div>
                   </div>
                 </div>
