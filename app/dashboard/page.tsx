@@ -480,11 +480,11 @@ export default function Dashboard() {
             </div>
             {user.role === "brand" ? (
               <>
-                <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+                <a href="/my-unlocked" className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block">
                   <div className="text-sm text-[#94A3B8] mb-1">Influencers unlocked</div>
                   <div className="text-2xl font-bold text-[#F8FAFC]">{brandUnlockedCount ?? "—"}</div>
-                  <div className="text-xs text-[#64748B] mt-1">Unlock for 5 credits</div>
-                </div>
+                  <div className="text-xs text-purple-400 mt-1">View all →</div>
+                </a>
                 <a href="/proposals" className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block">
                   <div className="text-sm text-[#94A3B8] mb-1">Proposals sent</div>
                   <div className="text-2xl font-bold text-[#F8FAFC]">{brandProposalCount ?? "—"}</div>
