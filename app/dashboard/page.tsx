@@ -170,9 +170,9 @@ export default function Dashboard() {
     brandName: "", campaignTitle: "", description: "",
     deliverables: "", results: "", mediaUrl: "", completedAt: "",
   })
-  const [brandProposalCount, setBrandProposalCount] = useState<number>(0)
-  const [brandAiReportCount, setBrandAiReportCount] = useState<number>(0)
-  const [brandUnlockedCount, setBrandUnlockedCount] = useState<number>(0)
+  const [brandProposalCount, setBrandProposalCount] = useState<number | null>(null)
+  const [brandAiReportCount, setBrandAiReportCount] = useState<number | null>(null)
+  const [brandUnlockedCount, setBrandUnlockedCount] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -188,7 +188,7 @@ export default function Dashboard() {
     async function loadDashboard() {
       setLoading(true)
       try {
-        const [creditsRes, influencerRes, statsRes, brandCampaignsRes, brandStatsRes] = await Promise.all([
+        const results = await Promise.allSettled([
           fetch(`/api/user-credits?userId=${u.id}`),
           u.role === "influencer" ? fetch(`/api/influencers?userId=${u.id}`) : Promise.resolve(null),
           u.role === "influencer" ? fetch(`/api/influencer-stats`) : Promise.resolve(null),
@@ -196,51 +196,83 @@ export default function Dashboard() {
           u.role === "brand" ? fetch(`/api/brand-stats`) : Promise.resolve(null),
         ])
 
-        const creditsData = await creditsRes.json()
-        if (typeof creditsData.credits === "number") setCredits(creditsData.credits)
-        setBrandVerified(creditsData.brandVerified ?? false)
+        const [creditsResult, influencerResult, statsResult, brandCampaignsResult, brandStatsResult] = results
 
-        if (influencerRes) {
-          const influencerData = await influencerRes.json()
-          const inf = (influencerData.influencers || [])[0] ?? null
-          setMyInfluencerProfile(inf)
-          if (inf?.aiReportFull) {
-            try { setAiReport(JSON.parse(inf.aiReportFull)) } catch {}
-          }
-          if (inf?.id) {
-            const [portfolioRes, historyRes] = await Promise.all([
-              fetch(`/api/portfolio?influencerId=${inf.id}`),
-              fetch(`/api/ai-reports`),
-            ])
-            const portfolioData = await portfolioRes.json()
-            setPortfolioItems(portfolioData.items || [])
-            const historyData = await historyRes.json()
-            const reports = historyData.reports || []
-            setAiReportHistory(reports)
-            setAiReportsCount(reports.length)
-            if (reports.length > 0) setExpandedReportId(reports[0].id)
-          }
+        if (creditsResult.status === "fulfilled" && creditsResult.value) {
+          try {
+            const creditsData = await creditsResult.value.json()
+            if (typeof creditsData.credits === "number") setCredits(creditsData.credits)
+            if (creditsData.brandVerified !== undefined) setBrandVerified(creditsData.brandVerified)
+          } catch (e) { console.error("[dashboard] Credits parse error:", e) }
+        } else if (creditsResult.status === "rejected") {
+          console.error("[dashboard] Credits fetch failed:", creditsResult.reason)
         }
 
-        if (statsRes) {
-          const statsData = await statsRes.json()
-          if (typeof statsData.campaignApplicationCount === "number") setCampaignApplicationCount(statsData.campaignApplicationCount)
-          if (typeof statsData.collaborationRequestCount === "number") setCollaborationRequestCount(statsData.collaborationRequestCount)
+        if (influencerResult.status === "fulfilled" && influencerResult.value) {
+          try {
+            const influencerData = await influencerResult.value.json()
+            const inf = (influencerData.influencers || [])[0] ?? null
+            setMyInfluencerProfile(inf)
+            if (inf?.aiReportFull) {
+              try { setAiReport(JSON.parse(inf.aiReportFull)) } catch {}
+            }
+            if (inf?.id) {
+              const [portfolioResult2, historyResult2] = await Promise.allSettled([
+                fetch(`/api/portfolio?influencerId=${inf.id}`),
+                fetch(`/api/ai-reports`),
+              ])
+              if (portfolioResult2.status === "fulfilled") {
+                try {
+                  const portfolioData = await portfolioResult2.value.json()
+                  setPortfolioItems(portfolioData.items || [])
+                } catch (e) { console.error("[dashboard] Portfolio parse error:", e) }
+              }
+              if (historyResult2.status === "fulfilled") {
+                try {
+                  const historyData = await historyResult2.value.json()
+                  const reports = historyData.reports || []
+                  setAiReportHistory(reports)
+                  setAiReportsCount(reports.length)
+                  if (reports.length > 0) setExpandedReportId(reports[0].id)
+                } catch (e) { console.error("[dashboard] History parse error:", e) }
+              }
+            }
+          } catch (e) { console.error("[dashboard] Influencer parse error:", e) }
+        } else if (influencerResult.status === "rejected") {
+          console.error("[dashboard] Influencer fetch failed:", influencerResult.reason)
         }
 
-        if (brandCampaignsRes) {
-          const brandCampaignsData = await brandCampaignsRes.json()
-          setBrandCampaigns(brandCampaignsData.campaigns || [])
+        if (statsResult.status === "fulfilled" && statsResult.value) {
+          try {
+            const statsData = await statsResult.value.json()
+            if (typeof statsData.campaignApplicationCount === "number") setCampaignApplicationCount(statsData.campaignApplicationCount)
+            if (typeof statsData.collaborationRequestCount === "number") setCollaborationRequestCount(statsData.collaborationRequestCount)
+          } catch (e) { console.error("[dashboard] Stats parse error:", e) }
+        } else if (statsResult.status === "rejected") {
+          console.error("[dashboard] Stats fetch failed:", statsResult.reason)
         }
 
-        if (brandStatsRes) {
-          const brandStatsData = await brandStatsRes.json()
-          if (typeof brandStatsData.proposalCount === "number") setBrandProposalCount(brandStatsData.proposalCount)
-          if (typeof brandStatsData.aiReportCount === "number") setBrandAiReportCount(brandStatsData.aiReportCount)
-          if (typeof brandStatsData.unlockedCount === "number") setBrandUnlockedCount(brandStatsData.unlockedCount)
+        if (brandCampaignsResult.status === "fulfilled" && brandCampaignsResult.value) {
+          try {
+            const brandCampaignsData = await brandCampaignsResult.value.json()
+            setBrandCampaigns(brandCampaignsData.campaigns || [])
+          } catch (e) { console.error("[dashboard] Brand campaigns parse error:", e) }
+        } else if (brandCampaignsResult.status === "rejected") {
+          console.error("[dashboard] Brand campaigns fetch failed:", brandCampaignsResult.reason)
+        }
+
+        if (brandStatsResult.status === "fulfilled" && brandStatsResult.value) {
+          try {
+            const brandStatsData = await brandStatsResult.value.json()
+            if (typeof brandStatsData.proposalCount === "number") setBrandProposalCount(brandStatsData.proposalCount)
+            if (typeof brandStatsData.aiReportCount === "number") setBrandAiReportCount(brandStatsData.aiReportCount)
+            if (typeof brandStatsData.unlockedCount === "number") setBrandUnlockedCount(brandStatsData.unlockedCount)
+          } catch (e) { console.error("[dashboard] Brand stats parse error:", e) }
+        } else if (brandStatsResult.status === "rejected") {
+          console.error("[dashboard] Brand stats fetch failed:", brandStatsResult.reason)
         }
       } catch (error) {
-        console.error("Dashboard load error:", error)
+        console.error("[dashboard] loadDashboard error:", error)
       } finally {
         setLoading(false)
       }
@@ -295,6 +327,19 @@ export default function Dashboard() {
     showToast("Updated!")
   }
 
+  async function refreshCredits() {
+    const userId = (session?.user as any)?.id
+    if (!userId) return
+    try {
+      const res = await fetch(`/api/user-credits?userId=${userId}`)
+      const data = await res.json()
+      if (typeof data.credits === "number") setCredits(data.credits)
+      window.dispatchEvent(new Event('credits-updated'))
+    } catch (e) {
+      console.error("refreshCredits error:", e)
+    }
+  }
+
   async function handleGenerateAiReport() {
     if (!myInfluencerProfile?.id) return
     setAiLoading(true)
@@ -311,8 +356,7 @@ export default function Dashboard() {
       setAiError(res.status === 402 ? "CREDITS" : (data.error || "Failed to generate report"))
       return
     }
-    setCredits(prev => prev !== null ? prev - 2 : prev)
-    window.dispatchEvent(new Event('credits-updated'))
+    refreshCredits()
     setAiReport(data.report)
     setAiReportsCount(c => c + 1)
     // Prepend new report to history
@@ -353,7 +397,20 @@ export default function Dashboard() {
     }
   }
 
-  if (status === "loading") return null
+  if (status === "loading") {
+    return (
+      <main className="min-h-screen bg-[#0A0A0F]">
+        <Navbar />
+        <div className="flex items-center justify-center h-64 text-[#64748B] text-sm gap-3">
+          <svg className="animate-spin h-4 w-4 text-purple-400" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+          </svg>
+          Loading...
+        </div>
+      </main>
+    )
+  }
 
   if (!session) return null
 
@@ -449,17 +506,17 @@ export default function Dashboard() {
               <>
                 <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
                   <div className="text-sm text-[#94A3B8] mb-1">Influencers unlocked</div>
-                  <div className="text-2xl font-bold text-[#F8FAFC]">{brandUnlockedCount}</div>
+                  <div className="text-2xl font-bold text-[#F8FAFC]">{brandUnlockedCount ?? "—"}</div>
                   <div className="text-xs text-[#64748B] mt-1">Unlock for 5 credits</div>
                 </div>
                 <a href="/proposals" className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block">
                   <div className="text-sm text-[#94A3B8] mb-1">Proposals sent</div>
-                  <div className="text-2xl font-bold text-[#F8FAFC]">{brandProposalCount}</div>
+                  <div className="text-2xl font-bold text-[#F8FAFC]">{brandProposalCount ?? "—"}</div>
                   <div className="text-xs text-purple-400 mt-1">View all →</div>
                 </a>
                 <a href="/discover/influencers" className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block">
                   <div className="text-sm text-[#94A3B8] mb-1">AI reports</div>
-                  <div className="text-2xl font-bold text-[#F8FAFC]">{brandAiReportCount}</div>
+                  <div className="text-2xl font-bold text-[#F8FAFC]">{brandAiReportCount ?? "—"}</div>
                   <div className="text-xs text-purple-400 mt-1">Browse influencers →</div>
                 </a>
               </>

@@ -12,32 +12,60 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            console.log("[auth] Missing credentials")
+            return null
+          }
 
-        const normalizedEmail = credentials.email.toLowerCase().trim()
+          const normalizedEmail = credentials.email.toLowerCase().trim()
+          console.log("[auth] Login attempt:", normalizedEmail)
 
-        const user = await prisma.user.findUnique({
-          where: { email: normalizedEmail },
-        })
+          let user
+          try {
+            user = await prisma.user.findUnique({ where: { email: normalizedEmail } })
+          } catch (dbErr) {
+            console.error("[auth] Prisma query error:", dbErr)
+            throw new Error("Database error, please try again")
+          }
 
-        if (!user) throw new Error("No account found with this email")
-        if (!user.password) throw new Error("This account uses a different sign-in method")
+          console.log("[auth] User found:", !!user)
+          if (!user) throw new Error("No account found with this email")
 
-        const passwordMatch = await bcrypt.compare(credentials.password, user.password)
-        if (!passwordMatch) throw new Error("Incorrect password")
+          if (!user.password) {
+            console.log("[auth] No password field — OAuth account")
+            throw new Error("This account uses a different sign-in method")
+          }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          credits: user.credits,
+          let passwordMatch = false
+          try {
+            passwordMatch = await bcrypt.compare(credentials.password, user.password)
+          } catch (bcryptErr) {
+            console.error("[auth] bcrypt error:", bcryptErr)
+            throw new Error("Authentication error, please try again")
+          }
+
+          console.log("[auth] Password match:", passwordMatch)
+          if (!passwordMatch) throw new Error("Incorrect password")
+
+          console.log("[auth] Login success:", normalizedEmail)
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            credits: user.credits,
+          }
+        } catch (err) {
+          console.error("[auth] authorize error:", err.message)
+          throw err
         }
       },
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
+  jwt: { maxAge: 30 * 24 * 60 * 60 },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
