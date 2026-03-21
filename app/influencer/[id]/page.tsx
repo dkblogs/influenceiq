@@ -40,6 +40,8 @@ export default function InfluencerProfile() {
   const [influencer, setInfluencer] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [unlocked, setUnlocked] = useState(false)
+  const [unlockedExpiresAt, setUnlockedExpiresAt] = useState<string | null>(null)
+  const [wasExpired, setWasExpired] = useState(false)
   const [unlocking, setUnlocking] = useState(false)
   const [showPhoneWarning, setShowPhoneWarning] = useState(false)
   const [error, setError] = useState("")
@@ -108,6 +110,8 @@ export default function InfluencerProfile() {
       if (res.ok && data.influencer) {
         setInfluencer(data.influencer)
         setUnlocked(data.unlocked ?? false)
+        setUnlockedExpiresAt(data.unlockedExpiresAt ?? null)
+        setWasExpired(data.wasExpired ?? false)
         setFollowersPublic(data.influencer.followersPublic ?? true)
       } else {
         setInfluencer(null)
@@ -151,6 +155,8 @@ export default function InfluencerProfile() {
     const data = await res.json()
     if (!res.ok) { setError(res.status === 402 ? "CREDITS" : (data.error || "Failed to unlock")); setUnlocking(false); return }
     setUnlocked(true)
+    setUnlockedExpiresAt(data.expiresAt ?? null)
+    setWasExpired(false)
     refreshCredits()
     setInfluencer((prev: any) => ({ ...prev, email: data.email, phone: data.phone }))
     setUnlocking(false)
@@ -677,32 +683,51 @@ export default function InfluencerProfile() {
           <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 md:p-8">
             <h2 className="font-semibold text-[#F8FAFC] mb-2">Contact details</h2>
 
-            {tier3 ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-4 bg-[#10B981]/10 border border-[#10B981]/20 rounded-xl">
-                  <span className="text-lg">✉️</span>
-                  <div>
-                    <div className="text-xs text-[#64748B] mb-0.5">Email</div>
-                    <div className="font-medium text-[#F8FAFC]">{influencer.email}</div>
+            {tier3 ? (() => {
+              const daysLeft = unlockedExpiresAt
+                ? Math.ceil((new Date(unlockedExpiresAt).getTime() - Date.now()) / 86400000)
+                : null
+              const expiryColor = daysLeft !== null
+                ? daysLeft > 7 ? "text-[#10B981]" : daysLeft >= 3 ? "text-amber-400" : "text-red-400"
+                : "text-[#64748B]"
+              return (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 p-4 bg-[#10B981]/10 border border-[#10B981]/20 rounded-xl">
+                    <span className="text-lg">✉️</span>
+                    <div>
+                      <div className="text-xs text-[#64748B] mb-0.5">Email</div>
+                      <div className="font-medium text-[#F8FAFC]">{influencer.email}</div>
+                    </div>
+                  </div>
+                  <div className={`flex items-center gap-3 p-4 rounded-xl border ${influencer.phone ? "bg-[#10B981]/10 border-[#10B981]/20" : "bg-[#1E1E2E] border-[#1E1E2E]"}`}>
+                    <span className="text-lg">📱</span>
+                    <div>
+                      <div className="text-xs text-[#64748B] mb-0.5">Phone</div>
+                      {influencer.phone
+                        ? <div className="font-medium text-[#F8FAFC]">{influencer.phone}</div>
+                        : <div className="text-sm text-[#64748B] italic">Not provided</div>}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-xs mt-2">
+                    <span className="text-[#64748B]">🔓 Contact unlocked · Use responsibly</span>
+                    {daysLeft !== null && (
+                      <span className={`font-medium ${expiryColor}`}>
+                        Expires in {daysLeft} day{daysLeft !== 1 ? "s" : ""}
+                        {unlockedExpiresAt && ` · ${new Date(unlockedExpiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`}
+                      </span>
+                    )}
                   </div>
                 </div>
-                <div className={`flex items-center gap-3 p-4 rounded-xl border ${influencer.phone ? "bg-[#10B981]/10 border-[#10B981]/20" : "bg-[#1E1E2E] border-[#1E1E2E]"}`}>
-                  <span className="text-lg">📱</span>
-                  <div>
-                    <div className="text-xs text-[#64748B] mb-0.5">Phone</div>
-                    {influencer.phone
-                      ? <div className="font-medium text-[#F8FAFC]">{influencer.phone}</div>
-                      : <div className="text-sm text-[#64748B] italic">Not provided</div>}
-                  </div>
-                </div>
-                <div className="text-xs text-[#64748B] mt-2">
-                  Contact details unlocked. Please use this information responsibly.
-                </div>
-              </div>
-            ) : (
+              )
+            })() : (
               <div>
+                {wasExpired && (
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 mb-4 text-sm text-amber-400">
+                    🔒 Your access has expired. Unlock again for 5 credits to regain contact details.
+                  </div>
+                )}
                 <p className="text-sm text-[#94A3B8] mb-4">
-                  Unlock this influencer's email and phone number to contact them directly.
+                  Unlock this influencer's email and phone number to contact them directly. Access valid for 30 days.
                 </p>
                 {error && (
                   <div className="bg-red-500/10 px-4 py-3 rounded-lg mb-4 border border-red-500/20">
@@ -726,7 +751,7 @@ export default function InfluencerProfile() {
                   disabled={unlocking}
                   className="w-full bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors shadow-lg shadow-purple-500/20"
                 >
-                  {unlocking ? "Unlocking..." : "Unlock contact details — 5 credits"}
+                  {unlocking ? "Unlocking..." : "Unlock contact details — 5 credits · 30 days access"}
                 </button>
               </div>
             )}

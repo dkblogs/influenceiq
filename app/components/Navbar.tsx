@@ -98,12 +98,12 @@ export default function Navbar() {
     </div>
   )
 
-  const DiscoverDropdown = ({ mobile = false }: { mobile?: boolean }) => (
+  const DiscoverDropdown = ({ mobile = false, showMyUnlocked = false }: { mobile?: boolean; showMyUnlocked?: boolean }) => (
     <div ref={mobile ? undefined : discoverRef} className={mobile ? "" : "relative"}>
       <button
         onClick={() => setDiscoverOpen(o => !o)}
         className={`text-sm transition-colors whitespace-nowrap flex items-center gap-1 ${
-          pathname.startsWith("/discover") ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8] hover:text-[#F8FAFC]"
+          pathname.startsWith("/discover") || pathname === "/my-unlocked" ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8] hover:text-[#F8FAFC]"
         }`}
       >
         Discover
@@ -114,7 +114,7 @@ export default function Navbar() {
       {discoverOpen && (
         <div className={mobile
           ? "flex flex-col pl-3 mt-1"
-          : "absolute top-full left-0 mt-2 w-44 bg-[#12121A] border border-[#1E1E2E] rounded-xl shadow-xl z-50 overflow-hidden"
+          : "absolute top-full left-0 mt-2 w-48 bg-[#12121A] border border-[#1E1E2E] rounded-xl shadow-xl z-50 overflow-hidden"
         }>
           <a
             href="/discover/brands"
@@ -130,12 +130,24 @@ export default function Navbar() {
             href="/discover/influencers"
             onClick={() => setDiscoverOpen(false)}
             className={mobile
-              ? "text-sm py-2 text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
+              ? `text-sm py-2 text-[#94A3B8] hover:text-[#F8FAFC] transition-colors${showMyUnlocked ? " border-b border-[#1E1E2E]" : ""}`
               : "block px-4 py-2.5 text-sm text-[#94A3B8] hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors"
             }
           >
             Influencers
           </a>
+          {showMyUnlocked && (
+            <a
+              href="/my-unlocked"
+              onClick={() => setDiscoverOpen(false)}
+              className={mobile
+                ? "text-sm py-2 text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
+                : "block px-4 py-2.5 text-sm text-[#94A3B8] hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors border-t border-[#1E1E2E]"
+              }
+            >
+              🔓 My Unlocked
+            </a>
+          )}
         </div>
       )}
     </div>
@@ -197,7 +209,7 @@ export default function Navbar() {
             <>
               {navLink("/dashboard", "Dashboard")}
               {navLink("/profile", "Profile")}
-              <DiscoverDropdown />
+              <DiscoverDropdown showMyUnlocked />
               <CampaignsDropdown />
               {navLink("/contact", "Contact Us")}
               <span className="w-px h-4 bg-[#1E1E2E]" />
@@ -275,7 +287,7 @@ export default function Navbar() {
                 <a key={l.href} href={l.href} className={`text-sm py-2.5 border-b border-[#1E1E2E] ${pathname === l.href ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8]"}`}>{l.label}</a>
               ))}
               <div className="py-1 border-b border-[#1E1E2E]">
-                <DiscoverDropdown mobile />
+                <DiscoverDropdown mobile showMyUnlocked />
               </div>
               <div className="py-1 border-b border-[#1E1E2E]">
                 <CampaignsDropdown mobile />

@@ -28,7 +28,8 @@ model User {
   accounts         Account[]
   influencers      Influencer[]
   notifications    Notification[]
-  brandProposals   Proposal[]     @relation("BrandProposals")
+  brandProposals   Proposal[]        @relation("BrandProposals")
+  unlockedContacts UnlockedContact[]
 }
 
 model Account {
@@ -114,6 +115,7 @@ model Influencer {
   portfolioItems   PortfolioItem[]
   aiReports        AiReport[]
   proposals        Proposal[]
+  unlockedContacts UnlockedContact[]
   @@unique([handle])
 }
 
@@ -154,13 +156,15 @@ model PortfolioItem {
 }
 
 model UnlockedContact {
-  id           String   @id @default(cuid())
+  id           String     @id @default(cuid())
   userId       String
+  user         User       @relation(fields: [userId], references: [id])
   influencerId String
-  createdAt    DateTime @default(now())
+  influencer   Influencer @relation(fields: [influencerId], references: [id])
+  unlockedAt   DateTime   @default(now())
+  expiresAt    DateTime   @default(now())
 
   @@unique([userId, influencerId])
-  
 }
 model Campaign {
   id           String   @id @default(cuid())
