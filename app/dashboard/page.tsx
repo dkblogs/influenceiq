@@ -170,6 +170,9 @@ export default function Dashboard() {
     brandName: "", campaignTitle: "", description: "",
     deliverables: "", results: "", mediaUrl: "", completedAt: "",
   })
+  const [brandProposalCount, setBrandProposalCount] = useState<number>(0)
+  const [brandAiReportCount, setBrandAiReportCount] = useState<number>(0)
+  const [brandUnlockedCount, setBrandUnlockedCount] = useState<number>(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -185,11 +188,12 @@ export default function Dashboard() {
     async function loadDashboard() {
       setLoading(true)
       try {
-        const [creditsRes, influencerRes, statsRes, brandCampaignsRes] = await Promise.all([
+        const [creditsRes, influencerRes, statsRes, brandCampaignsRes, brandStatsRes] = await Promise.all([
           fetch(`/api/user-credits?userId=${u.id}`),
           u.role === "influencer" ? fetch(`/api/influencers?userId=${u.id}`) : Promise.resolve(null),
           u.role === "influencer" ? fetch(`/api/influencer-stats`) : Promise.resolve(null),
           u.role === "brand" ? fetch(`/api/campaigns?brandId=${u.id}`) : Promise.resolve(null),
+          u.role === "brand" ? fetch(`/api/brand-stats`) : Promise.resolve(null),
         ])
 
         const creditsData = await creditsRes.json()
@@ -227,6 +231,13 @@ export default function Dashboard() {
         if (brandCampaignsRes) {
           const brandCampaignsData = await brandCampaignsRes.json()
           setBrandCampaigns(brandCampaignsData.campaigns || [])
+        }
+
+        if (brandStatsRes) {
+          const brandStatsData = await brandStatsRes.json()
+          if (typeof brandStatsData.proposalCount === "number") setBrandProposalCount(brandStatsData.proposalCount)
+          if (typeof brandStatsData.aiReportCount === "number") setBrandAiReportCount(brandStatsData.aiReportCount)
+          if (typeof brandStatsData.unlockedCount === "number") setBrandUnlockedCount(brandStatsData.unlockedCount)
         }
       } catch (error) {
         console.error("Dashboard load error:", error)
@@ -438,19 +449,19 @@ export default function Dashboard() {
               <>
                 <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
                   <div className="text-sm text-[#94A3B8] mb-1">Influencers unlocked</div>
-                  <div className="text-2xl font-bold text-[#F8FAFC]">0</div>
+                  <div className="text-2xl font-bold text-[#F8FAFC]">{brandUnlockedCount}</div>
                   <div className="text-xs text-[#64748B] mt-1">Unlock for 5 credits</div>
                 </div>
-                <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+                <a href="/proposals" className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block">
                   <div className="text-sm text-[#94A3B8] mb-1">Proposals sent</div>
-                  <div className="text-2xl font-bold text-[#F8FAFC]">0</div>
-                  <div className="text-xs text-[#64748B] mt-1">Send for 10 credits</div>
-                </div>
-                <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
+                  <div className="text-2xl font-bold text-[#F8FAFC]">{brandProposalCount}</div>
+                  <div className="text-xs text-purple-400 mt-1">View all →</div>
+                </a>
+                <a href="/discover/influencers" className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block">
                   <div className="text-sm text-[#94A3B8] mb-1">AI reports</div>
-                  <div className="text-2xl font-bold text-[#F8FAFC]">{aiReportsCount}</div>
-                  <div className="text-xs text-[#64748B] mt-1">Get one for 3 credits</div>
-                </div>
+                  <div className="text-2xl font-bold text-[#F8FAFC]">{brandAiReportCount}</div>
+                  <div className="text-xs text-purple-400 mt-1">Browse influencers →</div>
+                </a>
               </>
             ) : (
               <>
