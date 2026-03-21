@@ -28,6 +28,7 @@ model User {
   accounts         Account[]
   influencers      Influencer[]
   notifications    Notification[]
+  brandProposals   Proposal[]     @relation("BrandProposals")
 }
 
 model Account {
@@ -112,6 +113,7 @@ model Influencer {
   createdAt        DateTime @default(now())
   portfolioItems   PortfolioItem[]
   aiReports        AiReport[]
+  proposals        Proposal[]
   @@unique([handle])
 }
 
@@ -224,4 +226,55 @@ model CampaignReview {
   createdAt    DateTime @default(now())
 
   @@unique([campaignId, influencerId, brandId])
+}
+
+model Proposal {
+  id                  String    @id @default(cuid())
+  brandId             String
+  brand               User      @relation("BrandProposals", fields: [brandId], references: [id])
+  influencerId        String
+  influencer          Influencer @relation(fields: [influencerId], references: [id])
+  status              String    @default("pending")
+  campaignTitle       String
+  contentType         String
+  description         String    @db.Text
+  deliverables        String    @db.Text
+  location            String?
+  timeline            String
+  startDate           DateTime?
+  endDate             DateTime?
+  remuneration        String
+  remunerationDetails String?   @db.Text
+  exclusivity         Boolean   @default(false)
+  revisions           Int       @default(2)
+  additionalTerms     String?   @db.Text
+  rounds              ProposalRound[]
+  messages            ProposalMessage[]
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model ProposalRound {
+  id                   String   @id @default(cuid())
+  proposalId           String
+  proposal             Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  roundNumber          Int
+  submittedBy          String
+  remunerationCounter  String?
+  deliverablesCounter  String?  @db.Text
+  timelineCounter      String?
+  revisionsCounter     Int?
+  notes                String?  @db.Text
+  status               String   @default("pending")
+  createdAt            DateTime @default(now())
+}
+
+model ProposalMessage {
+  id          String   @id @default(cuid())
+  proposalId  String
+  proposal    Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  senderId    String
+  senderRole  String
+  message     String   @db.Text
+  createdAt   DateTime @default(now())
 }

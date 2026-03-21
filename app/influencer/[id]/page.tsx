@@ -51,6 +51,11 @@ export default function InfluencerProfile() {
   const [savingSettings, setSavingSettings] = useState(false)
   const [settingsSaved, setSettingsSaved] = useState(false)
   const [activeTab, setActiveTab] = useState<"overview" | "portfolio">("overview")
+  const [showProposalModal, setShowProposalModal] = useState(false)
+  const [proposalForm, setProposalForm] = useState({ campaignTitle: "", contentType: "Instagram Reel", description: "", deliverables: "", location: "", timeline: "", startDate: "", endDate: "", remuneration: "", remunerationDetails: "", exclusivity: false, revisions: 2, additionalTerms: "" })
+  const [proposalSending, setProposalSending] = useState(false)
+  const [proposalSent, setProposalSent] = useState(false)
+  const [proposalError, setProposalError] = useState("")
   const [portfolioItems, setPortfolioItems] = useState<any[]>([])
   const [portfolioLoading, setPortfolioLoading] = useState(false)
 
@@ -175,6 +180,25 @@ export default function InfluencerProfile() {
       setError(res.status === 402 ? "CREDITS" : (data.error || "Failed to generate report"))
     }
     setScoring(false)
+  }
+
+  async function sendProposal() {
+    setProposalSending(true)
+    setProposalError("")
+    const res = await fetch("/api/proposals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ influencerId: params.id, ...proposalForm }),
+    })
+    const data = await res.json()
+    setProposalSending(false)
+    if (!res.ok) {
+      setProposalError(res.status === 402 ? "Insufficient credits. You need 10 credits to send a proposal." : (data.error || "Failed to send proposal"))
+      return
+    }
+    setProposalSent(true)
+    if (typeof data.newCredits === "number") { setCredits(data.newCredits); window.dispatchEvent(new Event("credits-updated")) }
+    setTimeout(() => { setShowProposalModal(false); setProposalSent(false) }, 2000)
   }
 
   if (loading || status === "loading") {
@@ -639,6 +663,22 @@ export default function InfluencerProfile() {
           ) : null
         )}
 
+        {/* Send Proposal — brands only, tier3 (unlocked) */}
+        {tier3 && isBrand && !isOwner && (
+          <div className="bg-[#12121A] rounded-2xl border border-purple-500/20 p-5 md:p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="font-semibold text-[#F8FAFC] mb-0.5">Ready to collaborate?</h3>
+              <p className="text-sm text-[#64748B]">Send a formal proposal with terms, timeline and remuneration. Costs 10 credits.</p>
+            </div>
+            <button
+              onClick={() => setShowProposalModal(true)}
+              className="flex-shrink-0 bg-purple-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20 whitespace-nowrap"
+            >
+              Send Proposal →
+            </button>
+          </div>
+        )}
+
         {/* Contact section */}
         {tier1 ? null : (
           <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 md:p-8">
@@ -803,6 +843,130 @@ export default function InfluencerProfile() {
                 Unlock Email Only
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Proposal Modal */}
+      {showProposalModal && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-start justify-center p-4 overflow-y-auto">
+          <div className="bg-[#12121A] border border-[#1E1E2E] rounded-2xl w-full max-w-2xl my-8 shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1E1E2E]">
+              <div>
+                <h2 className="font-semibold text-[#F8FAFC]">Send Collaboration Proposal</h2>
+                <p className="text-xs text-[#64748B] mt-0.5">To: {influencer.name} · Costs 10 credits</p>
+              </div>
+              <button onClick={() => setShowProposalModal(false)} className="text-[#64748B] hover:text-[#F8FAFC] text-xl leading-none">×</button>
+            </div>
+
+            {proposalSent ? (
+              <div className="p-10 text-center">
+                <div className="text-4xl mb-3">🎉</div>
+                <div className="text-[#F8FAFC] font-semibold mb-1">Proposal sent successfully!</div>
+                <div className="text-sm text-[#64748B]">The influencer will be notified and can respond from their dashboard.</div>
+              </div>
+            ) : (
+              <div className="px-6 py-5 space-y-4">
+                {proposalError && (
+                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">{proposalError}</div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Campaign Title *</label>
+                    <input value={proposalForm.campaignTitle} onChange={e => setProposalForm(p => ({ ...p, campaignTitle: e.target.value }))}
+                      className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500"
+                      placeholder="e.g. Summer Collection Launch" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Content Type *</label>
+                    <select value={proposalForm.contentType} onChange={e => setProposalForm(p => ({ ...p, contentType: e.target.value }))}
+                      className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500">
+                      {["Instagram Post", "Instagram Reel", "Instagram Story", "YouTube Video", "Multiple Deliverables"].map(o => <option key={o}>{o}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Remuneration *</label>
+                    <input value={proposalForm.remuneration} onChange={e => setProposalForm(p => ({ ...p, remuneration: e.target.value }))}
+                      className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500"
+                      placeholder="e.g. ₹25,000 or Product + ₹10,000" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Timeline *</label>
+                    <input value={proposalForm.timeline} onChange={e => setProposalForm(p => ({ ...p, timeline: e.target.value }))}
+                      className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500"
+                      placeholder="e.g. 2 weeks" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Location</label>
+                    <input value={proposalForm.location} onChange={e => setProposalForm(p => ({ ...p, location: e.target.value }))}
+                      className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500"
+                      placeholder="Remote / Mumbai" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Start Date</label>
+                    <input type="date" value={proposalForm.startDate} onChange={e => setProposalForm(p => ({ ...p, startDate: e.target.value }))}
+                      className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">End Date</label>
+                    <input type="date" value={proposalForm.endDate} onChange={e => setProposalForm(p => ({ ...p, endDate: e.target.value }))}
+                      className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Revisions</label>
+                    <input type="number" min={1} max={10} value={proposalForm.revisions} onChange={e => setProposalForm(p => ({ ...p, revisions: Number(e.target.value) }))}
+                      className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Campaign Description *</label>
+                    <textarea rows={3} value={proposalForm.description} onChange={e => setProposalForm(p => ({ ...p, description: e.target.value }))}
+                      className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500 resize-none"
+                      placeholder="Describe the campaign, brand goals, and what you're looking for..." />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Deliverables *</label>
+                    <textarea rows={3} value={proposalForm.deliverables} onChange={e => setProposalForm(p => ({ ...p, deliverables: e.target.value }))}
+                      className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500 resize-none"
+                      placeholder="List exactly what you need — e.g. 2 Instagram Reels, 3 Stories, 1 bio link for 7 days" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Remuneration Details</label>
+                    <textarea rows={2} value={proposalForm.remunerationDetails} onChange={e => setProposalForm(p => ({ ...p, remunerationDetails: e.target.value }))}
+                      className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500 resize-none"
+                      placeholder="Payment terms, barter details, milestone payments, etc." />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Additional Terms</label>
+                    <textarea rows={2} value={proposalForm.additionalTerms} onChange={e => setProposalForm(p => ({ ...p, additionalTerms: e.target.value }))}
+                      className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500 resize-none"
+                      placeholder="Usage rights, exclusivity window, content approval process, etc." />
+                  </div>
+                  <div className="sm:col-span-2 flex items-center gap-3">
+                    <div
+                      onClick={() => setProposalForm(p => ({ ...p, exclusivity: !p.exclusivity }))}
+                      className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer flex-shrink-0 ${proposalForm.exclusivity ? "bg-purple-600" : "bg-[#1E1E2E]"}`}
+                    >
+                      <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${proposalForm.exclusivity ? "translate-x-5" : "translate-x-0.5"}`} />
+                    </div>
+                    <span className="text-sm text-[#94A3B8]">Exclusivity required (influencer cannot work with competitors during campaign)</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button onClick={() => setShowProposalModal(false)} className="flex-1 border border-[#1E1E2E] text-[#94A3B8] py-2.5 rounded-xl text-sm hover:bg-[#1E1E2E] transition-colors">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={sendProposal}
+                    disabled={proposalSending || !proposalForm.campaignTitle || !proposalForm.description || !proposalForm.deliverables || !proposalForm.timeline || !proposalForm.remuneration}
+                    className="flex-1 bg-purple-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors shadow-lg shadow-purple-500/20"
+                  >
+                    {proposalSending ? "Sending..." : "Send Proposal — 10 credits"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

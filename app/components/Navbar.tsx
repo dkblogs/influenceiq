@@ -85,7 +85,7 @@ export default function Navbar() {
       <button
         onClick={() => setCampaignsOpen(o => !o)}
         className={`text-sm transition-colors whitespace-nowrap flex items-center gap-1 ${
-          pathname === "/campaigns" || pathname === "/my-campaigns" ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8] hover:text-[#F8FAFC]"
+          pathname === "/campaigns" || pathname === "/my-campaigns" || pathname === "/proposals" || pathname.startsWith("/proposals/") ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8] hover:text-[#F8FAFC]"
         }`}
       >
         Campaigns
@@ -112,11 +112,21 @@ export default function Navbar() {
             href="/my-campaigns"
             onClick={() => setCampaignsOpen(false)}
             className={mobile
-              ? "text-sm py-2 text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
+              ? "text-sm py-2 text-[#94A3B8] hover:text-[#F8FAFC] border-b border-[#1E1E2E] transition-colors"
               : "block px-4 py-2.5 text-sm text-[#94A3B8] hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors"
             }
           >
             My Campaigns
+          </a>
+          <a
+            href="/proposals"
+            onClick={() => setCampaignsOpen(false)}
+            className={mobile
+              ? "text-sm py-2 text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
+              : "block px-4 py-2.5 text-sm text-[#94A3B8] hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors"
+            }
+          >
+            Proposals
           </a>
         </div>
       )}
@@ -234,6 +244,7 @@ export default function Navbar() {
               {navLink("/dashboard", "Dashboard")}
               {navLink("/profile", "Profile")}
               {navLink("/campaigns", "Campaigns")}
+              {navLink("/proposals", "Proposals")}
               {navLink("/contact", "Contact Us")}
               <span className="w-px h-4 bg-[#1E1E2E]" />
               <a href="/notifications" className="relative text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">
@@ -326,6 +337,7 @@ export default function Navbar() {
                 { href: "/dashboard", label: "Dashboard" },
                 { href: "/profile", label: "Profile" },
                 { href: "/campaigns", label: "Campaigns" },
+                { href: "/proposals", label: "Proposals" },
                 { href: "/contact", label: "Contact Us" },
               ].map(l => (
                 <a key={l.href} href={l.href} className={`text-sm py-2.5 border-b border-[#1E1E2E] ${pathname === l.href ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8]"}`}>{l.label}</a>
