@@ -8,10 +8,11 @@ export default function Navbar() {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [discoverOpen, setDiscoverOpen] = useState(false)
+  const [campaignsOpen, setCampaignsOpen] = useState(false)
   const discoverRef = useRef<HTMLDivElement>(null)
+  const campaignsRef = useRef<HTMLDivElement>(null)
   const user = session?.user as any
   const [credits, setCredits] = useState<number | null>(user?.credits ?? null)
-  const [brandVerified, setBrandVerified] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
   const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const notifIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -26,7 +27,6 @@ export default function Navbar() {
         .then((r) => r.json())
         .then((d) => {
           if (typeof d.credits === "number") setCredits(d.credits)
-          setBrandVerified(d.brandVerified ?? false)
         })
         .catch(() => {})
     }
@@ -53,11 +53,14 @@ export default function Navbar() {
     }
   }, [user?.id])
 
-  // Close discover dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (discoverRef.current && !discoverRef.current.contains(e.target as Node)) {
         setDiscoverOpen(false)
+      }
+      if (campaignsRef.current && !campaignsRef.current.contains(e.target as Node)) {
+        setCampaignsOpen(false)
       }
     }
     document.addEventListener("mousedown", handler)
@@ -76,6 +79,49 @@ export default function Navbar() {
       </a>
     )
   }
+
+  const CampaignsDropdown = ({ mobile = false }: { mobile?: boolean }) => (
+    <div ref={mobile ? undefined : campaignsRef} className={mobile ? "" : "relative"}>
+      <button
+        onClick={() => setCampaignsOpen(o => !o)}
+        className={`text-sm transition-colors whitespace-nowrap flex items-center gap-1 ${
+          pathname === "/campaigns" || pathname === "/my-campaigns" ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8] hover:text-[#F8FAFC]"
+        }`}
+      >
+        Campaigns
+        <svg className={`w-3 h-3 transition-transform ${campaignsOpen ? "rotate-180" : ""}`} viewBox="0 0 12 12" fill="none">
+          <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      {campaignsOpen && (
+        <div className={mobile
+          ? "flex flex-col pl-3 mt-1"
+          : "absolute top-full left-0 mt-2 w-44 bg-[#12121A] border border-[#1E1E2E] rounded-xl shadow-xl z-50 overflow-hidden"
+        }>
+          <a
+            href="/campaigns"
+            onClick={() => setCampaignsOpen(false)}
+            className={mobile
+              ? "text-sm py-2 text-[#94A3B8] hover:text-[#F8FAFC] border-b border-[#1E1E2E] transition-colors"
+              : "block px-4 py-2.5 text-sm text-[#94A3B8] hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors"
+            }
+          >
+            All Campaigns
+          </a>
+          <a
+            href="/my-campaigns"
+            onClick={() => setCampaignsOpen(false)}
+            className={mobile
+              ? "text-sm py-2 text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
+              : "block px-4 py-2.5 text-sm text-[#94A3B8] hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors"
+            }
+          >
+            My Campaigns
+          </a>
+        </div>
+      )}
+    </div>
+  )
 
   const DiscoverDropdown = ({ mobile = false }: { mobile?: boolean }) => (
     <div ref={mobile ? undefined : discoverRef} className={mobile ? "" : "relative"}>
@@ -156,8 +202,7 @@ export default function Navbar() {
               {navLink("/dashboard", "Dashboard")}
               {navLink("/profile", "Profile")}
               <DiscoverDropdown />
-              {navLink("/campaigns", "Campaigns")}
-              {navLink("/my-campaigns", "My Campaigns")}
+              <CampaignsDropdown />
               {navLink("/contact", "Contact Us")}
               <span className="w-px h-4 bg-[#1E1E2E]" />
               <a href="/notifications" className="relative text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">
@@ -254,14 +299,15 @@ export default function Navbar() {
               {[
                 { href: "/dashboard", label: "Dashboard" },
                 { href: "/profile", label: "Profile" },
-                { href: "/campaigns", label: "Campaigns" },
-                { href: "/my-campaigns", label: "My Campaigns" },
                 { href: "/contact", label: "Contact Us" },
               ].map(l => (
                 <a key={l.href} href={l.href} className={`text-sm py-2.5 border-b border-[#1E1E2E] ${pathname === l.href ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8]"}`}>{l.label}</a>
               ))}
               <div className="py-1 border-b border-[#1E1E2E]">
                 <DiscoverDropdown mobile />
+              </div>
+              <div className="py-1 border-b border-[#1E1E2E]">
+                <CampaignsDropdown mobile />
               </div>
               <a href="/notifications" className="flex items-center justify-between text-sm py-2.5 border-b border-[#1E1E2E] text-[#94A3B8]">
                 Notifications
