@@ -41,9 +41,9 @@ function SignupForm() {
       }
 
       if (role === "influencer") {
-        router.push("/login?success=Account created! Please sign in.&next=/join")
+        router.push("/login?success=Account created! Please sign in.&next=/onboarding/influencer")
       } else {
-        router.push("/login?success=Account created! Please sign in.")
+        router.push("/login?success=Account created! Please sign in.&next=/onboarding/brand")
       }
 
     } catch (err) {
@@ -58,7 +58,7 @@ function SignupForm() {
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <a href="/" className="inline-flex items-center gap-2">
+          <a href="/" className="inline-flex items-center gap-2 mb-1">
             <span className="text-2xl">⚡</span>
             <span className="text-xl font-semibold text-[#F8FAFC]">
               Influence<span className="text-purple-400">IQ</span>
@@ -66,6 +66,9 @@ function SignupForm() {
           </a>
           <p className="text-[#94A3B8] text-sm mt-2">Create your free account</p>
         </div>
+        <a href="/" className="inline-flex items-center gap-1 text-xs text-[#64748B] hover:text-[#94A3B8] transition-colors mb-4">
+          ← Back
+        </a>
 
         {/* Account type selector */}
         <div className="grid grid-cols-2 gap-3 mb-6">

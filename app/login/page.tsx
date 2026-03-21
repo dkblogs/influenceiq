@@ -50,7 +50,7 @@ function LoginForm() {
       <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-8 w-full max-w-md shadow-2xl shadow-black/50">
 
         <div className="text-center mb-8">
-          <a href="/" className="inline-flex items-center gap-2">
+          <a href="/" className="inline-flex items-center gap-2 mb-1">
             <span className="text-2xl">⚡</span>
             <span className="text-xl font-semibold text-[#F8FAFC]">
               Influence<span className="text-purple-400">IQ</span>
@@ -58,6 +58,9 @@ function LoginForm() {
           </a>
           <p className="text-[#94A3B8] text-sm mt-2">Sign in to your account</p>
         </div>
+        <a href="/" className="inline-flex items-center gap-1 text-xs text-[#64748B] hover:text-[#94A3B8] transition-colors mb-4">
+          ← Back
+        </a>
 
         {success && (
           <div className="bg-[#10B981]/10 text-[#10B981] text-sm px-4 py-3 rounded-lg mb-4 border border-[#10B981]/20">

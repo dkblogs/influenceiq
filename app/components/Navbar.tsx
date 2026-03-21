@@ -175,14 +175,24 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-5">
-          {!loggedIn && (
+          {!loggedIn && (pathname === "/for-brands" || pathname === "/for-influencers") && (
             <>
               {navLink("/about", "About Us")}
               {navLink("/why", "Why InfluenceIQ")}
-              <DiscoverDropdown />
               {navLink("/pricing", "Pricing")}
               {navLink("/contact", "Contact Us")}
               <span className="w-px h-4 bg-[#1E1E2E]" />
+              {navLink("/login", "Log in")}
+              <a
+                href={pathname === "/for-influencers" ? "/signup?role=influencer" : "/signup?role=brand"}
+                className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20"
+              >
+                Sign up free
+              </a>
+            </>
+          )}
+          {!loggedIn && pathname !== "/for-brands" && pathname !== "/for-influencers" && (
+            <>
               {navLink("/login", "Log in")}
               <a
                 href="/signup"
@@ -247,7 +257,7 @@ export default function Navbar() {
       {/* Mobile dropdown */}
       {mobileOpen && (
         <div className="md:hidden sticky top-[65px] z-40 border-b border-[#1E1E2E] bg-[#0A0A0F] px-4 py-4 flex flex-col gap-1">
-          {!loggedIn && (
+          {!loggedIn && (pathname === "/for-brands" || pathname === "/for-influencers") && (
             <>
               {[
                 { href: "/about", label: "About Us" },
@@ -257,9 +267,12 @@ export default function Navbar() {
               ].map(l => (
                 <a key={l.href} href={l.href} className={`text-sm py-2.5 border-b border-[#1E1E2E] ${pathname === l.href ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8]"}`}>{l.label}</a>
               ))}
-              <div className="py-1">
-                <DiscoverDropdown mobile />
-              </div>
+              <a href="/login" className="text-sm text-[#94A3B8] py-2.5 border-b border-[#1E1E2E]">Log in</a>
+              <a href={pathname === "/for-influencers" ? "/signup?role=influencer" : "/signup?role=brand"} className="mt-2 text-sm bg-purple-600 text-white px-4 py-2.5 rounded-lg text-center hover:bg-purple-500 transition-colors">Sign up free</a>
+            </>
+          )}
+          {!loggedIn && pathname !== "/for-brands" && pathname !== "/for-influencers" && (
+            <>
               <a href="/login" className="text-sm text-[#94A3B8] py-2.5 border-b border-[#1E1E2E]">Log in</a>
               <a href="/signup" className="mt-2 text-sm bg-purple-600 text-white px-4 py-2.5 rounded-lg text-center hover:bg-purple-500 transition-colors">Sign up</a>
             </>
