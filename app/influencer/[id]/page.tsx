@@ -508,23 +508,39 @@ export default function InfluencerProfile() {
 
             {brandReport ? (
               <div className="space-y-4">
-                {/* Score + summary */}
-                <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-5">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-3xl font-bold text-purple-400">{brandReport.score}</span>
-                    <span className="text-sm text-[#94A3B8]">Overall AI Score</span>
-                  </div>
+                {/* Verdict badge */}
+                {(() => {
+                  const v = brandReport.verdict || ""
+                  const isStrong = v.toLowerCase().includes("strong")
+                  const isModerate = v.toLowerCase().includes("moderate")
+                  const bgClass = isStrong
+                    ? "bg-[#10B981]/10 border-[#10B981]/30 text-[#10B981]"
+                    : isModerate
+                    ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                    : "bg-red-500/10 border-red-500/30 text-red-400"
+                  const icon = isStrong ? "✅" : isModerate ? "⚠️" : "❌"
+                  return (
+                    <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${bgClass}`}>
+                      <span className="text-lg">{icon}</span>
+                      <span className="font-semibold text-sm">{brandReport.verdict}</span>
+                      <span className="ml-auto text-2xl font-bold">{brandReport.score}<span className="text-xs font-normal opacity-60">/100</span></span>
+                    </div>
+                  )
+                })()}
+
+                {/* Executive summary */}
+                <div className="bg-[#0D0D1A] rounded-xl p-4 border border-[#1E1E2E]">
+                  <div className="text-xs font-medium text-purple-400 uppercase tracking-wide mb-1.5">Executive Summary</div>
                   <p className="text-sm text-[#94A3B8] leading-relaxed">{brandReport.summary}</p>
                 </div>
 
-                {/* Analysis sections */}
+                {/* 4 analysis cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {[
-                    { label: "Engagement Analysis", value: brandReport.engagementAnalysis },
-                    { label: "Niche Strength", value: brandReport.nicheStrength },
-                    { label: "Content Consistency", value: brandReport.contentConsistency },
-                    { label: "Growth Potential", value: brandReport.growthPotential },
-                    { label: "Brand Collaboration Readiness", value: brandReport.brandCollaborationReadiness },
+                    { label: "Brand Fit", value: brandReport.brandFitAnalysis },
+                    { label: "Audience Quality", value: brandReport.audienceQuality },
+                    { label: "Content Reliability", value: brandReport.contentReliability },
+                    { label: "Reach & Impact", value: brandReport.reachAndImpact },
                   ].map(item => (
                     <div key={item.label} className="bg-[#0D0D1A] rounded-xl p-4 border border-[#1E1E2E]">
                       <div className="text-xs font-medium text-purple-400 uppercase tracking-wide mb-1.5">{item.label}</div>
@@ -533,39 +549,55 @@ export default function InfluencerProfile() {
                   ))}
                 </div>
 
-                {/* Strengths + Improvements */}
+                {/* Risk factors */}
+                {brandReport.riskFactors && brandReport.riskFactors.toLowerCase() !== "none identified" && (
+                  <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4">
+                    <div className="text-xs font-medium text-red-400 uppercase tracking-wide mb-1.5">⚠ Risk Factors</div>
+                    <p className="text-sm text-[#94A3B8] leading-relaxed">{brandReport.riskFactors}</p>
+                  </div>
+                )}
+
+                {/* Pros + Cons */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="bg-[#10B981]/5 border border-[#10B981]/20 rounded-xl p-4">
-                    <div className="text-xs font-medium text-[#10B981] uppercase tracking-wide mb-2">Strengths</div>
+                    <div className="text-xs font-medium text-[#10B981] uppercase tracking-wide mb-2">Pros</div>
                     <ul className="space-y-1.5">
-                      {brandReport.strengths?.map((s: string, i: number) => (
+                      {brandReport.pros?.map((s: string, i: number) => (
                         <li key={i} className="text-sm text-[#94A3B8] flex items-start gap-2">
                           <span className="text-[#10B981] mt-0.5 flex-shrink-0">✓</span>{s}
                         </li>
                       ))}
                     </ul>
                   </div>
-                  <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
-                    <div className="text-xs font-medium text-amber-400 uppercase tracking-wide mb-2">Areas to Improve</div>
+                  <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4">
+                    <div className="text-xs font-medium text-red-400 uppercase tracking-wide mb-2">Cons</div>
                     <ul className="space-y-1.5">
-                      {brandReport.improvements?.map((s: string, i: number) => (
+                      {brandReport.cons?.map((s: string, i: number) => (
                         <li key={i} className="text-sm text-[#94A3B8] flex items-start gap-2">
-                          <span className="text-amber-400 mt-0.5 flex-shrink-0">→</span>{s}
+                          <span className="text-red-400 mt-0.5 flex-shrink-0">✗</span>{s}
                         </li>
                       ))}
                     </ul>
                   </div>
                 </div>
 
-                {/* Ideal brand categories */}
-                {brandReport.idealBrandCategories?.length > 0 && (
+                {/* Ideal campaign types */}
+                {brandReport.idealCampaignTypes?.length > 0 && (
                   <div className="bg-[#0D0D1A] rounded-xl p-4 border border-[#1E1E2E]">
-                    <div className="text-xs font-medium text-[#64748B] uppercase tracking-wide mb-2">Ideal Brand Categories</div>
+                    <div className="text-xs font-medium text-[#64748B] uppercase tracking-wide mb-2">Ideal Campaign Types</div>
                     <div className="flex flex-wrap gap-2">
-                      {brandReport.idealBrandCategories.map((cat: string, i: number) => (
-                        <span key={i} className="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2.5 py-1 rounded-full">{cat}</span>
+                      {brandReport.idealCampaignTypes.map((t: string, i: number) => (
+                        <span key={i} className="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2.5 py-1 rounded-full">{t}</span>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {/* Estimated ROI */}
+                {brandReport.estimatedROI && (
+                  <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4">
+                    <div className="text-xs font-medium text-purple-400 uppercase tracking-wide mb-1.5">Estimated ROI</div>
+                    <p className="text-sm text-[#94A3B8] leading-relaxed">{brandReport.estimatedROI}</p>
                   </div>
                 )}
 

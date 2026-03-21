@@ -35,7 +35,7 @@ export async function POST(request) {
 
     const bio = influencer.instagramBio || influencer.youtubeBio || "Not provided"
 
-    const prompt = `You are an expert influencer marketing analyst. Analyze this influencer and provide a detailed report.
+    const prompt = `You are an expert influencer marketing consultant helping a brand evaluate whether to collaborate with an influencer.
 
 Influencer Data:
 - Name: ${influencer.name}
@@ -45,19 +45,24 @@ Influencer Data:
 - YouTube: ${influencer.youtubeHandle || "N/A"} | Verified: ${influencer.youtubeVerified} | Subscribers: ${influencer.youtubeFollowers ?? "N/A"}
 - Bio: ${bio}
 - Location: ${influencer.location || "Not provided"}
+- AI Score: ${influencer.aiScore ?? "Not yet scored"}/100
+
+Analyze this influencer STRICTLY from a brand collaboration perspective. Do NOT give improvement suggestions to the influencer. Focus only on what matters to a brand making a hiring decision.
 
 Respond in this exact JSON format with no other text:
 {
   "score": <number 0-100>,
-  "summary": "<2-3 sentence overall assessment>",
-  "engagementAnalysis": "<analysis of engagement rate and quality>",
-  "nicheStrength": "<analysis of niche authority and content focus>",
-  "contentConsistency": "<assessment of posting consistency and content quality>",
-  "growthPotential": "<growth trajectory and future potential>",
-  "brandCollaborationReadiness": "<readiness for brand deals, professionalism>",
-  "strengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
-  "improvements": ["<improvement 1>", "<improvement 2>"],
-  "idealBrandCategories": ["<category 1>", "<category 2>", "<category 3>"]
+  "verdict": "<one line verdict: exactly one of 'Strong fit for collaboration' or 'Moderate fit' or 'Not recommended'>",
+  "summary": "<2-3 sentence executive summary for the brand decision maker>",
+  "brandFitAnalysis": "<how well this influencer fits brand collaborations in general>",
+  "audienceQuality": "<analysis of their audience — engagement quality, authenticity, demographics inference>",
+  "contentReliability": "<assessment of content consistency and professional reliability for brand deals>",
+  "reachAndImpact": "<realistic assessment of reach, visibility and campaign impact potential>",
+  "riskFactors": "<any red flags, risks or concerns a brand should know before collaborating — write 'None identified' if none>",
+  "pros": ["<pro 1 from brand perspective>", "<pro 2>", "<pro 3>"],
+  "cons": ["<con 1 from brand perspective>", "<con 2>"],
+  "idealCampaignTypes": ["<campaign type 1>", "<campaign type 2>", "<campaign type 3>"],
+  "estimatedROI": "<qualitative ROI estimate for a brand campaign with this influencer>"
 }`
 
     const completion = await groq.chat.completions.create({
