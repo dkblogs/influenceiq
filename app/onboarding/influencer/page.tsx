@@ -17,6 +17,8 @@ export default function InfluencerOnboarding() {
   const [done, setDone] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
+  const [showSkipWarning, setShowSkipWarning] = useState(false)
+  const [influencer, setInfluencer] = useState<any>(null)
 
   // Creator details
   const [niche, setNiche] = useState("")
@@ -29,6 +31,17 @@ export default function InfluencerOnboarding() {
     if (status === "unauthenticated") router.push("/login")
     if (status === "authenticated" && user?.role !== "influencer") router.push("/dashboard")
   }, [status, user, router])
+
+  // Fetch influencer profile to check real verification status
+  useEffect(() => {
+    if (status !== "authenticated" || !user?.id) return
+    fetch(`/api/influencers?userId=${user.id}`)
+      .then(r => r.json())
+      .then(d => { if (d.influencers?.[0]) setInfluencer(d.influencers[0]) })
+      .catch(() => {})
+  }, [status, user?.id])
+
+  const step3Complete = !!(influencer?.instagramVerified || influencer?.youtubeVerified)
 
   if (status === "loading" || status !== "authenticated") {
     return <div className="min-h-screen bg-[#0A0A0F]" />
@@ -102,26 +115,31 @@ export default function InfluencerOnboarding() {
         {/* Progress bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
-            {STEPS.map((s, i) => (
-              <div key={s} className="flex items-center gap-1">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                  i + 1 < step ? "bg-[#10B981] text-white" :
-                  i + 1 === step ? "bg-cyan-600 text-white" :
-                  "bg-[#1E1E2E] text-[#64748B]"
-                }`}>
-                  {i + 1 < step ? "✓" : i + 1}
+            {STEPS.map((s, i) => {
+              // Step 3 (index 2) is complete only when actually verified
+              const isComplete = i === 2 ? step3Complete : i + 1 < step
+              const isCurrent = i + 1 === step
+              return (
+                <div key={s} className="flex items-center gap-1">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                    isComplete ? "bg-[#10B981] text-white" :
+                    isCurrent ? "bg-cyan-600 text-white" :
+                    "bg-[#1E1E2E] text-[#64748B]"
+                  }`}>
+                    {isComplete ? "✓" : i + 1}
+                  </div>
+                  <span className={`text-[10px] hidden sm:block ml-1 ${i + 1 <= step ? "text-[#94A3B8]" : "text-[#64748B]"}`}>{s}</span>
+                  {i < STEPS.length - 1 && (
+                    <div className={`h-px mx-1 ${isComplete ? "bg-[#10B981]" : "bg-[#1E1E2E]"}`} style={{ width: "24px" }} />
+                  )}
                 </div>
-                <span className={`text-[10px] hidden sm:block ml-1 ${i + 1 <= step ? "text-[#94A3B8]" : "text-[#64748B]"}`}>{s}</span>
-                {i < STEPS.length - 1 && (
-                  <div className={`h-px mx-1 ${i + 1 < step ? "bg-[#10B981]" : "bg-[#1E1E2E]"}`} style={{ width: "24px" }} />
-                )}
-              </div>
-            ))}
+              )
+            })}
           </div>
           <div className="h-1.5 bg-[#1E1E2E] rounded-full">
             <div
               className="h-full bg-cyan-600 rounded-full transition-all duration-500"
-              style={{ width: `${(completedSteps / (STEPS.length - 1)) * 100}%` }}
+              style={{ width: `${([step > 1, step > 2, step3Complete, step > 4].filter(Boolean).length / (STEPS.length - 1)) * 100}%` }}
             />
           </div>
           <div className="text-xs text-[#64748B] mt-1.5">Step {step} of {STEPS.length}</div>
@@ -222,31 +240,64 @@ export default function InfluencerOnboarding() {
           {/* Step 3 — Verify Handle */}
           {step === 3 && (
             <div>
-              <h2 className="text-lg font-bold text-[#F8FAFC] mb-1">Verify Your Handle</h2>
+              <div className="flex items-center gap-2 mb-1">
+                {step3Complete
+                  ? <span className="text-[#10B981] text-lg">✅</span>
+                  : <span className="text-amber-400 text-lg">⚠️</span>
+                }
+                <h2 className="text-lg font-bold text-[#F8FAFC]">Verify Your Handle</h2>
+              </div>
               <p className="text-[#64748B] text-xs mb-4">Verified creators appear first in brand searches</p>
 
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-6">
-                <div className="flex items-start gap-3">
-                  <span className="text-amber-400 text-base flex-shrink-0">⚠️</span>
-                  <p className="text-amber-300 text-xs">
-                    Unverified profiles get <strong>80% fewer brand views</strong>. Verifying your handle takes under 2 minutes and unlocks your full profile.
+              {step3Complete ? (
+                <div className="bg-[#10B981]/10 border border-[#10B981]/20 rounded-xl p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <span className="text-[#10B981] text-base flex-shrink-0">✅</span>
+                    <p className="text-[#10B981] text-xs font-medium">
+                      Handle verified! Your profile is now fully trusted by brands.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <span className="text-amber-400 text-base flex-shrink-0">⚠️</span>
+                    <p className="text-amber-300 text-xs">
+                      Unverified profiles get <strong>80% fewer brand views</strong>. Verifying your handle takes under 2 minutes and unlocks your full profile.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {showSkipWarning && (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-4">
+                  <p className="text-red-400 text-xs">
+                    ⚠️ Unverified profiles are <strong>80% less likely</strong> to receive brand proposals. We strongly recommend verifying at least one handle before continuing.
                   </p>
                 </div>
-              </div>
+              )}
 
               <div className="flex flex-col gap-3 mb-4">
                 <a
                   href="/profile"
                   className="w-full bg-cyan-600 text-white py-3 rounded-xl text-sm font-semibold hover:bg-cyan-500 transition-colors text-center"
                 >
-                  Verify My Handle Now →
+                  {step3Complete ? "Manage Handles →" : "Verify My Handle Now →"}
                 </a>
                 <button
                   onClick={() => setStep(4)}
                   className="w-full bg-[#0A0A0F] border border-[#1E1E2E] text-[#64748B] py-3 rounded-xl text-sm hover:border-[#2E2E3E] hover:text-[#94A3B8] transition-colors"
                 >
-                  Skip for now ⚠️
+                  {step3Complete ? "Continue →" : "Skip for now"}
                 </button>
+                {!step3Complete && !showSkipWarning && (
+                  <button
+                    onClick={() => setShowSkipWarning(true)}
+                    className="text-[10px] text-[#64748B] hover:text-amber-400 transition-colors"
+                  >
+                    Why should I verify?
+                  </button>
+                )}
               </div>
               <p className="text-[10px] text-[#64748B] text-center">You can verify from your Profile page at any time</p>
             </div>
