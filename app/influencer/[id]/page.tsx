@@ -42,7 +42,7 @@ export default function InfluencerProfile() {
   const [showPhoneWarning, setShowPhoneWarning] = useState(false)
   const [error, setError] = useState("")
   const [credits, setCredits] = useState(0)
-  const [aiScores, setAiScores] = useState<any>(null)
+  const [brandReport, setBrandReport] = useState<any>(null)
   const [scoring, setScoring] = useState(false)
   const [reviews, setReviews] = useState<any[]>([])
   const [reviewsTotal, setReviewsTotal] = useState(0)
@@ -157,17 +157,23 @@ export default function InfluencerProfile() {
     setUnlocking(false)
   }
 
-  async function generateScore() {
+  async function generateBrandReport() {
     if (!session) { router.push("/login"); return }
     setScoring(true)
-    const res = await fetch("/api/ai-score", {
+    setError("")
+    const res = await fetch("/api/ai-report-brand", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ influencerId: params.id }),
     })
     const data = await res.json()
-    if (data.success) { setAiScores(data.scores); setCredits((prev: number) => prev - 3) }
-    else { setError(res.status === 402 ? "CREDITS" : (data.error || "Failed to generate score")) }
+    if (data.success) {
+      setBrandReport(data.report)
+      if (typeof data.newCredits === "number") setCredits(data.newCredits)
+      window.dispatchEvent(new Event("credits-updated"))
+    } else {
+      setError(res.status === 402 ? "CREDITS" : (data.error || "Failed to generate report"))
+    }
     setScoring(false)
   }
 
@@ -191,6 +197,7 @@ export default function InfluencerProfile() {
   const tier2 = loggedIn && !unlocked
   const tier3 = loggedIn && unlocked
   const isOwner = !!(loggedIn && influencer?.userId && (session?.user as any)?.id === influencer.userId)
+  const isBrand = loggedIn && (session?.user as any)?.role === "brand"
 
   return (
     <main className="min-h-screen bg-[#0A0A0F]">
@@ -326,21 +333,11 @@ export default function InfluencerProfile() {
                   <div className="text-xs text-[#64748B] mt-1">AI Score</div>
                 </>
               )}
-              {tier2 && (
+              {loggedIn && (
                 <>
-                  <div className="text-2xl text-[#334155]">🔒</div>
-                  <div className="text-xs text-purple-400 mt-1">Get AI report</div>
-                </>
-              )}
-              {tier3 && aiScores && (
-                <>
-                  <div className="text-3xl md:text-4xl font-bold text-purple-400">{aiScores.overallScore}</div>
-                  <div className="text-xs text-[#64748B] mt-1">AI Score</div>
-                </>
-              )}
-              {tier3 && !aiScores && (
-                <>
-                  <div className="text-2xl text-[#334155]">—</div>
+                  <div className="text-3xl md:text-4xl font-bold text-purple-400">
+                    {brandReport?.score ?? influencer.aiScore ?? "—"}
+                  </div>
                   <div className="text-xs text-[#64748B] mt-1">AI Score</div>
                 </>
               )}
@@ -475,61 +472,139 @@ export default function InfluencerProfile() {
           <div className="mb-6">
             <SignupPromptCard />
           </div>
-        ) : (
+        ) : isBrand ? (
           <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 md:p-8 mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
               <div>
-                <h2 className="font-semibold text-[#F8FAFC]">AI Score Breakdown</h2>
-                <p className="text-xs text-[#64748B] mt-1">Powered by InfluenceIQ AI · Updated on demand</p>
+                <h2 className="font-semibold text-[#F8FAFC]">AI Report</h2>
+                <p className="text-xs text-[#64748B] mt-1">Powered by InfluenceIQ AI · Costs 3 credits</p>
               </div>
-              <button
-                onClick={generateScore}
-                disabled={scoring}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors whitespace-nowrap shadow-lg shadow-purple-500/20"
-              >
-                {scoring ? "Analyzing..." : "Generate AI Score — 3 cr"}
-              </button>
+              {!brandReport && (
+                <button
+                  onClick={generateBrandReport}
+                  disabled={scoring}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors whitespace-nowrap shadow-lg shadow-purple-500/20 flex items-center gap-2"
+                >
+                  {scoring ? (
+                    <>
+                      <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      </svg>
+                      Analyzing...
+                    </>
+                  ) : "Get AI Report — 3 credits"}
+                </button>
+              )}
             </div>
 
-            {aiScores ? (
-              <div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {error && !brandReport && (
+              <div className="bg-red-500/10 px-4 py-3 rounded-xl border border-red-500/20 mb-4">
+                {error === "CREDITS"
+                  ? <InsufficientCreditsError action="generate this AI report" />
+                  : <span className="text-sm text-red-400">{error}</span>}
+              </div>
+            )}
+
+            {brandReport ? (
+              <div className="space-y-4">
+                {/* Score + summary */}
+                <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-5">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-3xl font-bold text-purple-400">{brandReport.score}</span>
+                    <span className="text-sm text-[#94A3B8]">Overall AI Score</span>
+                  </div>
+                  <p className="text-sm text-[#94A3B8] leading-relaxed">{brandReport.summary}</p>
+                </div>
+
+                {/* Analysis sections */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {[
-                    { label: "Engagement Rate", value: aiScores.engagement, note: aiScores.engagementNote },
-                    { label: "Audience Quality", value: aiScores.audienceQuality, note: aiScores.audienceQualityNote },
-                    { label: "Content Consistency", value: aiScores.contentConsistency, note: aiScores.contentConsistencyNote },
-                    { label: "Niche Authority", value: aiScores.nicheAuthority, note: aiScores.nicheAuthorityNote },
-                    { label: "Growth Trend", value: aiScores.growthTrend, note: aiScores.growthTrendNote },
-                    { label: "Brand Safety", value: aiScores.brandSafety, note: aiScores.brandSafetyNote },
-                  ].map((item) => (
+                    { label: "Engagement Analysis", value: brandReport.engagementAnalysis },
+                    { label: "Niche Strength", value: brandReport.nicheStrength },
+                    { label: "Content Consistency", value: brandReport.contentConsistency },
+                    { label: "Growth Potential", value: brandReport.growthPotential },
+                    { label: "Brand Collaboration Readiness", value: brandReport.brandCollaborationReadiness },
+                  ].map(item => (
                     <div key={item.label} className="bg-[#0D0D1A] rounded-xl p-4 border border-[#1E1E2E]">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium text-[#94A3B8]">{item.label}</span>
-                        <span className="text-sm font-semibold text-purple-400">{item.value}</span>
-                      </div>
-                      <div className="h-2 bg-[#1E1E2E] rounded-full overflow-hidden mb-2">
-                        <div className="h-full bg-purple-500 rounded-full transition-all duration-1000" style={{ width: `${item.value}%` }}></div>
-                      </div>
-                      <p className="text-xs text-[#64748B]">{item.note}</p>
+                      <div className="text-xs font-medium text-purple-400 uppercase tracking-wide mb-1.5">{item.label}</div>
+                      <p className="text-sm text-[#94A3B8] leading-relaxed">{item.value}</p>
                     </div>
                   ))}
                 </div>
-                <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg font-semibold text-purple-400">{aiScores.overallScore}</span>
-                    <span className="text-sm text-[#94A3B8]">Overall AI Score</span>
+
+                {/* Strengths + Improvements */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="bg-[#10B981]/5 border border-[#10B981]/20 rounded-xl p-4">
+                    <div className="text-xs font-medium text-[#10B981] uppercase tracking-wide mb-2">Strengths</div>
+                    <ul className="space-y-1.5">
+                      {brandReport.strengths?.map((s: string, i: number) => (
+                        <li key={i} className="text-sm text-[#94A3B8] flex items-start gap-2">
+                          <span className="text-[#10B981] mt-0.5 flex-shrink-0">✓</span>{s}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <p className="text-sm text-[#94A3B8]">{aiScores.summary}</p>
+                  <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
+                    <div className="text-xs font-medium text-amber-400 uppercase tracking-wide mb-2">Areas to Improve</div>
+                    <ul className="space-y-1.5">
+                      {brandReport.improvements?.map((s: string, i: number) => (
+                        <li key={i} className="text-sm text-[#94A3B8] flex items-start gap-2">
+                          <span className="text-amber-400 mt-0.5 flex-shrink-0">→</span>{s}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
+
+                {/* Ideal brand categories */}
+                {brandReport.idealBrandCategories?.length > 0 && (
+                  <div className="bg-[#0D0D1A] rounded-xl p-4 border border-[#1E1E2E]">
+                    <div className="text-xs font-medium text-[#64748B] uppercase tracking-wide mb-2">Ideal Brand Categories</div>
+                    <div className="flex flex-wrap gap-2">
+                      {brandReport.idealBrandCategories.map((cat: string, i: number) => (
+                        <span key={i} className="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2.5 py-1 rounded-full">{cat}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => { setBrandReport(null); setError("") }}
+                  className="text-xs text-[#64748B] hover:text-[#94A3B8] transition-colors"
+                >
+                  Generate new report
+                </button>
               </div>
-            ) : (
+            ) : !scoring && (
               <div className="text-center py-8 text-[#64748B]">
                 <div className="text-4xl mb-3">⚡</div>
-                <div className="font-medium text-[#94A3B8] mb-1">No AI score generated yet</div>
-                <div className="text-sm">Click Generate AI Score to get a detailed breakdown — costs 3 credits</div>
+                <div className="font-medium text-[#94A3B8] mb-1">No AI report generated yet</div>
+                {influencer.aiReportSummary ? (
+                  <p className="text-sm text-[#64748B] mt-2 max-w-md mx-auto">{influencer.aiReportSummary}</p>
+                ) : (
+                  <div className="text-sm">Click "Get AI Report" for a detailed breakdown — costs 3 credits</div>
+                )}
               </div>
             )}
           </div>
+        ) : (
+          /* Non-brand logged-in users: show existing AI score summary read-only */
+          influencer.aiScore ? (
+            <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 md:p-8 mb-6">
+              <h2 className="font-semibold text-[#F8FAFC] mb-1">AI Score</h2>
+              <p className="text-xs text-[#64748B] mb-4">Powered by InfluenceIQ AI</p>
+              <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-3xl font-bold text-purple-400">{influencer.aiScore}</span>
+                  <span className="text-sm text-[#94A3B8]">Overall AI Score</span>
+                </div>
+                {influencer.aiReportSummary && (
+                  <p className="text-sm text-[#94A3B8] leading-relaxed">{influencer.aiReportSummary}</p>
+                )}
+              </div>
+            </div>
+          ) : null
         )}
 
         {/* Contact section */}

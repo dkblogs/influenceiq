@@ -11,9 +11,8 @@ export async function POST(request) {
     if (!session?.user?.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 })
     }
-
-    if (session.user.role !== "influencer") {
-      return Response.json({ error: "Only influencers can generate their own AI score" }, { status: 403 })
+    if (session.user.role !== "brand") {
+      return Response.json({ error: "Only brands can use this route" }, { status: 403 })
     }
 
     const { influencerId } = await request.json()
@@ -25,24 +24,14 @@ export async function POST(request) {
     if (!influencer) {
       return Response.json({ error: "Influencer not found" }, { status: 404 })
     }
-    if (influencer.userId !== session.user.id) {
-      return Response.json({ error: "Forbidden" }, { status: 403 })
-    }
 
-    if (!influencer.instagramVerified && !influencer.youtubeVerified) {
-      return Response.json(
-        { error: "Please verify at least one social handle first" },
-        { status: 403 }
-      )
-    }
-
-    const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { credits: true } })
-    if (!user || user.credits < 2) {
+    const brand = await prisma.user.findUnique({ where: { id: session.user.id }, select: { credits: true } })
+    if (!brand || brand.credits < 3) {
       return Response.json({ error: "Insufficient credits", redirectTo: "/pricing" }, { status: 402 })
     }
 
-    await prisma.user.update({ where: { id: session.user.id }, data: { credits: { decrement: 2 } } })
-    await prisma.creditTransaction.create({ data: { userId: session.user.id, type: "ai_report", amount: -2 } })
+    await prisma.user.update({ where: { id: session.user.id }, data: { credits: { decrement: 3 } } })
+    await prisma.creditTransaction.create({ data: { userId: session.user.id, type: "ai_report", amount: -3 } })
 
     const bio = influencer.instagramBio || influencer.youtubeBio || "Not provided"
 
@@ -88,33 +77,15 @@ Respond in this exact JSON format with no other text:
       return Response.json({ error: "Failed to parse AI response" }, { status: 500 })
     }
 
-    const reportJson = JSON.stringify(report)
+    const updatedBrand = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { credits: true },
+    })
 
-    await Promise.all([
-      prisma.influencer.update({
-        where: { id: influencerId },
-        data: {
-          score: report.score,
-          aiScore: report.score,
-          aiReportSummary: report.summary,
-          aiReportFull: reportJson,
-          aiReportGeneratedAt: new Date(),
-        },
-      }),
-      prisma.aiReport.create({
-        data: {
-          influencerId,
-          score: report.score,
-          summary: report.summary,
-          reportFull: reportJson,
-        },
-      }),
-    ])
-
-    return Response.json({ success: true, report })
+    return Response.json({ success: true, report, newCredits: updatedBrand.credits })
 
   } catch (error) {
-    console.error("AI score error:", error.message)
-    return Response.json({ error: "Failed to generate score" }, { status: 500 })
+    console.error("AI brand report error:", error.message)
+    return Response.json({ error: "Failed to generate report" }, { status: 500 })
   }
 }
