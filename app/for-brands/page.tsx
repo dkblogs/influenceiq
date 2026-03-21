@@ -143,7 +143,7 @@ export default function ForBrandsPage() {
             href="/signup?role=brand"
             className="inline-block bg-purple-600 text-white px-8 py-3.5 rounded-xl text-sm font-semibold hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20"
           >
-            Get Started Free →
+            Let's Go →
           </a>
           <p className="text-xs text-[#64748B] mt-4">
             Already have an account?{" "}

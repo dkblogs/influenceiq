@@ -142,7 +142,7 @@ export default function ForInfluencersPage() {
             href="/signup?role=influencer"
             className="inline-block bg-cyan-600 text-white px-8 py-3.5 rounded-xl text-sm font-semibold hover:bg-cyan-500 transition-colors shadow-lg shadow-cyan-500/20"
           >
-            Join Free →
+            Let's Go →
           </a>
           <p className="text-xs text-[#64748B] mt-4">
             Already have an account?{" "}
