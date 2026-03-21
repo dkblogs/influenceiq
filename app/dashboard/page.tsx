@@ -318,6 +318,10 @@ export default function Dashboard() {
 
   async function handleGenerateAiReport() {
     if (!myInfluencerProfile?.id) return
+    if ((credits ?? 0) < 2) {
+      setAiError("CREDITS")
+      return
+    }
     setAiLoading(true)
     setAiError("")
     setAiReport(null)
@@ -545,12 +549,24 @@ export default function Dashboard() {
                   Get an AI-powered analysis of your influence,<br />engagement, and brand readiness
                 </div>
                 <div className="text-xs text-[#64748B] mb-4">Costs 2 credits</div>
-                <button
-                  onClick={handleGenerateAiReport}
-                  className="bg-purple-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20"
-                >
-                  Generate AI Score
-                </button>
+                {(credits ?? 0) < 2 ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <button disabled className="bg-[#1E1E2E] text-[#64748B] px-5 py-2.5 rounded-lg text-sm font-medium cursor-not-allowed opacity-60">
+                      Generate AI Score
+                    </button>
+                    <span className="text-xs text-red-400">
+                      Needs 2 credits. You have {credits ?? 0}.{" "}
+                      <a href="/pricing?from=/dashboard" className="text-purple-400 underline hover:text-purple-300">Buy credits →</a>
+                    </span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleGenerateAiReport}
+                    className="bg-purple-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20"
+                  >
+                    Generate AI Score
+                  </button>
+                )}
               </div>
             )}
 
@@ -569,7 +585,7 @@ export default function Dashboard() {
             {aiError && (
               <div className="bg-red-500/10 px-4 py-3 rounded-lg border border-red-500/20 mb-4">
                 {aiError === "CREDITS"
-                  ? <InsufficientCreditsError action="generate AI report" />
+                  ? <InsufficientCreditsError action="generate AI report" required={2} current={credits} from="/dashboard" />
                   : <span className="text-sm text-red-400">{aiError}</span>}
               </div>
             )}
@@ -619,13 +635,20 @@ export default function Dashboard() {
                   >
                     View Full Report →
                   </a>
-                  <button
-                    onClick={handleGenerateAiReport}
-                    disabled={aiLoading}
-                    className="border border-[#1E1E2E] text-[#94A3B8] px-4 py-2 rounded-lg text-sm hover:border-purple-500/30 hover:text-[#F8FAFC] transition-colors disabled:opacity-50"
-                  >
-                    Regenerate (2 credits)
-                  </button>
+                  {(credits ?? 0) < 2 ? (
+                    <span className="text-xs text-red-400">
+                      Needs 2 credits to regenerate. You have {credits ?? 0}.{" "}
+                      <a href="/pricing?from=/dashboard" className="text-purple-400 underline hover:text-purple-300">Buy credits →</a>
+                    </span>
+                  ) : (
+                    <button
+                      onClick={handleGenerateAiReport}
+                      disabled={aiLoading}
+                      className="border border-[#1E1E2E] text-[#94A3B8] px-4 py-2 rounded-lg text-sm hover:border-purple-500/30 hover:text-[#F8FAFC] transition-colors disabled:opacity-50"
+                    >
+                      Regenerate (2 credits)
+                    </button>
+                  )}
                   {myInfluencerProfile?.aiReportGeneratedAt && (
                     <span className="text-xs text-[#64748B]">
                       Last generated {new Date(myInfluencerProfile.aiReportGeneratedAt).toLocaleDateString("en-IN")}

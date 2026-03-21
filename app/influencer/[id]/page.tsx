@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
 import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
 import { useApp } from "@/app/context/AppContext"
+import React from "react"
 
 function firstName(name: string) {
   return name?.split(" ")[0] || name
@@ -54,7 +55,7 @@ export default function InfluencerProfile() {
   const [proposalForm, setProposalForm] = useState({ campaignTitle: "", contentType: "Instagram Reel", description: "", deliverables: "", location: "", timeline: "", startDate: "", endDate: "", remuneration: "", remunerationDetails: "", exclusivity: false, revisions: 2, additionalTerms: "" })
   const [proposalSending, setProposalSending] = useState(false)
   const [proposalSent, setProposalSent] = useState(false)
-  const [proposalError, setProposalError] = useState("")
+  const [proposalError, setProposalError] = useState<React.ReactNode>("")
   const [portfolioItems, setPortfolioItems] = useState<any[]>([])
   const [portfolioLoading, setPortfolioLoading] = useState(false)
 
@@ -132,6 +133,10 @@ export default function InfluencerProfile() {
 
   async function generateBrandReport() {
     if (!session) { router.push("/login"); return }
+    if ((credits ?? 0) < 3) {
+      setError("CREDITS")
+      return
+    }
     setScoring(true)
     setError("")
     const res = await fetch("/api/ai-report-brand", {
@@ -149,6 +154,20 @@ export default function InfluencerProfile() {
     setScoring(false)
   }
 
+  function handleSendProposalClick() {
+    if ((credits ?? 0) < 10) {
+      setProposalError(
+        <span>
+          You need 10 credits to send a proposal. You have {credits ?? 0}.{" "}
+          <a href="/pricing?from=/influencer" className="text-purple-400 underline hover:text-purple-300">Buy credits →</a>
+        </span>
+      )
+      return
+    }
+    setProposalError("")
+    setShowProposalModal(true)
+  }
+
   async function sendProposal() {
     setProposalSending(true)
     setProposalError("")
@@ -160,8 +179,12 @@ export default function InfluencerProfile() {
     const data = await res.json()
     setProposalSending(false)
     if (!res.ok) {
-      setProposalError(res.status === 402 ? "Insufficient credits. You need 10 credits to send a proposal." : (data.error || "Failed to send proposal"))
-      return
+      setProposalError(
+        res.status === 402
+          ? <span>Not enough credits. You need 10 credits to send a proposal. You have {credits ?? 0}.{" "}<a href="/pricing?from=/influencer" className="text-purple-400 underline hover:text-purple-300">Buy credits →</a></span>
+          : (data.error || "Failed to send proposal")
+      )
+      return // keep modal open, form data preserved
     }
     setProposalSent(true)
     refreshCredits()
@@ -444,28 +467,40 @@ export default function InfluencerProfile() {
                 <p className="text-xs text-[#64748B] mt-1">Powered by InfluenceIQ AI · Costs 3 credits</p>
               </div>
               {!brandReport && (
-                <button
-                  onClick={generateBrandReport}
-                  disabled={scoring}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors whitespace-nowrap shadow-lg shadow-purple-500/20 flex items-center gap-2"
-                >
-                  {scoring ? (
-                    <>
-                      <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                      </svg>
-                      Analyzing...
-                    </>
-                  ) : "Get AI Report — 3 credits"}
-                </button>
+                (credits ?? 0) < 3 ? (
+                  <div className="flex flex-col items-end gap-1">
+                    <button disabled className="px-4 py-2 bg-[#1E1E2E] text-[#64748B] rounded-lg text-sm font-medium cursor-not-allowed opacity-60 whitespace-nowrap">
+                      Get AI Report — 3 credits
+                    </button>
+                    <span className="text-xs text-red-400">
+                      Needs 3 credits. You have {credits ?? 0}.{" "}
+                      <a href="/pricing?from=/influencer" className="text-purple-400 underline hover:text-purple-300">Buy credits →</a>
+                    </span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={generateBrandReport}
+                    disabled={scoring}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors whitespace-nowrap shadow-lg shadow-purple-500/20 flex items-center gap-2"
+                  >
+                    {scoring ? (
+                      <>
+                        <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                        </svg>
+                        Analyzing...
+                      </>
+                    ) : "Get AI Report — 3 credits"}
+                  </button>
+                )
               )}
             </div>
 
             {error && !brandReport && (
               <div className="bg-red-500/10 px-4 py-3 rounded-xl border border-red-500/20 mb-4">
                 {error === "CREDITS"
-                  ? <InsufficientCreditsError action="generate this AI report" />
+                  ? <InsufficientCreditsError action="generate this AI report" required={3} current={credits} from="/influencer" />
                   : <span className="text-sm text-red-400">{error}</span>}
               </div>
             )}
@@ -609,9 +644,12 @@ export default function InfluencerProfile() {
             <div>
               <h3 className="font-semibold text-[#F8FAFC] mb-0.5">Ready to collaborate?</h3>
               <p className="text-sm text-[#64748B]">Send a formal proposal with terms, timeline and remuneration. Costs 10 credits.</p>
+              {proposalError && !showProposalModal && (
+                <div className="mt-2 text-sm text-red-400">{proposalError}</div>
+              )}
             </div>
             <button
-              onClick={() => setShowProposalModal(true)}
+              onClick={handleSendProposalClick}
               className="flex-shrink-0 bg-purple-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20 whitespace-nowrap"
             >
               Send Proposal →
@@ -662,7 +700,7 @@ export default function InfluencerProfile() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setShowProposalModal(true)}
+                  onClick={handleSendProposalClick}
                   className="w-full bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20"
                 >
                   Send Proposal →

@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
 import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
+import { useApp } from "@/app/context/AppContext"
 
 const inputClass = "w-full px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm focus:outline-none focus:border-purple-500 bg-[#0A0A0F] text-[#F8FAFC] placeholder-[#64748B] transition-colors"
 const readonlyClass = "w-full px-4 py-2.5 bg-[#0D0D1A] border border-[#1E1E2E] rounded-lg text-sm text-[#64748B] cursor-not-allowed"
@@ -134,6 +135,7 @@ function HandleVerifier({
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
+  const { credits } = useApp()
   const router = useRouter()
   const user = session?.user as any
 
@@ -187,6 +189,7 @@ export default function ProfilePage() {
   const [bioModalLoading, setBioModalLoading] = useState(false)
   const [bioModalResult, setBioModalResult] = useState<any>(null)
   const [bioModalError, setBioModalError] = useState("")
+  const [bioCreditError, setBioCreditError] = useState(false)
 
   // Verification badge state
   const [verifyLoading, setVerifyLoading] = useState(false)
@@ -263,6 +266,10 @@ export default function ProfilePage() {
   }, [status])
 
   async function handleRequestVerification() {
+    if ((credits ?? 0) < 20) {
+      setVerifyError("CREDITS")
+      return
+    }
     setVerifyLoading(true)
     setVerifyError("")
     const res = await fetch("/api/request-verification", { method: "POST" })
@@ -811,12 +818,22 @@ export default function ProfilePage() {
                     <label className={labelClass.replace("mb-1.5", "mb-0")}>Bio</label>
                     <button
                       type="button"
-                      onClick={() => setBioModalOpen(true)}
+                      onClick={() => {
+                        if ((credits ?? 0) < 1) { setBioCreditError(true); return }
+                        setBioCreditError(false)
+                        setBioModalOpen(true)
+                      }}
                       className="flex items-center gap-1.5 text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 px-3 py-1 rounded-lg hover:bg-purple-500/20 transition-colors"
                     >
                       ✨ Generate with AI
                     </button>
                   </div>
+                  {bioCreditError && (
+                    <p className="text-xs text-red-400 mt-1">
+                      Needs 1 credit. You have {credits ?? 0}.{" "}
+                      <a href="/pricing?from=/profile" className="text-purple-400 underline hover:text-purple-300">Buy credits →</a>
+                    </p>
+                  )}
                   <textarea id="bio-field" value={bio} onChange={e => setBio(e.target.value)}
                     rows={3} className={`${inputClass} resize-none`}
                     placeholder="Tell brands about yourself and your content..." />
@@ -890,7 +907,7 @@ export default function ProfilePage() {
                       {verifyError && (
                         <div className="bg-red-500/10 px-4 py-3 rounded-lg border border-red-500/20">
                           {verifyError === "CREDITS"
-                            ? <InsufficientCreditsError action="get verified" />
+                            ? <InsufficientCreditsError action="get verified" required={20} current={credits} from="/profile" />
                             : <span className="text-sm text-red-400">{verifyError}</span>}
                         </div>
                       )}
@@ -1154,7 +1171,7 @@ export default function ProfilePage() {
                   {bioModalError && (
                     <div className="bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20">
                       {bioModalError === "CREDITS"
-                        ? <InsufficientCreditsError action="generate a bio" />
+                        ? <InsufficientCreditsError action="generate a bio" required={1} current={credits} from="/profile" />
                         : <span className="text-xs text-red-400">{bioModalError}</span>}
                     </div>
                   )}

@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react"
 import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
 import { useApp } from "@/app/context/AppContext"
 
@@ -105,6 +105,8 @@ export default function Pricing() {
   const { data: session } = useSession()
   const { refreshCredits } = useApp()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const from = searchParams.get("from")
   const [toast, setToast] = useState("")
   const [payingPlan, setPayingPlan] = useState<string | null>(null)
   const user = session?.user as any
@@ -181,6 +183,12 @@ export default function Pricing() {
       )}
 
       <div className="px-4 md:px-8 py-12 md:py-16 max-w-5xl mx-auto">
+
+        {from && (
+          <a href={from} className="inline-flex items-center gap-1.5 text-sm text-[#64748B] hover:text-[#94A3B8] mb-6 transition-colors">
+            ← Back to {from.replace("/", "").replace(/-/g, " ") || "previous page"}
+          </a>
+        )}
 
         <InfluencerNote />
 
