@@ -5,14 +5,6 @@ import Navbar from "@/app/components/Navbar"
 import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
 import { useApp } from "@/app/context/AppContext"
 
-const hardcodedCampaigns = [
-  { id: "seed-1", brand: "FreshKart", brandInitials: "FK", brandColor: "bg-orange-500", title: "Summer grocery launch campaign", description: "Looking for food and lifestyle influencers to promote our new summer grocery collection. Must create 2 Instagram reels and 3 stories.", niche: "Food", platform: "Instagram", budget: "₹15,000", deadline: "15 days left", applicants: 12, slots: 3, location: "Pan India", minFollowers: "10K", status: "Open" },
-  { id: "seed-2", brand: "ZenFit", brandInitials: "ZF", brandColor: "bg-green-500", title: "App launch — fitness influencers needed", description: "Promote our new AI fitness app to your audience. Create 1 YouTube video and 2 Instagram posts showing the app in action.", niche: "Fitness", platform: "YouTube + Instagram", budget: "₹25,000", deadline: "20 days left", applicants: 8, slots: 2, location: "Mumbai, Delhi, Bangalore", minFollowers: "25K", status: "Open" },
-  { id: "seed-3", brand: "PayEasy", brandInitials: "PE", brandColor: "bg-blue-500", title: "Finance creator collab — fintech app", description: "Seeking finance and tech creators to explain our payment solution to small business owners.", niche: "Finance", platform: "LinkedIn + YouTube", budget: "₹40,000", deadline: "30 days left", applicants: 5, slots: 4, location: "Pan India", minFollowers: "15K", status: "Open" },
-  { id: "seed-4", brand: "StyleHub", brandInitials: "SH", brandColor: "bg-pink-500", title: "Festive collection showcase", description: "We need fashion influencers to showcase our new festive ethnic wear collection. 3 Instagram reels required. Products will be provided.", niche: "Fashion", platform: "Instagram", budget: "₹20,000", deadline: "10 days left", applicants: 24, slots: 5, location: "Mumbai, Delhi", minFollowers: "20K", status: "Open" },
-  { id: "seed-5", brand: "EduLearn", brandInitials: "EL", brandColor: "bg-yellow-500", title: "Study tips YouTube collab", description: "Partner with us to create study tips and exam prep content. Full creative freedom.", niche: "Education", platform: "YouTube", budget: "₹12,000", deadline: "25 days left", applicants: 7, slots: 3, location: "Pan India", minFollowers: "5K", status: "Open" },
-  { id: "seed-6", brand: "FoodBox", brandInitials: "FB", brandColor: "bg-red-500", title: "Healthy snack unboxing campaign", description: "Create an unboxing video or reel of our healthy snack subscription box. Box will be sent to your address.", niche: "Food", platform: "Instagram + YouTube", budget: "₹8,000", deadline: "12 days left", applicants: 18, slots: 6, location: "Pan India", minFollowers: "5K", status: "Open" },
-]
 
 const niches = ["All", "Food", "Fitness", "Finance", "Fashion", "Education", "Tech"]
 const platforms = ["All", "Instagram", "YouTube", "LinkedIn"]
@@ -50,7 +42,7 @@ export default function Campaigns() {
     }
   }, [session?.user?.id, isInfluencer])
 
-  const allCampaigns = [...hardcodedCampaigns, ...dbCampaigns]
+  const allCampaigns = dbCampaigns
 
   const filtered = allCampaigns.filter((c) => {
     const matchNiche = selectedNiche === "All" || c.niche === selectedNiche
@@ -151,10 +143,22 @@ export default function Campaigns() {
           {filtered.length} open campaign{filtered.length !== 1 ? "s" : ""} found
         </div>
 
-        {filtered.length === 0 ? (
+        {allCampaigns.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-white/50 text-lg">No campaigns posted yet.</p>
+            {role === "brand" && (
+              <a href="/post-campaign" className="text-purple-400 underline mt-2 block">
+                Post the first campaign →
+              </a>
+            )}
+            {role === "influencer" && (
+              <p className="text-white/40 text-sm mt-2">Check back soon — brands are joining every day!</p>
+            )}
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-16 text-[#64748B]">
             <div className="text-4xl mb-3">📋</div>
-            <div className="font-medium text-[#94A3B8] mb-1">No campaigns found</div>
+            <div className="font-medium text-[#94A3B8] mb-1">No campaigns match your filters</div>
             <div className="text-sm">Try a different niche or platform</div>
           </div>
         ) : (
