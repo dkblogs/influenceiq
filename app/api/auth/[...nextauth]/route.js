@@ -14,18 +14,17 @@ export const authOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
 
+        const normalizedEmail = credentials.email.toLowerCase().trim()
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email: normalizedEmail },
         })
 
-        if (!user || !user.password) return null
+        if (!user) throw new Error("No account found with this email")
+        if (!user.password) throw new Error("This account uses a different sign-in method")
 
-        const passwordMatch = await bcrypt.compare(
-          credentials.password,
-          user.password
-        )
-
-        if (!passwordMatch) return null
+        const passwordMatch = await bcrypt.compare(credentials.password, user.password)
+        if (!passwordMatch) throw new Error("Incorrect password")
 
         return {
           id: user.id,

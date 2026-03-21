@@ -20,13 +20,22 @@ function LoginForm() {
     setLoading(true)
 
     const result = await signIn("credentials", {
-      email,
+      email: email.toLowerCase().trim(),
       password,
       redirect: false,
     })
 
     if (result?.error) {
-      setError("Invalid email or password")
+      const msg = result.error
+      if (msg === "No account found with this email") {
+        setError("No account found with this email address.")
+      } else if (msg === "Incorrect password") {
+        setError("Incorrect password. Please try again.")
+      } else if (msg === "This account uses a different sign-in method") {
+        setError("This account was created with a different sign-in method.")
+      } else {
+        setError("Invalid email or password.")
+      }
       setLoading(false)
       return
     }

@@ -6,7 +6,8 @@ const bcrypt = require("bcryptjs")
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { name, email, password, role, instagramHandle, youtubeHandle } = body
+    const { name, password, role, instagramHandle, youtubeHandle } = body
+    const email = typeof body.email === "string" ? body.email.toLowerCase().trim() : ""
 
     if (!name || !email || !password) {
       return Response.json(
