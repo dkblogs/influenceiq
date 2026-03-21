@@ -318,7 +318,7 @@ export default function Dashboard() {
 
   async function handleGenerateAiReport() {
     if (!myInfluencerProfile?.id) return
-    if ((credits ?? 0) < 2) {
+    if (credits !== null && credits < 2) {
       setAiError("CREDITS")
       return
     }
@@ -549,13 +549,13 @@ export default function Dashboard() {
                   Get an AI-powered analysis of your influence,<br />engagement, and brand readiness
                 </div>
                 <div className="text-xs text-[#64748B] mb-4">Costs 2 credits</div>
-                {(credits ?? 0) < 2 ? (
+                {(credits !== null && credits < 2) ? (
                   <div className="flex flex-col items-center gap-2">
                     <button disabled className="bg-[#1E1E2E] text-[#64748B] px-5 py-2.5 rounded-lg text-sm font-medium cursor-not-allowed opacity-60">
                       Generate AI Score
                     </button>
                     <span className="text-xs text-red-400">
-                      Needs 2 credits. You have {credits ?? 0}.{" "}
+                      Needs 2 credits. You have {credits}.{" "}
                       <a href="/pricing?from=/dashboard" className="text-purple-400 underline hover:text-purple-300">Buy credits →</a>
                     </span>
                   </div>
@@ -635,9 +635,9 @@ export default function Dashboard() {
                   >
                     View Full Report →
                   </a>
-                  {(credits ?? 0) < 2 ? (
+                  {(credits !== null && credits < 2) ? (
                     <span className="text-xs text-red-400">
-                      Needs 2 credits to regenerate. You have {credits ?? 0}.{" "}
+                      Needs 2 credits to regenerate. You have {credits}.{" "}
                       <a href="/pricing?from=/dashboard" className="text-purple-400 underline hover:text-purple-300">Buy credits →</a>
                     </span>
                   ) : (

@@ -266,7 +266,7 @@ export default function ProfilePage() {
   }, [status])
 
   async function handleRequestVerification() {
-    if ((credits ?? 0) < 20) {
+    if (credits !== null && credits < 20) {
       setVerifyError("CREDITS")
       return
     }
@@ -819,7 +819,7 @@ export default function ProfilePage() {
                     <button
                       type="button"
                       onClick={() => {
-                        if ((credits ?? 0) < 1) { setBioCreditError(true); return }
+                        if (credits !== null && credits < 1) { setBioCreditError(true); return }
                         setBioCreditError(false)
                         setBioModalOpen(true)
                       }}
@@ -830,7 +830,7 @@ export default function ProfilePage() {
                   </div>
                   {bioCreditError && (
                     <p className="text-xs text-red-400 mt-1">
-                      Needs 1 credit. You have {credits ?? 0}.{" "}
+                      Needs 1 credit. You have {credits}.{" "}
                       <a href="/pricing?from=/profile" className="text-purple-400 underline hover:text-purple-300">Buy credits →</a>
                     </p>
                   )}

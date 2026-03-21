@@ -60,7 +60,7 @@ export default function Campaigns() {
     }
     setError("")
 
-    if ((credits ?? 0) < 2) {
+    if (credits !== null && credits < 2) {
       setError("CREDITS")
       return
     }
@@ -204,13 +204,13 @@ export default function Campaigns() {
                           <span className="px-5 py-2 rounded-lg text-sm font-medium bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20">
                             ✅ Applied
                           </span>
-                        ) : (credits ?? 0) < 2 ? (
+                        ) : (credits !== null && credits < 2) ? (
                           <div className="flex flex-col gap-1">
                             <button disabled className="px-5 py-2 rounded-lg text-sm font-medium bg-[#1E1E2E] text-[#64748B] cursor-not-allowed opacity-60">
                               Apply now — 2 credits
                             </button>
                             <span className="text-xs text-red-400">
-                              Needs 2 credits. You have {credits ?? 0}.{" "}
+                              Needs 2 credits. You have {credits}.{" "}
                               <a href="/pricing?from=/campaigns" className="text-purple-400 underline hover:text-purple-300">Buy credits →</a>
                             </span>
                           </div>

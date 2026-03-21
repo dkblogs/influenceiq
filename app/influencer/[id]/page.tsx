@@ -133,7 +133,7 @@ export default function InfluencerProfile() {
 
   async function generateBrandReport() {
     if (!session) { router.push("/login"); return }
-    if ((credits ?? 0) < 3) {
+    if (credits !== null && credits < 3) {
       setError("CREDITS")
       return
     }
@@ -155,10 +155,10 @@ export default function InfluencerProfile() {
   }
 
   function handleSendProposalClick() {
-    if ((credits ?? 0) < 10) {
+    if (credits !== null && credits < 10) {
       setProposalError(
         <span>
-          You need 10 credits to send a proposal. You have {credits ?? 0}.{" "}
+          You need 10 credits to send a proposal. You have {credits}.{" "}
           <a href="/pricing?from=/influencer" className="text-purple-400 underline hover:text-purple-300">Buy credits →</a>
         </span>
       )
@@ -467,13 +467,13 @@ export default function InfluencerProfile() {
                 <p className="text-xs text-[#64748B] mt-1">Powered by InfluenceIQ AI · Costs 3 credits</p>
               </div>
               {!brandReport && (
-                (credits ?? 0) < 3 ? (
+                (credits !== null && credits < 3) ? (
                   <div className="flex flex-col items-end gap-1">
                     <button disabled className="px-4 py-2 bg-[#1E1E2E] text-[#64748B] rounded-lg text-sm font-medium cursor-not-allowed opacity-60 whitespace-nowrap">
                       Get AI Report — 3 credits
                     </button>
                     <span className="text-xs text-red-400">
-                      Needs 3 credits. You have {credits ?? 0}.{" "}
+                      Needs 3 credits. You have {credits}.{" "}
                       <a href="/pricing?from=/influencer" className="text-purple-400 underline hover:text-purple-300">Buy credits →</a>
                     </span>
                   </div>
