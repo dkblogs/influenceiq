@@ -156,8 +156,27 @@ export default function ProfilePage() {
   const [about, setAbout] = useState("")
   // Influencer fields
   const [niche, setNiche] = useState("")
+  const [selectedNiches, setSelectedNiches] = useState<string[]>([])
+  const [customNiche, setCustomNiche] = useState("")
   const [platform, setPlatform] = useState("")
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
+  const [customPlatform, setCustomPlatform] = useState("")
+  const [gender, setGender] = useState("")
   const [bio, setBio] = useState("")
+
+  const NICHES = ["Food", "Tech", "Fashion", "Finance", "Fitness", "Travel", "Gaming", "Education", "Entertainment", "Beauty", "Lifestyle", "Sports", "Health", "Other"]
+  const PLATFORMS = ["Instagram", "YouTube", "Facebook", "LinkedIn", "X (Twitter)", "Snapchat", "Pinterest"]
+
+  function toggleNiche(n: string) {
+    setSelectedNiches(prev =>
+      prev.includes(n) ? prev.filter(x => x !== n) : prev.length < 5 ? [...prev, n] : prev
+    )
+  }
+  function togglePlatform(p: string) {
+    setSelectedPlatforms(prev =>
+      prev.includes(p) ? prev.filter(x => x !== p) : prev.length < 4 ? [...prev, p] : prev
+    )
+  }
   const [instagramHandle, setInstagramHandle] = useState("")
   const [youtubeHandle, setYoutubeHandle] = useState("")
 
@@ -215,7 +234,10 @@ export default function ProfilePage() {
         setAbout(d.user?.about || "")
         if (d.influencer) {
           setNiche(d.influencer.niche || "")
+          setSelectedNiches(d.influencer.niches?.length ? d.influencer.niches : (d.influencer.niche ? [d.influencer.niche] : []))
           setPlatform(d.influencer.platform || "")
+          setSelectedPlatforms(d.influencer.platforms?.length ? d.influencer.platforms : (d.influencer.platform ? [d.influencer.platform] : []))
+          setGender(d.influencer.gender || "")
           setBio(d.influencer.about || "")
           setLocation(d.influencer.location || "")
           setInstagramHandle(d.influencer.instagramHandle || "")
@@ -286,7 +308,10 @@ export default function ProfilePage() {
     setLocation(influencer?.location || profile?.location || "")
     setBio(influencer?.about || "")
     setNiche(influencer?.niche || "")
+    setSelectedNiches(influencer?.niches?.length ? influencer.niches : (influencer?.niche ? [influencer.niche] : []))
     setPlatform(influencer?.platform || "")
+    setSelectedPlatforms(influencer?.platforms?.length ? influencer.platforms : (influencer?.platform ? [influencer.platform] : []))
+    setGender(influencer?.gender || "")
     const rawPhone = (influencer?.phone ?? profile?.phone) || ""
     const knownCodes = ["+880", "+971", "+977", "+94", "+92", "+91", "+65", "+66", "+63", "+62", "+61", "+60", "+55", "+49", "+44", "+33", "+27", "+86", "+81", "+1"]
     const matchedCode = knownCodes.find(c => rawPhone.startsWith(c))
@@ -307,7 +332,14 @@ export default function ProfilePage() {
     const res = await fetch("/api/profile", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, companyName, industry, location, website, phone: phoneCode + phoneNumber, about, niche, platform, bio, instagramHandle, youtubeHandle }),
+      body: JSON.stringify({
+        name, companyName, industry, location, website,
+        phone: phoneCode + phoneNumber, about, gender, bio, instagramHandle, youtubeHandle,
+        niches: selectedNiches.map(n => n === "Other" ? (customNiche.trim() || "Other") : n),
+        platforms: selectedPlatforms.map(p => p === "Other" ? (customPlatform.trim() || "Other") : p),
+        niche: selectedNiches[0] === "Other" ? (customNiche.trim() || "Other") : (selectedNiches[0] || niche),
+        platform: selectedPlatforms[0] === "Other" ? (customPlatform.trim() || "Other") : (selectedPlatforms[0] || platform),
+      }),
     })
     const data = await res.json()
     setSaving(false)
@@ -472,8 +504,13 @@ export default function ProfilePage() {
 
               {/* Niche / platform / AI score tags */}
               <div className="flex flex-wrap gap-2 justify-center mb-5">
-                {niche && <span className="text-xs bg-[#1E1E2E] text-[#94A3B8] px-3 py-1 rounded-full border border-[#2A2A3A]">{niche}</span>}
-                {platform && <span className="text-xs bg-[#1E1E2E] text-[#94A3B8] px-3 py-1 rounded-full border border-[#2A2A3A]">{platform}</span>}
+                {(influencer?.niches?.length ? influencer.niches : (niche ? [niche] : [])).map((n: string) => (
+                  <span key={n} className="text-xs bg-[#1E1E2E] text-[#94A3B8] px-3 py-1 rounded-full border border-[#2A2A3A]">{n}</span>
+                ))}
+                {(influencer?.platforms?.length ? influencer.platforms : (platform ? [platform] : [])).map((p: string) => (
+                  <span key={p} className="text-xs bg-cyan-500/10 text-cyan-400 px-3 py-1 rounded-full border border-cyan-500/20">{p}</span>
+                ))}
+                {gender && <span className="text-xs bg-[#1E1E2E] text-[#64748B] px-3 py-1 rounded-full border border-[#2A2A3A]">{gender}</span>}
                 {influencer?.aiScore != null && (
                   <span className="text-xs bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full border border-purple-500/20 font-semibold">
                     AI Score: {influencer.aiScore}/100
@@ -693,33 +730,47 @@ export default function ProfilePage() {
             <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6">
               <h2 className="font-semibold text-[#F8FAFC] mb-5 text-sm uppercase tracking-wide">Profile Details</h2>
               <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className={labelClass}>Primary platform</label>
-                    <select value={platform} onChange={e => setPlatform(e.target.value)} className={selectClass}>
-                      <option value="">Select platform</option>
-                      <option>Instagram</option>
-                      <option>YouTube</option>
-                      <option>Facebook</option>
-                      <option>LinkedIn</option>
-                      <option>X (Twitter)</option>
-                    </select>
+                <div>
+                  <label className={labelClass}>Platforms <span className="text-[#64748B] font-normal">(select up to 4)</span></label>
+                  <div className="flex flex-wrap gap-2">
+                    {PLATFORMS.map(p => (
+                      <button key={p} type="button" onClick={() => togglePlatform(p)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${selectedPlatforms.includes(p) ? "bg-purple-600 text-white border-purple-600" : "bg-[#0A0A0F] text-[#94A3B8] border-[#1E1E2E] hover:border-purple-500/50"}`}>
+                        {p}
+                      </button>
+                    ))}
                   </div>
-                  <div>
-                    <label className={labelClass}>Niche</label>
-                    <select value={niche} onChange={e => setNiche(e.target.value)} className={selectClass}>
-                      <option value="">Select niche</option>
-                      <option>Food</option>
-                      <option>Tech</option>
-                      <option>Fashion</option>
-                      <option>Finance</option>
-                      <option>Fitness</option>
-                      <option>Travel</option>
-                      <option>Gaming</option>
-                      <option>Education</option>
-                      <option>Entertainment</option>
-                      <option>Other</option>
-                    </select>
+                  {selectedPlatforms.includes("Other") && (
+                    <input type="text" value={customPlatform} onChange={e => setCustomPlatform(e.target.value)}
+                      placeholder="Enter your platform..." className={`${inputClass} mt-2`} />
+                  )}
+                  <p className="text-[#64748B] text-xs mt-1">{selectedPlatforms.length}/4 selected</p>
+                </div>
+                <div>
+                  <label className={labelClass}>Niches <span className="text-[#64748B] font-normal">(select up to 5)</span></label>
+                  <div className="flex flex-wrap gap-2">
+                    {NICHES.map(n => (
+                      <button key={n} type="button" onClick={() => toggleNiche(n)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${selectedNiches.includes(n) ? "bg-purple-600 text-white border-purple-600" : "bg-[#0A0A0F] text-[#94A3B8] border-[#1E1E2E] hover:border-purple-500/50"}`}>
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                  {selectedNiches.includes("Other") && (
+                    <input type="text" value={customNiche} onChange={e => setCustomNiche(e.target.value)}
+                      placeholder="Enter your niche..." className={`${inputClass} mt-2`} />
+                  )}
+                  <p className="text-[#64748B] text-xs mt-1">{selectedNiches.length}/5 selected</p>
+                </div>
+                <div>
+                  <label className={labelClass}>Gender <span className="text-[#64748B] font-normal">(optional)</span></label>
+                  <div className="flex flex-wrap gap-2">
+                    {["Male", "Female", "Non-binary", "Prefer not to say"].map(g => (
+                      <button key={g} type="button" onClick={() => setGender(gender === g ? "" : g)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${gender === g ? "bg-purple-600 text-white border-purple-600" : "bg-[#0A0A0F] text-[#94A3B8] border-[#1E1E2E] hover:border-purple-500/50"}`}>
+                        {g}
+                      </button>
+                    ))}
                   </div>
                 </div>
                 <div>
@@ -1064,12 +1115,12 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs text-[#94A3B8] mb-1">Niche</label>
-                      <div className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#64748B]">{niche || "—"}</div>
+                      <label className="block text-xs text-[#94A3B8] mb-1">Niches</label>
+                      <div className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#64748B]">{selectedNiches.join(", ") || niche || "—"}</div>
                     </div>
                     <div>
-                      <label className="block text-xs text-[#94A3B8] mb-1">Platform</label>
-                      <div className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#64748B]">{platform || "—"}</div>
+                      <label className="block text-xs text-[#94A3B8] mb-1">Platforms</label>
+                      <div className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#64748B]">{selectedPlatforms.join(", ") || platform || "—"}</div>
                     </div>
                   </div>
 

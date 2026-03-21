@@ -14,14 +14,17 @@ export default function Join() {
     instagramHandle: "",
     youtubeHandle: "",
     location: "",
-    platform: "",
-    niche: "",
     followers: "",
     engagementRate: "",
     pricePerPost: "",
     bio: "",
     phone: "",
   })
+  const [selectedNiches, setSelectedNiches] = useState<string[]>([])
+  const [customNiche, setCustomNiche] = useState("")
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
+  const [customPlatform, setCustomPlatform] = useState("")
+  const [gender, setGender] = useState("")
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [message, setMessage] = useState("")
@@ -49,8 +52,23 @@ export default function Join() {
     }
   }, [user?.name])
 
+  const NICHES = ["Food", "Tech", "Fashion", "Finance", "Fitness", "Travel", "Gaming", "Education", "Entertainment", "Beauty", "Lifestyle", "Sports", "Health", "Other"]
+  const PLATFORMS = ["Instagram", "YouTube", "Facebook", "LinkedIn", "X (Twitter)", "Snapchat", "Pinterest"]
+
   function set(field: string, value: string) {
     setForm(p => ({ ...p, [field]: value }))
+  }
+
+  function toggleNiche(n: string) {
+    setSelectedNiches(prev =>
+      prev.includes(n) ? prev.filter(x => x !== n) : prev.length < 5 ? [...prev, n] : prev
+    )
+  }
+
+  function togglePlatform(p: string) {
+    setSelectedPlatforms(prev =>
+      prev.includes(p) ? prev.filter(x => x !== p) : prev.length < 4 ? [...prev, p] : prev
+    )
   }
 
   async function handleFetchProfile() {
@@ -91,8 +109,8 @@ export default function Join() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.platform) { setError("Please select a platform"); return }
-    if (!form.niche) { setError("Please select a niche"); return }
+    if (selectedPlatforms.length === 0) { setError("Please select at least one platform"); return }
+    if (selectedNiches.length === 0) { setError("Please select at least one niche"); return }
 
     setSubmitting(true)
     setError("")
@@ -102,6 +120,11 @@ export default function Join() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...form,
+        gender,
+        niches: selectedNiches.map(n => n === "Other" ? (customNiche.trim() || "Other") : n),
+        platforms: selectedPlatforms.map(p => p === "Other" ? (customPlatform.trim() || "Other") : p),
+        niche: selectedNiches[0] === "Other" ? (customNiche.trim() || "Other") : (selectedNiches[0] || ""),
+        platform: selectedPlatforms[0] === "Other" ? (customPlatform.trim() || "Other") : (selectedPlatforms[0] || ""),
         email: user?.email || "",
         userId: user?.id || "",
       }),
@@ -133,7 +156,6 @@ export default function Join() {
   }
 
   const inputClass = "w-full px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm focus:outline-none focus:border-purple-500 bg-[#0A0A0F] text-[#F8FAFC] placeholder-[#64748B]"
-  const selectClass = `${inputClass} text-[#94A3B8]`
 
   return (
     <main className="min-h-screen bg-[#0A0A0F]">
@@ -224,33 +246,49 @@ export default function Join() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Primary platform <span className="text-red-400">*</span></label>
-                <select required value={form.platform} onChange={e => set("platform", e.target.value)} className={selectClass}>
-                  <option value="">Select platform</option>
-                  <option>Instagram</option>
-                  <option>YouTube</option>
-                  <option>Facebook</option>
-                  <option>LinkedIn</option>
-                  <option>X (Twitter)</option>
-                </select>
+            <div>
+              <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Platforms <span className="text-red-400">*</span> <span className="text-[#64748B] font-normal">(select up to 4)</span></label>
+              <div className="flex flex-wrap gap-2">
+                {PLATFORMS.map(p => (
+                  <button key={p} type="button" onClick={() => togglePlatform(p)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${selectedPlatforms.includes(p) ? "bg-purple-600 text-white border-purple-600" : "bg-[#0A0A0F] text-[#94A3B8] border-[#1E1E2E] hover:border-purple-500/50"}`}>
+                    {p}
+                  </button>
+                ))}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Your niche <span className="text-red-400">*</span></label>
-                <select required value={form.niche} onChange={e => set("niche", e.target.value)} className={selectClass}>
-                  <option value="">Select niche</option>
-                  <option>Food</option>
-                  <option>Tech</option>
-                  <option>Fashion</option>
-                  <option>Finance</option>
-                  <option>Fitness</option>
-                  <option>Travel</option>
-                  <option>Gaming</option>
-                  <option>Education</option>
-                  <option>Entertainment</option>
-                  <option>Other</option>
-                </select>
+              {selectedPlatforms.includes("Other") && (
+                <input type="text" value={customPlatform} onChange={e => setCustomPlatform(e.target.value)}
+                  placeholder="Enter your platform..." className={`${inputClass} mt-2`} />
+              )}
+              <p className="text-[#64748B] text-xs mt-1">{selectedPlatforms.length}/4 selected</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Niches <span className="text-red-400">*</span> <span className="text-[#64748B] font-normal">(select up to 5)</span></label>
+              <div className="flex flex-wrap gap-2">
+                {NICHES.map(n => (
+                  <button key={n} type="button" onClick={() => toggleNiche(n)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${selectedNiches.includes(n) ? "bg-purple-600 text-white border-purple-600" : "bg-[#0A0A0F] text-[#94A3B8] border-[#1E1E2E] hover:border-purple-500/50"}`}>
+                    {n}
+                  </button>
+                ))}
+              </div>
+              {selectedNiches.includes("Other") && (
+                <input type="text" value={customNiche} onChange={e => setCustomNiche(e.target.value)}
+                  placeholder="Enter your niche..." className={`${inputClass} mt-2`} />
+              )}
+              <p className="text-[#64748B] text-xs mt-1">{selectedNiches.length}/5 selected</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">Gender <span className="text-[#64748B] font-normal">(optional)</span></label>
+              <div className="flex gap-2">
+                {["Male", "Female", "Non-binary", "Prefer not to say"].map(g => (
+                  <button key={g} type="button" onClick={() => setGender(gender === g ? "" : g)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${gender === g ? "bg-purple-600 text-white border-purple-600" : "bg-[#0A0A0F] text-[#94A3B8] border-[#1E1E2E] hover:border-purple-500/50"}`}>
+                    {g}
+                  </button>
+                ))}
               </div>
             </div>
 

@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation"
 
 const STEPS = ["Account", "Creator Details", "Verify Handle", "First Action"]
 
-const NICHES = ["Fashion", "Beauty", "Food", "Travel", "Tech", "Finance", "Fitness", "Gaming", "Education", "Other"]
-const PLATFORMS = ["Instagram", "YouTube", "LinkedIn", "Twitter/X", "Other"]
+const NICHES = ["Food", "Tech", "Fashion", "Finance", "Fitness", "Travel", "Gaming", "Education", "Entertainment", "Beauty", "Lifestyle", "Sports", "Health", "Other"]
+const PLATFORMS = ["Instagram", "YouTube", "Facebook", "LinkedIn", "X (Twitter)", "Snapchat", "Pinterest"]
+const GENDERS = ["Male", "Female", "Non-binary", "Prefer not to say"]
 
 export default function InfluencerOnboarding() {
   const { data: session, status } = useSession()
@@ -21,8 +22,11 @@ export default function InfluencerOnboarding() {
   const [influencer, setInfluencer] = useState<any>(null)
 
   // Creator details
-  const [niche, setNiche] = useState("")
-  const [platform, setPlatform] = useState("")
+  const [selectedNiches, setSelectedNiches] = useState<string[]>([])
+  const [customNiche, setCustomNiche] = useState("")
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
+  const [customPlatform, setCustomPlatform] = useState("")
+  const [gender, setGender] = useState("")
   const [bio, setBio] = useState("")
   const [location, setLocation] = useState("")
   const [phone, setPhone] = useState("")
@@ -54,7 +58,13 @@ export default function InfluencerOnboarding() {
       const res = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ niche, platform, about: bio, location, phone }),
+        body: JSON.stringify({
+          gender, bio, location, phone,
+          niches: selectedNiches.map(n => n === "Other" ? (customNiche.trim() || "Other") : n),
+          platforms: selectedPlatforms.map(p => p === "Other" ? (customPlatform.trim() || "Other") : p),
+          niche: selectedNiches[0] === "Other" ? (customNiche.trim() || "Other") : (selectedNiches[0] || ""),
+          platform: selectedPlatforms[0] === "Other" ? (customPlatform.trim() || "Other") : (selectedPlatforms[0] || ""),
+        }),
       })
       if (!res.ok) { setError("Failed to save. Please try again."); return }
       setStep(3)
@@ -188,20 +198,49 @@ export default function InfluencerOnboarding() {
               )}
 
               <div className="space-y-4 mb-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Your Niche</label>
-                    <select value={niche} onChange={e => setNiche(e.target.value)} className="w-full px-3 py-2.5 border border-[#1E1E2E] rounded-lg text-sm bg-[#0A0A0F] text-[#F8FAFC] focus:outline-none focus:border-cyan-500">
-                      <option value="">Select niche</option>
-                      {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
-                    </select>
+                <div>
+                  <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">Platforms <span className="text-[#64748B] font-normal">(select up to 4)</span></label>
+                  <div className="flex flex-wrap gap-2">
+                    {PLATFORMS.map(p => (
+                      <button key={p} type="button"
+                        onClick={() => setSelectedPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : prev.length < 4 ? [...prev, p] : prev)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${selectedPlatforms.includes(p) ? "bg-cyan-600 text-white border-cyan-600" : "bg-[#0A0A0F] text-[#94A3B8] border-[#1E1E2E] hover:border-cyan-500/50"}`}>
+                        {p}
+                      </button>
+                    ))}
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium text-[#94A3B8] mb-1">Primary Platform</label>
-                    <select value={platform} onChange={e => setPlatform(e.target.value)} className="w-full px-3 py-2.5 border border-[#1E1E2E] rounded-lg text-sm bg-[#0A0A0F] text-[#F8FAFC] focus:outline-none focus:border-cyan-500">
-                      <option value="">Select platform</option>
-                      {PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
-                    </select>
+                  {selectedPlatforms.includes("Other") && (
+                    <input type="text" value={customPlatform} onChange={e => setCustomPlatform(e.target.value)}
+                      placeholder="Enter your platform..." className="mt-2 w-full px-3 py-2.5 border border-[#1E1E2E] rounded-lg text-sm bg-[#0A0A0F] text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-cyan-500" />
+                  )}
+                  <p className="text-[#64748B] text-xs mt-1">{selectedPlatforms.length}/4 selected</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">Niches <span className="text-[#64748B] font-normal">(select up to 5)</span></label>
+                  <div className="flex flex-wrap gap-2">
+                    {NICHES.map(n => (
+                      <button key={n} type="button"
+                        onClick={() => setSelectedNiches(prev => prev.includes(n) ? prev.filter(x => x !== n) : prev.length < 5 ? [...prev, n] : prev)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${selectedNiches.includes(n) ? "bg-cyan-600 text-white border-cyan-600" : "bg-[#0A0A0F] text-[#94A3B8] border-[#1E1E2E] hover:border-cyan-500/50"}`}>
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                  {selectedNiches.includes("Other") && (
+                    <input type="text" value={customNiche} onChange={e => setCustomNiche(e.target.value)}
+                      placeholder="Enter your niche..." className="mt-2 w-full px-3 py-2.5 border border-[#1E1E2E] rounded-lg text-sm bg-[#0A0A0F] text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-cyan-500" />
+                  )}
+                  <p className="text-[#64748B] text-xs mt-1">{selectedNiches.length}/5 selected</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">Gender <span className="text-[#64748B] font-normal">(optional)</span></label>
+                  <div className="flex flex-wrap gap-2">
+                    {GENDERS.map(g => (
+                      <button key={g} type="button" onClick={() => setGender(gender === g ? "" : g)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${gender === g ? "bg-cyan-600 text-white border-cyan-600" : "bg-[#0A0A0F] text-[#94A3B8] border-[#1E1E2E] hover:border-cyan-500/50"}`}>
+                        {g}
+                      </button>
+                    ))}
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
