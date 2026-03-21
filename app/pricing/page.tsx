@@ -1,6 +1,9 @@
 "use client"
+import { useState } from "react"
 import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
+import { useApp } from "@/app/context/AppContext"
 
 const brandActions: [string, string][] = [
   ["Browse and search influencers", "Free"],
@@ -99,27 +102,42 @@ function InfluencerNote() {
 }
 
 export default function Pricing() {
+  const { data: session } = useSession()
+  const { refreshCredits } = useApp()
+  const router = useRouter()
+  const [toast, setToast] = useState("")
+  const [payingPlan, setPayingPlan] = useState<string | null>(null)
+  const user = session?.user as any
+
+  function showToast(msg: string) {
+    setToast(msg)
+    setTimeout(() => setToast(""), 4000)
+  }
+
   async function handlePayment(amount: number, credits: number, plan: string) {
-    const res = await fetch("/api/payment", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount, credits, plan }),
-    })
-    const data = await res.json()
+    if (!user?.id) {
+      router.push("/signup")
+      return
+    }
 
-    const options = {
-      key: data.keyId,
-      amount: data.amount,
-      currency: data.currency,
-      name: "InfluenceIQ",
-      description: `${plan} Plan — ${credits} credits`,
-      order_id: data.orderId,
-      handler: async function (response: any) {
-        const session = await fetch("/api/auth/session")
-        const sessionData = await session.json()
-        const userId = sessionData?.user?.id
+    setPayingPlan(plan)
+    try {
+      const res = await fetch("/api/payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount, credits, plan }),
+      })
+      const data = await res.json()
+      if (!data.orderId) { showToast("Payment setup failed. Try again."); return }
 
-        if (userId) {
+      const options = {
+        key: data.keyId,
+        amount: data.amount,
+        currency: data.currency,
+        name: "InfluenceIQ",
+        description: `${plan} Plan — ${credits} credits`,
+        order_id: data.orderId,
+        handler: async function (response: any) {
           const result = await fetch("/api/payment-success", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -127,25 +145,26 @@ export default function Pricing() {
               credits,
               plan,
               razorpay_payment_id: response.razorpay_payment_id,
-              userId,
+              userId: user.id,
             }),
           })
           const resultData = await result.json()
           if (resultData.success) {
-            alert(`Payment successful! You now have ${resultData.newCredits} credits.`)
-            window.location.href = "/dashboard"
+            await refreshCredits()
+            window.dispatchEvent(new Event("credits-updated"))
+            showToast(`✅ ${credits} credits added! New total: ${resultData.newCredits}`)
           }
-        } else {
-          alert(`Payment successful! Please log in to see your credits.`)
-          window.location.href = "/login"
-        }
-      },
-      prefill: { name: "", email: "" },
-      theme: { color: "#7C3AED" },
-    }
+        },
+        modal: { ondismiss: () => setPayingPlan(null) },
+        prefill: { name: user.name || "", email: user.email || "" },
+        theme: { color: "#7C3AED" },
+      }
 
-    const razor = new (window as any).Razorpay(options)
-    razor.open()
+      const razor = new (window as any).Razorpay(options)
+      razor.open()
+    } finally {
+      setPayingPlan(null)
+    }
   }
 
   return (
@@ -153,6 +172,13 @@ export default function Pricing() {
       <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
       <Navbar />
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#10B981] text-white text-sm px-5 py-3 rounded-xl shadow-lg shadow-black/30 animate-fade-in">
+          {toast}
+        </div>
+      )}
 
       <div className="px-4 md:px-8 py-12 md:py-16 max-w-5xl mx-auto">
 
@@ -179,8 +205,8 @@ export default function Pricing() {
               <li className="flex items-center gap-2 text-sm text-[#94A3B8]"><span className="text-[#10B981]">✓</span>Post 6 open campaigns</li>
               <li className="flex items-center gap-2 text-sm text-[#94A3B8]"><span className="text-[#10B981]">✓</span>50 campaign applications</li>
             </ul>
-            <button onClick={() => handlePayment(499, 100, "Starter")} className="w-full border border-purple-500/50 text-purple-400 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500/10 transition-colors">
-              Buy Starter
+            <button onClick={() => handlePayment(499, 100, "Starter")} disabled={!!payingPlan} className="w-full border border-purple-500/50 text-purple-400 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              {payingPlan === "Starter" ? "Opening payment…" : "Buy Starter"}
             </button>
           </div>
 
@@ -197,8 +223,8 @@ export default function Pricing() {
               <li className="flex items-center gap-2 text-sm text-purple-100"><span className="text-purple-200">✓</span>200 campaign applications</li>
               <li className="flex items-center gap-2 text-sm text-purple-100"><span className="text-purple-200">✓</span>Priority support</li>
             </ul>
-            <button onClick={() => handlePayment(1499, 400, "Growth")} className="w-full bg-white text-purple-600 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-50 transition-colors">
-              Buy Growth
+            <button onClick={() => handlePayment(1499, 400, "Growth")} disabled={!!payingPlan} className="w-full bg-white text-purple-600 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              {payingPlan === "Growth" ? "Opening payment…" : "Buy Growth"}
             </button>
           </div>
 
@@ -214,8 +240,8 @@ export default function Pricing() {
               <li className="flex items-center gap-2 text-sm text-[#94A3B8]"><span className="text-[#10B981]">✓</span>600 campaign applications</li>
               <li className="flex items-center gap-2 text-sm text-[#94A3B8]"><span className="text-[#10B981]">✓</span>CSV export + API access</li>
             </ul>
-            <button onClick={() => handlePayment(3999, 1200, "Agency")} className="w-full border border-purple-500/50 text-purple-400 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500/10 transition-colors">
-              Buy Agency
+            <button onClick={() => handlePayment(3999, 1200, "Agency")} disabled={!!payingPlan} className="w-full border border-purple-500/50 text-purple-400 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              {payingPlan === "Agency" ? "Opening payment…" : "Buy Agency"}
             </button>
           </div>
 
@@ -223,14 +249,16 @@ export default function Pricing() {
 
         <ActionCosts />
 
-        <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-6 text-center">
-          <div className="text-2xl mb-2">🎁</div>
-          <div className="font-medium text-[#F8FAFC] mb-1">5 free credits for every new account</div>
-          <div className="text-sm text-[#94A3B8] mb-4">No card needed to get started.</div>
-          <a href="/signup" className="inline-block bg-purple-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">
-            Create free account
-          </a>
-        </div>
+        {!user && (
+          <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-6 text-center">
+            <div className="text-2xl mb-2">🎁</div>
+            <div className="font-medium text-[#F8FAFC] mb-1">5 free credits for every new account</div>
+            <div className="text-sm text-[#94A3B8] mb-4">No card needed to get started.</div>
+            <a href="/signup" className="inline-block bg-purple-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20">
+              Create free account
+            </a>
+          </div>
+        )}
 
       </div>
 
