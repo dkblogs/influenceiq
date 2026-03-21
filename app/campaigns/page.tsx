@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import Navbar from "@/app/components/Navbar"
 import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
+import { useApp } from "@/app/context/AppContext"
 
 const hardcodedCampaigns = [
   { id: "seed-1", brand: "FreshKart", brandInitials: "FK", brandColor: "bg-orange-500", title: "Summer grocery launch campaign", description: "Looking for food and lifestyle influencers to promote our new summer grocery collection. Must create 2 Instagram reels and 3 stories.", niche: "Food", platform: "Instagram", budget: "₹15,000", deadline: "15 days left", applicants: 12, slots: 3, location: "Pan India", minFollowers: "10K", status: "Open" },
@@ -18,11 +19,11 @@ const platforms = ["All", "Instagram", "YouTube", "LinkedIn"]
 
 export default function Campaigns() {
   const { data: session, status } = useSession()
+  const { refreshCredits } = useApp()
   const [selectedNiche, setSelectedNiche] = useState("All")
   const [selectedPlatform, setSelectedPlatform] = useState("All")
   const [search, setSearch] = useState("")
   const [applied, setApplied] = useState<string[]>([])
-  const [credits, setCredits] = useState<number | null>(null)
   const [error, setError] = useState("")
   const [dbCampaigns, setDbCampaigns] = useState<any[]>([])
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set())
@@ -36,12 +37,6 @@ export default function Campaigns() {
     fetch(`/api/campaigns`)
       .then(res => res.json())
       .then(data => setDbCampaigns(data.campaigns || []))
-
-    if (session?.user?.id) {
-      fetch(`/api/user-credits?userId=${session.user.id}`)
-        .then(res => res.json())
-        .then(data => setCredits(data.credits))
-    }
 
     if (isInfluencer) {
       fetch("/api/my-applications")
@@ -90,7 +85,7 @@ export default function Campaigns() {
 
     setApplied([...applied, campaignId])
     setAppliedIds(prev => new Set([...prev, campaignId]))
-    setCredits(data.newCredits)
+    refreshCredits()
   }
 
   return (

@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react"
 import { useParams, useRouter } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
 import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
+import { useApp } from "@/app/context/AppContext"
 
 function firstName(name: string) {
   return name?.split(" ")[0] || name
@@ -32,6 +33,7 @@ function SignupPromptCard() {
 
 export default function InfluencerProfile() {
   const { data: session, status } = useSession()
+  const { credits, refreshCredits } = useApp()
   const loggedIn = status !== "loading" && !!session
   const params = useParams()
   const router = useRouter()
@@ -41,7 +43,6 @@ export default function InfluencerProfile() {
   const [unlocking, setUnlocking] = useState(false)
   const [showPhoneWarning, setShowPhoneWarning] = useState(false)
   const [error, setError] = useState("")
-  const [credits, setCredits] = useState(0)
   const [brandReport, setBrandReport] = useState<any>(null)
   const [scoring, setScoring] = useState(false)
   const [reviews, setReviews] = useState<any[]>([])
@@ -68,13 +69,6 @@ export default function InfluencerProfile() {
   useEffect(() => {
     if (params.id) fetchInfluencer()
   }, [params.id])
-
-  useEffect(() => {
-    if (!session?.user?.id) return
-    fetch(`/api/user-credits?userId=${session.user.id}`)
-      .then(res => res.json())
-      .then(data => setCredits(data.credits))
-  }, [session?.user?.id])
 
   useEffect(() => {
     if (!params.id) return
@@ -157,7 +151,7 @@ export default function InfluencerProfile() {
     const data = await res.json()
     if (!res.ok) { setError(res.status === 402 ? "CREDITS" : (data.error || "Failed to unlock")); setUnlocking(false); return }
     setUnlocked(true)
-    setCredits(data.newCredits)
+    refreshCredits()
     setInfluencer((prev: any) => ({ ...prev, email: data.email, phone: data.phone }))
     setUnlocking(false)
   }
@@ -174,8 +168,7 @@ export default function InfluencerProfile() {
     const data = await res.json()
     if (data.success) {
       setBrandReport(data.report)
-      if (typeof data.newCredits === "number") setCredits(data.newCredits)
-      window.dispatchEvent(new Event("credits-updated"))
+      refreshCredits()
     } else {
       setError(res.status === 402 ? "CREDITS" : (data.error || "Failed to generate report"))
     }
@@ -197,7 +190,7 @@ export default function InfluencerProfile() {
       return
     }
     setProposalSent(true)
-    if (typeof data.newCredits === "number") { setCredits(data.newCredits); window.dispatchEvent(new Event("credits-updated")) }
+    refreshCredits()
     setTimeout(() => { setShowProposalModal(false); setProposalSent(false) }, 2000)
   }
 

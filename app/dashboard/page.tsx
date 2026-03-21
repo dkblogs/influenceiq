@@ -4,6 +4,7 @@ import Navbar from "@/app/components/Navbar"
 import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { useApp } from "@/app/context/AppContext"
 
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const [hovered, setHovered] = useState(0)
@@ -144,9 +145,8 @@ function ReviewModal({ campaign, onClose, onSubmit }: {
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
+  const { credits, refreshCredits, brandVerified } = useApp()
   const router = useRouter()
-  const [credits, setCredits] = useState<number | null>(null)
-  const [brandVerified, setBrandVerified] = useState<boolean | null>(null)
   const [brandCampaigns, setBrandCampaigns] = useState<any[]>([])
   const [reviewModal, setReviewModal] = useState<any>(null)
   const [reviewSuccess, setReviewSuccess] = useState("")
@@ -189,24 +189,13 @@ export default function Dashboard() {
       setLoading(true)
       try {
         const results = await Promise.allSettled([
-          fetch(`/api/user-credits?userId=${u.id}`),
           u.role === "influencer" ? fetch(`/api/influencers?userId=${u.id}`) : Promise.resolve(null),
           u.role === "influencer" ? fetch(`/api/influencer-stats`) : Promise.resolve(null),
           u.role === "brand" ? fetch(`/api/campaigns?brandId=${u.id}`) : Promise.resolve(null),
           u.role === "brand" ? fetch(`/api/brand-stats`) : Promise.resolve(null),
         ])
 
-        const [creditsResult, influencerResult, statsResult, brandCampaignsResult, brandStatsResult] = results
-
-        if (creditsResult.status === "fulfilled" && creditsResult.value) {
-          try {
-            const creditsData = await creditsResult.value.json()
-            if (typeof creditsData.credits === "number") setCredits(creditsData.credits)
-            if (creditsData.brandVerified !== undefined) setBrandVerified(creditsData.brandVerified)
-          } catch (e) { console.error("[dashboard] Credits parse error:", e) }
-        } else if (creditsResult.status === "rejected") {
-          console.error("[dashboard] Credits fetch failed:", creditsResult.reason)
-        }
+        const [influencerResult, statsResult, brandCampaignsResult, brandStatsResult] = results
 
         if (influencerResult.status === "fulfilled" && influencerResult.value) {
           try {
@@ -325,19 +314,6 @@ export default function Dashboard() {
     setPortfolioItems(prev => prev.map(i => i.id === data.item.id ? data.item : i))
     setEditingItem(null)
     showToast("Updated!")
-  }
-
-  async function refreshCredits() {
-    const userId = (session?.user as any)?.id
-    if (!userId) return
-    try {
-      const res = await fetch(`/api/user-credits?userId=${userId}`)
-      const data = await res.json()
-      if (typeof data.credits === "number") setCredits(data.credits)
-      window.dispatchEvent(new Event('credits-updated'))
-    } catch (e) {
-      console.error("refreshCredits error:", e)
-    }
   }
 
   async function handleGenerateAiReport() {

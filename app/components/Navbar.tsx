@@ -2,9 +2,11 @@
 import { useState, useEffect, useRef } from "react"
 import { useSession, signOut } from "next-auth/react"
 import { usePathname } from "next/navigation"
+import { useApp } from "@/app/context/AppContext"
 
 export default function Navbar() {
   const { data: session, status } = useSession()
+  const { credits, unreadCount } = useApp()
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [discoverOpen, setDiscoverOpen] = useState(false)
@@ -12,50 +14,9 @@ export default function Navbar() {
   const discoverRef = useRef<HTMLDivElement>(null)
   const campaignsRef = useRef<HTMLDivElement>(null)
   const user = session?.user as any
-  const [credits, setCredits] = useState<number | null>(user?.credits ?? null)
-  const [unreadCount, setUnreadCount] = useState(0)
-  const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const notifIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const loggedIn = status === "authenticated"
   const role = user?.role
-
-  useEffect(() => {
-    if (!user?.id) return
-    function fetchCredits() {
-      fetch(`/api/user-credits?userId=${user.id}`)
-        .then((r) => r.json())
-        .then((d) => {
-          if (typeof d.credits === "number") setCredits(d.credits)
-        })
-        .catch(() => {})
-    }
-    fetchCredits()
-    retryRef.current = setTimeout(() => {
-      setCredits((prev) => { if (prev === null) fetchCredits(); return prev })
-    }, 3000)
-    window.addEventListener('credits-updated', fetchCredits)
-
-    // Fetch notifications unread count
-    function fetchUnread() {
-      fetch('/api/notifications')
-        .then(r => r.json())
-        .then(d => { if (typeof d.unreadCount === 'number') setUnreadCount(d.unreadCount) })
-        .catch(() => {})
-    }
-    fetchUnread()
-    notifIntervalRef.current = setInterval(fetchUnread, 30000)
-
-    function handleNotifsRead() { setUnreadCount(0) }
-    window.addEventListener('notifications-read', handleNotifsRead)
-
-    return () => {
-      if (retryRef.current) clearTimeout(retryRef.current)
-      if (notifIntervalRef.current) clearInterval(notifIntervalRef.current)
-      window.removeEventListener('credits-updated', fetchCredits)
-      window.removeEventListener('notifications-read', handleNotifsRead)
-    }
-  }, [user?.id])
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -180,6 +141,27 @@ export default function Navbar() {
     </div>
   )
 
+  const BellIcon = () => (
+    <a href="/notifications" className="relative text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+      </svg>
+      {unreadCount > 0 && (
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 leading-none">
+          {unreadCount > 9 ? "9+" : unreadCount}
+        </span>
+      )}
+    </a>
+  )
+
+  const CreditsChip = () => (
+    <div className="flex items-center bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-full">
+      <span className="text-xs text-purple-400 font-medium">
+        {credits !== null ? `${credits} credits` : "…"}
+      </span>
+    </div>
+  )
+
   return (
     <>
       <nav className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-[#1E1E2E] sticky top-0 bg-[#0A0A0F]/80 backdrop-blur-md z-50">
@@ -219,21 +201,8 @@ export default function Navbar() {
               <CampaignsDropdown />
               {navLink("/contact", "Contact Us")}
               <span className="w-px h-4 bg-[#1E1E2E]" />
-              <a href="/notifications" className="relative text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 leading-none">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </a>
-              <div className="flex items-center bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-full">
-                <span className="text-xs text-purple-400 font-medium">
-                  {credits !== null ? `${credits} credits` : "…"}
-                </span>
-              </div>
+              <BellIcon />
+              <CreditsChip />
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
                 className="text-sm text-[#64748B] hover:text-[#94A3B8] transition-colors"
@@ -251,21 +220,8 @@ export default function Navbar() {
               {navLink("/proposals", "Proposals")}
               {navLink("/contact", "Contact Us")}
               <span className="w-px h-4 bg-[#1E1E2E]" />
-              <a href="/notifications" className="relative text-[#94A3B8] hover:text-[#F8FAFC] transition-colors">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 leading-none">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </a>
-              <div className="flex items-center bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-full">
-                <span className="text-xs text-purple-400 font-medium">
-                  {credits !== null ? `${credits} credits` : "…"}
-                </span>
-              </div>
+              <BellIcon />
+              <CreditsChip />
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
                 className="text-sm text-[#64748B] hover:text-[#94A3B8] transition-colors"
