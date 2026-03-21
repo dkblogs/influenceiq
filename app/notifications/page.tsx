@@ -35,6 +35,15 @@ export default function NotificationsPage() {
       .then(r => r.json())
       .then(d => setNotifications(d.notifications || []))
       .finally(() => setLoading(false))
+
+    // Mark all as read and clear the navbar bell badge
+    fetch("/api/notifications", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ markAllRead: true }),
+    }).then(() => {
+      window.dispatchEvent(new Event("notifications-read"))
+    }).catch(() => {})
   }, [status, router])
 
   async function handleClick(notif: any) {

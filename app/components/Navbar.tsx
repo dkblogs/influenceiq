@@ -46,10 +46,14 @@ export default function Navbar() {
     fetchUnread()
     notifIntervalRef.current = setInterval(fetchUnread, 30000)
 
+    function handleNotifsRead() { setUnreadCount(0) }
+    window.addEventListener('notifications-read', handleNotifsRead)
+
     return () => {
       if (retryRef.current) clearTimeout(retryRef.current)
       if (notifIntervalRef.current) clearInterval(notifIntervalRef.current)
       window.removeEventListener('credits-updated', fetchCredits)
+      window.removeEventListener('notifications-read', handleNotifsRead)
     }
   }, [user?.id])
 
