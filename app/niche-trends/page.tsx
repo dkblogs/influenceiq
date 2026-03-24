@@ -72,36 +72,103 @@ export default function NicheTrends() {
 
       <div className="px-4 md:px-8 py-10 max-w-6xl mx-auto">
 
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <div className="inline-flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-4 py-1.5 rounded-full text-xs text-purple-300 mb-4">
-            🤖 Powered by real InfluenceIQ data + AI analysis
+        {/* ── Section 1: Hero Header ── */}
+        <div className="mb-12 text-center relative">
+          <div className="absolute inset-0 pointer-events-none -z-10">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-purple-600/8 rounded-full blur-[100px]" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-[#F8FAFC] mb-3">
-            Niche Trend Report 📊
+          <div className="inline-flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-4 py-1.5 rounded-full text-xs text-purple-300 mb-5">
+            🇮🇳 India Influencer Market Intelligence
+          </div>
+          <h1 className="text-3xl md:text-5xl font-bold text-[#F8FAFC] mb-4 leading-tight">
+            📊 India Influencer<br className="hidden md:block" /> Niche Trend Report
           </h1>
-          <p className="text-[#94A3B8] text-base max-w-xl mx-auto">
-            AI-powered insights into India's influencer marketing landscape
+          <p className="text-[#94A3B8] text-base md:text-lg max-w-2xl mx-auto mb-5">
+            Powered by real creator data + AI market analysis
           </p>
-          <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
-            <span className="text-xs bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] px-3 py-1 rounded-full">
+          <div className="flex items-center justify-center gap-3 flex-wrap mb-5">
+            <span className="text-xs bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] px-3 py-1.5 rounded-full font-medium">
               🔄 Updated daily
             </span>
+            <span className="text-xs bg-purple-500/10 border border-purple-500/20 text-purple-300 px-3 py-1.5 rounded-full font-medium">
+              🆓 Free for everyone
+            </span>
             {data?.totalInfluencers !== undefined && (
-              <span className="text-xs text-[#64748B]">
-                Based on {data.totalInfluencers} verified creators
+              <span className="text-xs bg-[#12121A] border border-[#1E1E2E] text-[#64748B] px-3 py-1.5 rounded-full">
+                {data.totalInfluencers} verified creators analysed
               </span>
             )}
             {data?.generatedAt && (
               <span className="text-xs text-[#64748B]">Last updated: {data.generatedAt}</span>
             )}
           </div>
-          <div className="mt-4 inline-flex items-center gap-3 bg-[#12121A] border border-[#1E1E2E] rounded-xl px-4 py-2 text-xs text-[#64748B]">
+          <div className="inline-flex items-center gap-3 bg-[#12121A] border border-[#1E1E2E] rounded-xl px-4 py-2 text-xs text-[#64748B]">
             <span className="text-green-400 font-medium">📊 Platform data</span>
             <span>= real InfluenceIQ creator stats</span>
-            <span className="mx-1 text-[#1E1E2E]">·</span>
+            <span className="text-[#2E2E3E]">·</span>
             <span className="text-blue-400 font-medium">🤖 AI insights</span>
             <span>= India market analysis</span>
+          </div>
+        </div>
+
+        {/* ── Section 2: How It Works ── */}
+        <div className="mb-12">
+          <h2 className="text-lg font-semibold text-[#F8FAFC] text-center mb-6">How this report works</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              {
+                icon: "🗄️",
+                title: "Real Platform Data",
+                desc: "We analyse verified creator profiles on InfluenceIQ to extract engagement rates, follower counts and platform activity per niche.",
+                accent: "border-green-500/20 bg-green-500/5",
+                iconBg: "bg-green-500/10",
+              },
+              {
+                icon: "🤖",
+                title: "AI Market Analysis",
+                desc: "Our AI analyses India's current social media landscape to generate trend scores, momentum signals and brand opportunities.",
+                accent: "border-blue-500/20 bg-blue-500/5",
+                iconBg: "bg-blue-500/10",
+              },
+              {
+                icon: "📈",
+                title: "Daily Updates",
+                desc: "Trends refresh every 24 hours so you always see the most current picture of India's creator economy.",
+                accent: "border-purple-500/20 bg-purple-500/5",
+                iconBg: "bg-purple-500/10",
+              },
+            ].map(card => (
+              <div key={card.title} className={`rounded-2xl border p-5 ${card.accent}`}>
+                <div className={`w-10 h-10 rounded-xl ${card.iconBg} flex items-center justify-center text-xl mb-3`}>
+                  {card.icon}
+                </div>
+                <h3 className="font-semibold text-[#F8FAFC] text-sm mb-2">{card.title}</h3>
+                <p className="text-[#64748B] text-xs leading-relaxed">{card.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Section 3: How to Use It ── */}
+        <div className="mb-12 bg-[#12121A] border border-[#1E1E2E] rounded-2xl p-6">
+          <h2 className="text-base font-semibold text-[#F8FAFC] mb-4">How to use this report</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              { step: "1", icon: "🔍", title: "Browse niches", desc: "Find which content categories are trending right now in India" },
+              { step: "2", icon: "📊", title: "Check momentum", desc: "Rising 🔥 means opportunity, Declining 📉 means saturation" },
+              { step: "3", icon: "⏰", title: "Use best times", desc: "Post at peak hours shown for each niche for maximum reach" },
+              { step: "4", icon: "💡", title: "Read insights", desc: "Brand opportunity and creator tips are tailored per niche" },
+            ].map(item => (
+              <div key={item.step} className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-purple-600/20 border border-purple-500/30 text-purple-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                  {item.step}
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-[#F8FAFC]">{item.icon} {item.title}</span>
+                  <p className="text-xs text-[#64748B] mt-0.5">{item.desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -121,12 +188,25 @@ export default function NicheTrends() {
 
         {data && !loading && (
           <>
-            {/* Overall insight card */}
-            <div className="bg-[#12121A] border border-[#1E1E2E] rounded-2xl p-6 mb-6">
-              <p className="text-[#94A3B8] leading-relaxed mb-4">{data.overallInsight}</p>
-              <div className="inline-flex items-center gap-2 bg-purple-600/10 border border-purple-500/20 px-4 py-2 rounded-xl">
-                <span className="text-purple-300 text-sm font-medium">🔥 Hottest niche right now:</span>
-                <span className="text-purple-400 font-bold">{data.hotNiche}</span>
+            {/* ── Section 4: Today's Snapshot Banner ── */}
+            <div className="relative overflow-hidden rounded-2xl mb-8 p-6 md:p-8">
+              {/* Gradient background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-900/60 via-[#12121A] to-amber-900/30 border border-purple-500/30 rounded-2xl" />
+              <div className="absolute top-0 left-0 w-64 h-64 bg-purple-600/20 rounded-full blur-[80px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+              <div className="absolute bottom-0 right-0 w-48 h-48 bg-amber-500/10 rounded-full blur-[60px] translate-x-1/4 translate-y-1/4 pointer-events-none" />
+              <div className="relative z-10">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div>
+                    <div className="inline-flex items-center gap-2 bg-amber-500/15 border border-amber-500/30 px-3 py-1 rounded-full text-xs text-amber-300 font-medium mb-3">
+                      🔥 Today&apos;s Snapshot — {data.generatedAt}
+                    </div>
+                    <p className="text-[#94A3B8] text-sm leading-relaxed max-w-2xl">{data.overallInsight}</p>
+                  </div>
+                  <div className="flex-shrink-0 bg-purple-600/20 border border-purple-500/30 rounded-2xl px-6 py-4 text-center">
+                    <p className="text-xs text-purple-300 font-medium mb-1">🔥 Hottest niche right now</p>
+                    <p className="text-2xl font-bold text-[#F8FAFC]">{data.hotNiche}</p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -228,7 +308,7 @@ export default function NicheTrends() {
                     </div>
 
                     {/* Audience insight */}
-                    <p className="text-xs text-[#64748B] italic mb-3">"{t.audienceInsight}"</p>
+                    <p className="text-xs text-[#64748B] italic mb-3">&ldquo;{t.audienceInsight}&rdquo;</p>
 
                     {/* Brand / Creator insight based on view */}
                     {(view === "all" || view === "brands") && (
@@ -289,7 +369,7 @@ export default function NicheTrends() {
       </div>
 
       <footer className="border-t border-[#1E1E2E] px-4 md:px-8 py-8 text-center text-sm text-[#64748B] mt-8">
-        InfluenceIQ · India's AI Influencer Marketplace · 2025
+        InfluenceIQ · India&apos;s AI Influencer Marketplace · 2025
       </footer>
     </main>
   )
