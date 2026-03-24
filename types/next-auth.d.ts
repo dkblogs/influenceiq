@@ -16,14 +16,6 @@ declare module "next-auth" {
     id: string
     role: string
     brandVerified: boolean
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    id: string
-    sub: string
-    role: string
-    brandVerified: boolean
+    password?: string | null
   }
 }

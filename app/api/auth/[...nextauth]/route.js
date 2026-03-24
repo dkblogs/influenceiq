@@ -1,10 +1,16 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
-const bcrypt = require("bcryptjs")
+import bcrypt from "bcryptjs"
+import { PrismaAdapter } from "@auth/prisma-adapter"
 
 export const authOptions = {
+  adapter: PrismaAdapter(prisma),
+  session: { strategy: "database", maxAge: 30 * 24 * 60 * 60 },
   trustHost: true,
+  secret: process.env.NEXTAUTH_SECRET,
+  pages: { signIn: "/login", error: "/login" },
+
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -15,82 +21,32 @@ export const authOptions = {
       async authorize(credentials) {
         try {
           if (!credentials?.email || !credentials?.password) {
-            console.log("[auth] Missing credentials")
-            return null
+            throw new Error("Email and password required")
           }
-
-          const normalizedEmail = credentials.email.toLowerCase().trim()
-          console.log("[auth] Login attempt:", normalizedEmail)
-
-          let user
-          try {
-            user = await prisma.user.findUnique({ where: { email: normalizedEmail } })
-          } catch (dbErr) {
-            console.error("[auth] Prisma query error:", dbErr)
-            throw new Error("Database error, please try again")
-          }
-
-          console.log("[auth] User found:", !!user)
-          if (!user) throw new Error("No account found with this email")
-
-          if (!user.password) {
-            console.log("[auth] No password field — OAuth account")
-            throw new Error("This account uses a different sign-in method")
-          }
-
-          let passwordMatch = false
-          try {
-            passwordMatch = await bcrypt.compare(credentials.password, user.password)
-          } catch (bcryptErr) {
-            console.error("[auth] bcrypt error:", bcryptErr)
-            throw new Error("Authentication error, please try again")
-          }
-
-          console.log("[auth] Password match:", passwordMatch)
-          if (!passwordMatch) throw new Error("Incorrect password")
-
-          console.log("[auth] Login success:", normalizedEmail)
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
-            credits: user.credits,
-          }
-        } catch (err) {
-          console.error("[auth] authorize error:", err.message)
-          throw err
+          const email = credentials.email.toLowerCase().trim()
+          const user = await prisma.user.findUnique({ where: { email } })
+          if (!user) throw new Error("No account found with this email address")
+          if (!user.password) throw new Error("Please sign in with a different method")
+          const isValid = await bcrypt.compare(credentials.password, user.password)
+          if (!isValid) throw new Error("Incorrect password. Please try again.")
+          return user
+        } catch (error) {
+          throw error
         }
       },
     }),
   ],
-  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-change-in-production",
-  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
-  jwt: { maxAge: 30 * 24 * 60 * 60 },
+
   callbacks: {
-    async jwt({ token, user }) {
+    async session({ session, user }) {
+      // With database strategy, user comes from DB directly
       if (user) {
-        token.id = user.id
-        token.sub = user.id
-        token.role = user.role
-        token.credits = user.credits
-        token.brandVerified = user.brandVerified ?? false
-      }
-      return token
-    },
-    async session({ session, token }) {
-      if (token) {
-        session.user = session.user ?? {}
-        session.user.id = token.id ?? token.sub ?? ""
-        session.user.role = token.role ?? "brand"
-        session.user.brandVerified = token.brandVerified ?? false
+        session.user.id = user.id
+        session.user.role = user.role
+        session.user.brandVerified = user.brandVerified ?? false
       }
       return session
     },
-  },
-  pages: {
-    signIn: "/login",
-    error: "/login",
   },
 }
 
