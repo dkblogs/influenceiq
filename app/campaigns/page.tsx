@@ -173,7 +173,7 @@ export default function Campaigns() {
         ) : (
           <div className="space-y-4">
             {filtered.map((c) => (
-              <div key={c.id} className="bg-[#12121A] border border-[#1E1E2E] rounded-2xl p-4 md:p-6 hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10 transition-all">
+              <a key={c.id} href={`/campaigns/${c.id}`} className="block bg-[#12121A] border border-[#1E1E2E] rounded-2xl p-4 md:p-6 hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10 cursor-pointer transition-all">
                 <div className="flex items-start gap-4">
                   <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl ${c.brandColor || "bg-purple-500"} flex items-center justify-center text-white font-medium text-sm flex-shrink-0`}>
                     {c.brandInitials || c.brand?.slice(0, 2).toUpperCase() || "BR"}
@@ -224,7 +224,7 @@ export default function Campaigns() {
                           </div>
                         ) : (
                           <button
-                            onClick={() => handleApply(c.id)}
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleApply(c.id) }}
                             className="px-5 py-2 rounded-lg text-sm font-medium transition-colors bg-purple-600 text-white hover:bg-purple-500 shadow-lg shadow-purple-500/20"
                           >
                             Apply now — 2 credits
@@ -234,6 +234,7 @@ export default function Campaigns() {
                         c.brandId === userId ? (
                           <a
                             href="/my-campaigns"
+                            onClick={e => e.stopPropagation()}
                             className="px-5 py-2 rounded-lg text-sm font-medium bg-[#1E1E2E] text-[#94A3B8] hover:text-[#F8FAFC] border border-[#1E1E2E] transition-colors"
                           >
                             View Applicants →
@@ -250,7 +251,7 @@ export default function Campaigns() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         )}
