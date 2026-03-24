@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
@@ -101,7 +101,7 @@ function InfluencerNote() {
   )
 }
 
-export default function Pricing() {
+function PricingContent() {
   const { data: session } = useSession()
   const { refreshCredits } = useApp()
   const router = useRouter()
@@ -275,5 +275,13 @@ export default function Pricing() {
       </footer>
 
     </main>
+  )
+}
+
+export default function Pricing() {
+  return (
+    <Suspense>
+      <PricingContent />
+    </Suspense>
   )
 }
