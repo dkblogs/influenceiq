@@ -81,6 +81,8 @@ export async function GET() {
       { niche: "Lifestyle", influencerCount: 0, avgFollowers: 0, avgEngagement: "0", topPlatforms: ["Instagram"] },
     ]
 
+    const nichesInDB = promptData.map(n => n.niche).join(", ")
+
     console.log("4. Calling Groq API...")
     let completion
     try {
@@ -89,15 +91,20 @@ export async function GET() {
         messages: [
           {
             role: "user",
-            content: `You are an influencer marketing trends analyst for India. Based on this real platform data from InfluenceIQ:
+            content: `You are an influencer marketing trends analyst for India. Based on this REAL platform data from InfluenceIQ:
 
 ${JSON.stringify(promptData, null, 2)}
 
-Generate trend insights for each niche in this EXACT JSON format (no markdown, no extra text, just valid JSON):
+Generate trend insights ONLY for these niches that exist in our data: ${nichesInDB}
+Do NOT invent or add niches that are not in the list above.
+
+The "hotNiche" must also be one of: ${nichesInDB}
+
+Generate insights in this EXACT JSON format (no markdown, no extra text, just valid JSON):
 {
   "trends": [
     {
-      "niche": "Tech",
+      "niche": "<must be one of: ${nichesInDB}>",
       "trendScore": 85,
       "momentum": "rising",
       "mostActivePlatforms": ["YouTube", "Instagram"],
@@ -109,11 +116,11 @@ Generate trend insights for each niche in this EXACT JSON format (no markdown, n
     }
   ],
   "overallInsight": "2-3 sentence overview of Indian influencer market trends in 2025",
-  "hotNiche": "Finance",
+  "hotNiche": "<must be one of: ${nichesInDB}>",
   "generatedAt": "${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}"
 }
 
-Cover ALL of these niches: ${promptData.map(n => n.niche).join(", ")}. momentum must be one of: rising, stable, declining. trendScore 0-100.`,
+Cover ALL of these niches: ${nichesInDB}. momentum must be one of: rising, stable, declining. trendScore 0-100.`,
           },
         ],
         temperature: 0.7,
@@ -130,8 +137,20 @@ Cover ALL of these niches: ${promptData.map(n => n.niche).join(", ")}. momentum 
     // Extract JSON — strip any markdown fences
     const jsonMatch = raw.match(/\{[\s\S]*\}/)
     if (!jsonMatch) throw new Error(`Groq returned non-JSON response. Raw: ${raw.slice(0, 200)}`)
-    const aiData = JSON.parse(jsonMatch[0])
-    console.log("6. Parsed trends:", JSON.stringify(aiData))
+    const parsed = JSON.parse(jsonMatch[0])
+
+    // Filter out any niches not in our DB
+    parsed.trends = parsed.trends.filter(t =>
+      promptData.some(n => n.niche.toLowerCase() === t.niche.toLowerCase())
+    )
+
+    // Make sure hotNiche is valid
+    if (!promptData.some(n => n.niche.toLowerCase() === parsed.hotNiche?.toLowerCase())) {
+      parsed.hotNiche = promptData[0]?.niche || "Tech"
+    }
+
+    console.log("6. Parsed trends:", JSON.stringify(parsed))
+    const aiData = parsed
 
     const responseData = {
       ...aiData,
