@@ -184,7 +184,11 @@ export default function ProposalDetailPage() {
               </span>
             </div>
             <p className="text-sm text-[#64748B] mt-0.5">
-              {isBrandViewing ? `With: ${proposal.influencerName}` : `From: ${proposal.brandName}`}
+              {isBrandViewing ? (
+                <>With: <a href={`/influencer/${proposal.influencerId}`} className="text-purple-400 hover:text-purple-300 underline">{proposal.influencerName}</a></>
+              ) : (
+                <>From: <span className="text-[#94A3B8]">{proposal.brandName}</span></>
+              )}
             </p>
           </div>
         </div>
@@ -194,6 +198,14 @@ export default function ProposalDetailPage() {
           <div className="bg-[#10B981]/10 border border-[#10B981]/20 rounded-2xl p-5 mb-6">
             <div className="text-lg font-semibold text-[#10B981] mb-1">✅ Both parties have agreed</div>
             <div className="text-sm text-[#94A3B8]">Final terms: <strong className="text-[#F8FAFC]">{currentRemuneration}</strong> · Timeline: <strong className="text-[#F8FAFC]">{currentTimeline}</strong> · {currentRevisions} revisions</div>
+            {isBrandViewing && (
+              <a
+                href={`/influencer/${proposal.influencerId}`}
+                className="mt-3 inline-flex items-center gap-2 bg-[#10B981] hover:bg-[#0EA572] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                📞 View Contact Details →
+              </a>
+            )}
           </div>
         )}
 
@@ -251,7 +263,9 @@ export default function ProposalDetailPage() {
                       </div>
                       <div className="flex-1 pb-3">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-medium text-[#F8FAFC] capitalize">{round.submittedBy}</span>
+                          <span className="text-xs font-medium text-[#F8FAFC]">
+                            {round.submittedBy === "brand" ? proposal.brandName : proposal.influencerName}
+                          </span>
                           <span className={`text-xs px-1.5 py-0.5 rounded border ${STATUS_STYLE[round.status] ?? STATUS_STYLE.pending}`}>{round.status}</span>
                           <span className="text-xs text-[#64748B]">{timeAgo(round.createdAt)}</span>
                         </div>
