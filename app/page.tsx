@@ -38,6 +38,7 @@ export default function HomePage() {
         >
           <span className="text-5xl">🏢</span>
           <span className="text-[#F8FAFC] font-semibold text-sm">I&apos;m a Brand</span>
+          <p className="text-sm text-white/50 mt-1 text-center">Discover and collaborate with top creators</p>
           <span className="text-purple-400 text-xs group-hover:translate-x-0.5 transition-transform">→</span>
         </a>
 
@@ -47,6 +48,7 @@ export default function HomePage() {
         >
           <span className="text-5xl">⭐</span>
           <span className="text-[#F8FAFC] font-semibold text-sm">I&apos;m a Creator</span>
+          <p className="text-sm text-white/50 mt-1 text-center">Get brand deals and grow your audience</p>
           <span className="text-cyan-400 text-xs group-hover:translate-x-0.5 transition-transform">→</span>
         </a>
       </div>
