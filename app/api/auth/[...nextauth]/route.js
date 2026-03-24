@@ -2,11 +2,9 @@ import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-import { PrismaAdapter } from "@auth/prisma-adapter"
 
 export const authOptions = {
-  adapter: PrismaAdapter(prisma),
-  session: { strategy: "database", maxAge: 30 * 24 * 60 * 60 },
+  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   trustHost: true,
   secret: process.env.NEXTAUTH_SECRET,
   pages: { signIn: "/login", error: "/login" },
@@ -29,7 +27,13 @@ export const authOptions = {
           if (!user.password) throw new Error("Please sign in with a different method")
           const isValid = await bcrypt.compare(credentials.password, user.password)
           if (!isValid) throw new Error("Incorrect password. Please try again.")
-          return user
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            brandVerified: user.brandVerified ?? false,
+          }
         } catch (error) {
           throw error
         }
@@ -38,12 +42,20 @@ export const authOptions = {
   ],
 
   callbacks: {
-    async session({ session, user }) {
-      // With database strategy, user comes from DB directly
+    async jwt({ token, user }) {
       if (user) {
-        session.user.id = user.id
-        session.user.role = user.role
-        session.user.brandVerified = user.brandVerified ?? false
+        token.id = user.id
+        token.sub = user.id
+        token.role = user.role
+        token.brandVerified = user.brandVerified ?? false
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.id ?? token.sub ?? ""
+        session.user.role = token.role ?? "brand"
+        session.user.brandVerified = token.brandVerified ?? false
       }
       return session
     },
