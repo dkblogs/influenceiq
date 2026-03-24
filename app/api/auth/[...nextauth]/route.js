@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 const bcrypt = require("bcryptjs")
 
 export const authOptions = {
+  trustHost: true,
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -63,7 +64,7 @@ export const authOptions = {
       },
     }),
   ],
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-change-in-production",
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   jwt: { maxAge: 30 * 24 * 60 * 60 },
   callbacks: {
@@ -90,17 +91,6 @@ export const authOptions = {
   pages: {
     signIn: "/login",
     error: "/login",
-  },
-  cookies: {
-    sessionToken: {
-      name: "next-auth.session-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-      },
-    },
   },
 }
 

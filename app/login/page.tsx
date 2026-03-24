@@ -19,11 +19,20 @@ function LoginForm() {
     setError("")
     setLoading(true)
 
-    const result = await signIn("credentials", {
+    let result = await signIn("credentials", {
       email: email.toLowerCase().trim(),
       password,
       redirect: false,
     })
+
+    if (!result?.ok && !result?.error?.includes("password") && !result?.error?.includes("email") && !result?.error?.includes("account")) {
+      await new Promise(r => setTimeout(r, 1000))
+      result = await signIn("credentials", {
+        email: email.toLowerCase().trim(),
+        password,
+        redirect: false,
+      })
+    }
 
     if (result?.error) {
       const msg = result.error
