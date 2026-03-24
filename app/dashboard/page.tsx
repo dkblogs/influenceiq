@@ -818,15 +818,15 @@ export default function Dashboard() {
                 </div>
                 <span className="text-xs text-purple-400 font-medium whitespace-nowrap">Browse →</span>
               </a>
-              <a href="/campaigns" className="flex items-center gap-4 p-3 rounded-xl border border-[#1E1E2E] hover:bg-[#1E1E2E] hover:border-purple-500/30 transition-all">
-                <div className="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center text-lg flex-shrink-0">📋</div>
+              <a href={user.role === "brand" ? "/post-campaign" : "/campaigns"} className="flex items-center gap-4 p-3 rounded-xl border border-[#1E1E2E] hover:bg-[#1E1E2E] hover:border-purple-500/30 transition-all">
+                <div className="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center text-lg flex-shrink-0">📢</div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-[#F8FAFC]">Open campaigns</div>
+                  <div className="text-sm font-medium text-[#F8FAFC]">{user.role === "brand" ? "Post a Campaign" : "Open campaigns"}</div>
                   <div className="text-xs text-[#64748B]">
-                    {user.role === "brand" ? "Post a campaign — 15 credits" : "Apply to campaigns — 2 credits each"}
+                    {user.role === "brand" ? "Reach the right creators for your brand" : "Apply to campaigns — 2 credits each"}
                   </div>
                 </div>
-                <span className="text-xs text-purple-400 font-medium whitespace-nowrap">View →</span>
+                <span className="text-xs text-purple-400 font-medium whitespace-nowrap">{user.role === "brand" ? "Post →" : "View →"}</span>
               </a>
               {user.role === "brand" ? (
                 <a href="/recommend" className="flex items-center gap-4 p-3 rounded-xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/10 transition-all">
