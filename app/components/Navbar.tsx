@@ -226,7 +226,13 @@ export default function Navbar() {
             <>
               {navLink("/dashboard", "Dashboard")}
               {navLink("/profile", "Profile")}
-              {navLink("/campaigns", "Campaigns")}
+              <a
+                href="/campaigns"
+                className="relative px-3 py-1.5 rounded-lg bg-purple-600/20 border border-purple-500/30 text-purple-300 font-medium text-sm hover:bg-purple-600/30 hover:text-purple-200 transition-all"
+              >
+                💰 Campaigns
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              </a>
               {navLink("/proposals", "Proposals")}
               {navLink("/contact", "Contact Us")}
               <span className="w-px h-4 bg-[#1E1E2E]" />
