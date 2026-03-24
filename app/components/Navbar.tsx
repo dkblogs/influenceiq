@@ -11,8 +11,10 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [discoverOpen, setDiscoverOpen] = useState(false)
   const [campaignsOpen, setCampaignsOpen] = useState(false)
+  const [creditsOpen, setCreditsOpen] = useState(false)
   const discoverRef = useRef<HTMLDivElement>(null)
   const campaignsRef = useRef<HTMLDivElement>(null)
+  const creditsRef = useRef<HTMLDivElement>(null)
   const user = session?.user as any
 
   const loggedIn = status === "authenticated"
@@ -26,6 +28,9 @@ export default function Navbar() {
       }
       if (campaignsRef.current && !campaignsRef.current.contains(e.target as Node)) {
         setCampaignsOpen(false)
+      }
+      if (creditsRef.current && !creditsRef.current.contains(e.target as Node)) {
+        setCreditsOpen(false)
       }
     }
     document.addEventListener("mousedown", handler)
@@ -155,10 +160,33 @@ export default function Navbar() {
   )
 
   const CreditsChip = () => (
-    <div className="flex items-center bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-full">
-      <span className="text-xs text-purple-400 font-medium">
-        {credits !== null ? `${credits} credits` : "…"}
-      </span>
+    <div ref={creditsRef} className="relative">
+      <button
+        onClick={() => setCreditsOpen(o => !o)}
+        className="flex items-center bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-full hover:bg-purple-500/20 transition-colors"
+      >
+        <span className="text-xs text-purple-400 font-medium">
+          {credits !== null ? `${credits} credits` : "…"}
+        </span>
+      </button>
+      {creditsOpen && (
+        <div className="absolute right-0 top-full mt-2 w-44 bg-[#12121A] border border-[#1E1E2E] rounded-xl shadow-xl shadow-black/40 py-1 z-50">
+          <a
+            href="/pricing"
+            onClick={() => setCreditsOpen(false)}
+            className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#1E1E2E] transition-colors"
+          >
+            💳 Buy credits
+          </a>
+          <a
+            href="/credits"
+            onClick={() => setCreditsOpen(false)}
+            className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#1E1E2E] transition-colors"
+          >
+            📋 View history
+          </a>
+        </div>
+      )}
     </div>
   )
 

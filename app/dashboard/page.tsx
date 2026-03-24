@@ -867,6 +867,9 @@ export default function Dashboard() {
               <a href="/pricing" className="block w-full bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500 text-center transition-colors shadow-lg shadow-purple-500/20">
                 Buy credits
               </a>
+              <a href="/credits" className="block w-full text-center text-xs text-purple-400 hover:text-purple-300 mt-3 transition-colors">
+                View transaction history →
+              </a>
             </div>
             <div className="border-t border-[#1E1E2E] pt-4 mt-2">
               <div className="text-xs font-medium text-[#94A3B8] mb-3">What you can do</div>
