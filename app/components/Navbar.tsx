@@ -145,16 +145,6 @@ export default function Navbar() {
           >
             Influencers
           </a>
-          <a
-            href="/niche-trends"
-            onClick={() => setDiscoverOpen(false)}
-            className={mobile
-              ? "text-sm py-2 text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
-              : "block px-4 py-2.5 text-sm text-[#94A3B8] hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors"
-            }
-          >
-            📊 Trends
-          </a>
         </div>
       )}
     </div>
@@ -252,6 +242,7 @@ export default function Navbar() {
               {navLink("/profile", "Profile")}
               <DiscoverDropdown />
               <CampaignsDropdown />
+              {navLink("/niche-trends", "📊 Trends")}
               {navLink("/contact", "Contact Us")}
               <span className="w-px h-4 bg-[#1E1E2E]" />
               <BellIcon />
@@ -344,6 +335,7 @@ export default function Navbar() {
               <div className="py-1 border-b border-[#1E1E2E]">
                 <CampaignsDropdown mobile />
               </div>
+              <a href="/niche-trends" className={`text-sm py-2.5 border-b border-[#1E1E2E] ${pathname === "/niche-trends" ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8]"}`}>📊 Trends</a>
               <a href="/notifications" className="flex items-center justify-between text-sm py-2.5 border-b border-[#1E1E2E] text-[#94A3B8]">
                 Notifications
                 {unreadCount > 0 && <span className="bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5">{unreadCount > 9 ? "9+" : unreadCount}</span>}
@@ -362,6 +354,7 @@ export default function Navbar() {
                 { href: "/profile", label: "Profile" },
                 { href: "/campaigns", label: "Campaigns" },
                 { href: "/proposals", label: "Proposals" },
+                { href: "/niche-trends", label: "📊 Trends" },
                 { href: "/contact", label: "Contact Us" },
               ].map(l => (
                 <a key={l.href} href={l.href} className={`text-sm py-2.5 border-b border-[#1E1E2E] ${pathname === l.href ? "text-[#F8FAFC] font-medium" : "text-[#94A3B8]"}`}>{l.label}</a>
