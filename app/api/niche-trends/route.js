@@ -1,11 +1,14 @@
 import Groq from "groq-sdk"
 import { prisma } from "@/lib/prisma"
+import { NICHES } from "@/lib/constants"
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 // In-memory cache: { data, generatedAt }
 let cache = null
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000 // 24 hours
+
+const ALL_NICHES = NICHES.filter(n => n !== "Other")
 
 export async function GET() {
   try {
@@ -30,7 +33,7 @@ export async function GET() {
     })
     console.log("2. Influencer count:", influencers.length)
 
-    // Build per-niche stats
+    // Build per-niche stats from real DB data
     const nicheMap = {}
 
     for (const inf of influencers) {
@@ -53,35 +56,22 @@ export async function GET() {
       }
     }
 
-    // Format nicheStats for Groq prompt
+    // Format real DB niche stats
     const nicheStats = Object.entries(nicheMap)
       .filter(([, v]) => v.count > 0)
       .map(([niche, v]) => ({
         niche,
         influencerCount: v.count,
-        avgFollowers: v.count > 0 ? Math.round(v.totalFollowers / v.count) : 0,
-        avgEngagement: v.count > 0 ? (v.totalEngagement / v.count).toFixed(2) : "0",
+        avgFollowers: Math.round(v.totalFollowers / v.count),
+        avgEngagement: (v.totalEngagement / v.count).toFixed(2),
         topPlatforms: Object.entries(v.platforms)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 3)
           .map(([p]) => p),
       }))
 
-    console.log("3. Niche stats built:", JSON.stringify(nicheStats))
-
-    // If no verified influencer data yet, use seed niches for the prompt
-    const promptData = nicheStats.length > 0 ? nicheStats : [
-      { niche: "Tech", influencerCount: 0, avgFollowers: 0, avgEngagement: "0", topPlatforms: ["YouTube", "Instagram"] },
-      { niche: "Fashion", influencerCount: 0, avgFollowers: 0, avgEngagement: "0", topPlatforms: ["Instagram"] },
-      { niche: "Food", influencerCount: 0, avgFollowers: 0, avgEngagement: "0", topPlatforms: ["Instagram", "YouTube"] },
-      { niche: "Finance", influencerCount: 0, avgFollowers: 0, avgEngagement: "0", topPlatforms: ["YouTube", "LinkedIn"] },
-      { niche: "Fitness", influencerCount: 0, avgFollowers: 0, avgEngagement: "0", topPlatforms: ["Instagram", "YouTube"] },
-      { niche: "Gaming", influencerCount: 0, avgFollowers: 0, avgEngagement: "0", topPlatforms: ["YouTube"] },
-      { niche: "Education", influencerCount: 0, avgFollowers: 0, avgEngagement: "0", topPlatforms: ["YouTube", "Instagram"] },
-      { niche: "Lifestyle", influencerCount: 0, avgFollowers: 0, avgEngagement: "0", topPlatforms: ["Instagram"] },
-    ]
-
-    const nichesInDB = promptData.map(n => n.niche).join(", ")
+    const nichesWithData = new Set(nicheStats.map(n => n.niche.toLowerCase()))
+    console.log("3. Niches with real data:", [...nichesWithData])
 
     console.log("4. Calling Groq API...")
     let completion
@@ -91,40 +81,46 @@ export async function GET() {
         messages: [
           {
             role: "user",
-            content: `You are an influencer marketing trends analyst for India. Based on this REAL platform data from InfluenceIQ:
+            content: `You are an expert influencer marketing analyst specializing in the Indian market (2025-2026).
 
-${JSON.stringify(promptData, null, 2)}
+Generate niche trend insights for the Indian influencer marketing landscape for ALL of these niches:
+${ALL_NICHES.join(", ")}
 
-Generate trend insights ONLY for these niches that exist in our data: ${nichesInDB}
-Do NOT invent or add niches that are not in the list above.
+We have REAL platform data for some niches from InfluenceIQ (use this as verified data):
+${JSON.stringify(nicheStats, null, 2)}
 
-The "hotNiche" must also be one of: ${nichesInDB}
+Rules:
+- For niches WITH real data above — base your insights on the actual numbers provided, set "dataSource": "platform"
+- For niches WITHOUT real data — generate realistic insights based on current Indian social media trends, set "dataSource": "ai"
+- Cover EVERY niche in the list above, no exceptions
+- "hotNiche" must be one of the niches listed above
+- momentum must be one of: rising, stable, declining
+- trendScore: 0-100
 
-Generate insights in this EXACT JSON format (no markdown, no extra text, just valid JSON):
+Respond in this EXACT JSON format (no markdown, no extra text):
 {
   "trends": [
     {
-      "niche": "<must be one of: ${nichesInDB}>",
-      "trendScore": 85,
+      "niche": "Fashion",
+      "trendScore": 88,
       "momentum": "rising",
-      "mostActivePlatforms": ["YouTube", "Instagram"],
-      "averageEngagement": "4.2%",
-      "bestTimeToPost": "Tuesday-Thursday, 6PM-9PM IST",
-      "audienceInsight": "Predominantly 18-35 male audience seeking product reviews and tutorials",
-      "brandOpportunity": "High ROI for SaaS, gadgets, and fintech brands via YouTube integrations",
-      "creatorTip": "Post detailed unboxing and comparison videos on YouTube for maximum reach"
+      "dataSource": "ai",
+      "mostActivePlatforms": ["Instagram", "YouTube"],
+      "averageEngagement": "3.8%",
+      "bestTimeToPost": "Monday-Friday, 7PM-10PM IST",
+      "audienceInsight": "Predominantly 18-30 urban females, aspirational buyers",
+      "brandOpportunity": "High ROI for product launches and seasonal collections",
+      "creatorTip": "Reels with try-on hauls get 3x more saves than static posts"
     }
   ],
-  "overallInsight": "2-3 sentence overview of Indian influencer market trends in 2025",
-  "hotNiche": "<must be one of: ${nichesInDB}>",
+  "overallInsight": "2-3 sentence overview of Indian influencer market in 2025-2026",
+  "hotNiche": "Health & Fitness",
   "generatedAt": "${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}"
-}
-
-Cover ALL of these niches: ${nichesInDB}. momentum must be one of: rising, stable, declining. trendScore 0-100.`,
+}`,
           },
         ],
         temperature: 0.7,
-        max_tokens: 3000,
+        max_tokens: 8000,
       })
     } catch (groqErr) {
       console.error("[niche-trends] Groq API call failed:", groqErr.message, groqErr.stack)
@@ -132,28 +128,29 @@ Cover ALL of these niches: ${nichesInDB}. momentum must be one of: rising, stabl
     }
 
     const raw = completion.choices[0]?.message?.content?.trim() || ""
-    console.log("5. Groq response:", JSON.stringify(raw))
+    console.log("5. Groq response length:", raw.length)
 
     // Extract JSON — strip any markdown fences
     const jsonMatch = raw.match(/\{[\s\S]*\}/)
     if (!jsonMatch) throw new Error(`Groq returned non-JSON response. Raw: ${raw.slice(0, 200)}`)
     const parsed = JSON.parse(jsonMatch[0])
 
-    // Filter out any niches not in our DB
-    parsed.trends = parsed.trends.filter(t =>
-      promptData.some(n => n.niche.toLowerCase() === t.niche.toLowerCase())
-    )
+    // Override dataSource based on actual DB data (don't trust AI to get this right)
+    parsed.trends = parsed.trends.map(t => ({
+      ...t,
+      dataSource: nichesWithData.has(t.niche.toLowerCase()) ? "platform" : "ai",
+    }))
 
-    // Make sure hotNiche is valid
-    if (!promptData.some(n => n.niche.toLowerCase() === parsed.hotNiche?.toLowerCase())) {
-      parsed.hotNiche = promptData[0]?.niche || "Tech"
+    // Ensure hotNiche is a valid niche
+    const validNicheNames = ALL_NICHES.map(n => n.toLowerCase())
+    if (!validNicheNames.includes(parsed.hotNiche?.toLowerCase())) {
+      parsed.hotNiche = parsed.trends.sort((a, b) => b.trendScore - a.trendScore)[0]?.niche || ALL_NICHES[0]
     }
 
-    console.log("6. Parsed trends:", JSON.stringify(parsed))
-    const aiData = parsed
+    console.log("6. Parsed trends count:", parsed.trends.length)
 
     const responseData = {
-      ...aiData,
+      ...parsed,
       nicheStats,
       totalInfluencers: influencers.length,
     }

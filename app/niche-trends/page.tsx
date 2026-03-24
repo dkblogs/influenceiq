@@ -7,6 +7,7 @@ type Trend = {
   niche: string
   trendScore: number
   momentum: "rising" | "stable" | "declining"
+  dataSource: "platform" | "ai"
   mostActivePlatforms: string[]
   averageEngagement: string
   bestTimeToPost: string
@@ -95,6 +96,13 @@ export default function NicheTrends() {
               <span className="text-xs text-[#64748B]">Last updated: {data.generatedAt}</span>
             )}
           </div>
+          <div className="mt-4 inline-flex items-center gap-3 bg-[#12121A] border border-[#1E1E2E] rounded-xl px-4 py-2 text-xs text-[#64748B]">
+            <span className="text-green-400 font-medium">📊 Platform data</span>
+            <span>= real InfluenceIQ creator stats</span>
+            <span className="mx-1 text-[#1E1E2E]">·</span>
+            <span className="text-blue-400 font-medium">🤖 AI insights</span>
+            <span>= India market analysis</span>
+          </div>
         </div>
 
         {loading && (
@@ -164,11 +172,23 @@ export default function NicheTrends() {
                 return (
                   <div key={t.niche} className="bg-[#12121A] border border-[#1E1E2E] rounded-2xl p-5 hover:border-purple-500/30 transition-colors">
                     {/* Header row */}
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between mb-2">
                       <h3 className="font-bold text-[#F8FAFC] text-lg">{t.niche}</h3>
                       <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${badge.cls}`}>
                         {badge.label}
                       </span>
+                    </div>
+                    {/* Source badge */}
+                    <div className="mb-3">
+                      {t.dataSource === "platform" ? (
+                        <span className="text-xs bg-green-500/10 border border-green-500/20 text-green-400 px-2.5 py-1 rounded-full font-medium">
+                          📊 Based on platform data
+                        </span>
+                      ) : (
+                        <span className="text-xs bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2.5 py-1 rounded-full font-medium">
+                          🤖 AI market analysis
+                        </span>
+                      )}
                     </div>
 
                     {/* Trend score bar */}
