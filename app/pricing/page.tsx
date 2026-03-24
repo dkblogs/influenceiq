@@ -116,6 +116,17 @@ function PricingContent() {
     setTimeout(() => setToast(""), 4000)
   }
 
+  function loadRazorpay(): Promise<boolean> {
+    return new Promise(resolve => {
+      if ((window as any).Razorpay) return resolve(true)
+      const script = document.createElement("script")
+      script.src = "https://checkout.razorpay.com/v1/checkout.js"
+      script.onload = () => resolve(true)
+      script.onerror = () => resolve(false)
+      document.body.appendChild(script)
+    })
+  }
+
   async function handlePayment(amount: number, credits: number, plan: string) {
     if (!user?.id) {
       router.push("/signup")
@@ -124,6 +135,12 @@ function PricingContent() {
 
     setPayingPlan(plan)
     try {
+      const loaded = await loadRazorpay()
+      if (!loaded) {
+        showToast("Payment system failed to load. Please refresh and try again.")
+        return
+      }
+
       const res = await fetch("/api/payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -171,8 +188,6 @@ function PricingContent() {
 
   return (
     <main className="min-h-screen bg-[#0A0A0F]">
-      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
       <Navbar />
 
       {/* Toast */}
