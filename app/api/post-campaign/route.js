@@ -3,9 +3,9 @@ import { prisma } from "@/lib/prisma"
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { userId, title, description, niche, platform, budget, deadline, slots, minFollowers, location } = body
+    const { userId, title, description, niche, platforms, budget, deadline, slots, minFollowers, location } = body
 
-    if (!userId || !title || !description || !niche || !platform || !budget) {
+    if (!userId || !title || !description || !niche || !platforms?.length || !budget) {
       return Response.json({ error: "Please fill in all required fields" }, { status: 400 })
     }
 
@@ -32,7 +32,8 @@ export async function POST(request) {
         title,
         description,
         niche,
-        platform,
+        platform: platforms[0],
+        platforms,
         budget,
         deadline: deadline || "30 days",
         slots: parseInt(slots) || 1,

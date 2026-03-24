@@ -13,7 +13,13 @@ export default function PostCampaign() {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [niche, setNiche] = useState("")
-  const [platform, setPlatform] = useState("")
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
+
+  const PLATFORMS = ["Instagram", "YouTube", "Twitter/X", "LinkedIn", "Facebook", "Snapchat", "Pinterest", "Other"]
+
+  function togglePlatform(p: string) {
+    setSelectedPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])
+  }
   const [budget, setBudget] = useState("")
   const [deadline, setDeadline] = useState("30 days")
   const [slots, setSlots] = useState("1")
@@ -27,6 +33,10 @@ export default function PostCampaign() {
       return
     }
     setError("")
+    if (selectedPlatforms.length === 0) {
+      setError("Please select at least one platform.")
+      return
+    }
     setLoading(true)
 
     const res = await fetch("/api/post-campaign", {
@@ -37,7 +47,7 @@ export default function PostCampaign() {
         title,
         description,
         niche,
-        platform,
+        platforms: selectedPlatforms,
         budget,
         deadline,
         slots,
@@ -137,16 +147,24 @@ export default function PostCampaign() {
                   </select>
                 </div>
                 <div>
-                  <label className={labelClass}>Platform</label>
-                  <select value={platform} onChange={(e) => setPlatform(e.target.value)} className={selectClass} required>
-                    <option value="">Select platform</option>
-                    <option>Instagram</option>
-                    <option>YouTube</option>
-                    <option>LinkedIn</option>
-                    <option>X (Twitter)</option>
-                    <option>Instagram + YouTube</option>
-                    <option>All platforms</option>
-                  </select>
+                  <label className={labelClass}>Platforms</label>
+                  <div className="flex flex-wrap gap-2">
+                    {PLATFORMS.map(p => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => togglePlatform(p)}
+                        className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
+                          selectedPlatforms.includes(p)
+                            ? "bg-purple-600 border-purple-500 text-white"
+                            : "bg-white/5 border-white/10 text-white/60 hover:border-purple-500"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-white/40 text-xs mt-1">{selectedPlatforms.length} selected</p>
                 </div>
               </div>
 

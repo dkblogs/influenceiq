@@ -176,6 +176,7 @@ model Campaign {
   description  String
   niche        String
   platform     String
+  platforms    String[]
   budget       String
   deadline     String
   slots        Int      @default(1)

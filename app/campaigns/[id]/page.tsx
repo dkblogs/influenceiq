@@ -122,7 +122,7 @@ export default function CampaignDetailPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
           {[
             { label: "Niche", value: campaign.niche, icon: "🎯" },
-            { label: "Platform", value: campaign.platform, icon: "📱" },
+            { label: "Platform", value: (campaign.platforms?.length ? campaign.platforms : [campaign.platform]).join(", "), icon: "📱" },
             { label: "Budget", value: campaign.budget, icon: "💰" },
             { label: "Deadline", value: campaign.deadline, icon: "📅" },
             { label: "Location", value: campaign.location, icon: "📍" },

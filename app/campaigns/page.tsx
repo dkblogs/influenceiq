@@ -193,7 +193,11 @@ export default function Campaigns() {
                     <p className="text-sm text-[#94A3B8] mb-4 leading-relaxed">{c.description}</p>
                     <div className="flex items-center gap-3 mb-4 flex-wrap">
                       <div className="flex items-center gap-1.5 text-xs text-[#94A3B8]">💰 {c.budget}</div>
-                      <div className="flex items-center gap-1.5 text-xs text-[#94A3B8]">📱 {c.platform}</div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {(c.platforms?.length ? c.platforms : [c.platform]).map((p: string) => (
+                          <span key={p} className="text-xs text-[#94A3B8]">📱 {p}</span>
+                        ))}
+                      </div>
                       <div className="flex items-center gap-1.5 text-xs text-[#94A3B8]">👥 Min. {c.minFollowers}</div>
                       <div className="flex items-center gap-1.5 text-xs text-[#94A3B8]">🎯 {c.slots} slots</div>
                       <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/20">{c.niche}</span>
