@@ -73,6 +73,7 @@ export const authOptions = {
         token.sub = user.id
         token.role = user.role
         token.credits = user.credits
+        token.brandVerified = user.brandVerified ?? false
       }
       return token
     },
