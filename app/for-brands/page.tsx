@@ -131,6 +131,27 @@ export default function ForBrandsPage() {
         <a href="/pricing" className="text-purple-400 text-sm hover:underline">View full pricing →</a>
       </section>
 
+      {/* Market Insights */}
+      <section className="px-4 py-16 max-w-5xl mx-auto">
+        <div className="bg-gradient-to-r from-purple-600/10 to-cyan-600/10 border border-purple-500/20 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <div className="inline-flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-3 py-1 rounded-full text-xs text-purple-300 mb-3">
+              📊 New Feature
+            </div>
+            <h2 className="text-xl md:text-2xl font-bold text-[#F8FAFC] mb-2">Niche Trend Report</h2>
+            <p className="text-[#94A3B8] text-sm max-w-md">
+              AI-powered insights into India's influencer marketing landscape. See which niches are trending, engagement rates, best posting times and brand opportunities — updated daily.
+            </p>
+          </div>
+          <a
+            href="/niche-trends"
+            className="flex-shrink-0 bg-purple-600 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20 whitespace-nowrap"
+          >
+            View Market Trends →
+          </a>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="px-4 py-20 text-center relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
