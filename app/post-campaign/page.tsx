@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
 import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
+import { NICHES, PLATFORMS } from "@/lib/constants"
 
 export default function PostCampaign() {
   const { data: session } = useSession()
@@ -14,8 +15,6 @@ export default function PostCampaign() {
   const [description, setDescription] = useState("")
   const [niche, setNiche] = useState("")
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
-
-  const PLATFORMS = ["Instagram", "YouTube", "Twitter/X", "LinkedIn", "Facebook", "Snapchat", "Pinterest", "Other"]
 
   function togglePlatform(p: string) {
     setSelectedPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])
@@ -135,15 +134,7 @@ export default function PostCampaign() {
                   <label className={labelClass}>Niche</label>
                   <select value={niche} onChange={(e) => setNiche(e.target.value)} className={selectClass} required>
                     <option value="">Select niche</option>
-                    <option>Food</option>
-                    <option>Tech</option>
-                    <option>Fitness</option>
-                    <option>Finance</option>
-                    <option>Fashion</option>
-                    <option>Travel</option>
-                    <option>Gaming</option>
-                    <option>Education</option>
-                    <option>Lifestyle</option>
+                    {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
                   </select>
                 </div>
                 <div>

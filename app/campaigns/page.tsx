@@ -4,16 +4,13 @@ import { useSession } from "next-auth/react"
 import Navbar from "@/app/components/Navbar"
 import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
 import { useApp } from "@/app/context/AppContext"
-
-
-const niches = ["All", "Food", "Fitness", "Finance", "Fashion", "Education", "Tech"]
-const platforms = ["All", "Instagram", "YouTube", "LinkedIn"]
+import { NICHES, PLATFORMS } from "@/lib/constants"
 
 export default function Campaigns() {
   const { data: session, status } = useSession()
   const { credits, refreshCredits } = useApp()
-  const [selectedNiche, setSelectedNiche] = useState("All")
-  const [selectedPlatform, setSelectedPlatform] = useState("All")
+  const [selectedNiches, setSelectedNiches] = useState<string[]>([])
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
   const [search, setSearch] = useState("")
   const [applied, setApplied] = useState<string[]>([])
   const [error, setError] = useState("")
@@ -45,11 +42,12 @@ export default function Campaigns() {
   const allCampaigns = dbCampaigns
 
   const filtered = allCampaigns.filter((c) => {
-    const matchNiche = selectedNiche === "All" || c.niche === selectedNiche
-    const matchPlatform = selectedPlatform === "All" || c.platform.includes(selectedPlatform)
+    const cPlatforms = c.platforms?.length ? c.platforms : (c.platform ? [c.platform] : [])
+    const matchNiche = selectedNiches.length === 0 || selectedNiches.includes(c.niche)
+    const matchPlatform = selectedPlatforms.length === 0 || cPlatforms.some((p: string) => selectedPlatforms.includes(p))
     const matchSearch = c.title.toLowerCase().includes(search.toLowerCase()) ||
       c.brand?.toLowerCase().includes(search.toLowerCase()) ||
-      c.niche.toLowerCase().includes(search.toLowerCase())
+      c.niche?.toLowerCase().includes(search.toLowerCase())
     return matchNiche && matchPlatform && matchSearch
   })
 
@@ -121,11 +119,14 @@ export default function Campaigns() {
         </div>
 
         <div className="mb-4">
-          <div className="text-xs text-[#64748B] mb-2 font-medium uppercase tracking-wide">Niche</div>
+          <div className="text-xs text-[#64748B] mb-2 font-medium uppercase tracking-wide">
+            Niche {selectedNiches.length > 0 && <span className="text-purple-400 normal-case">({selectedNiches.length} selected)</span>}
+          </div>
           <div className="flex gap-2 flex-wrap">
-            {niches.map((n) => (
-              <button key={n} onClick={() => setSelectedNiche(n)}
-                className={`px-3 md:px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedNiche === n ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"}`}>
+            {NICHES.map((n) => (
+              <button key={n}
+                onClick={() => setSelectedNiches(prev => prev.includes(n) ? prev.filter(x => x !== n) : [...prev, n])}
+                className={`px-3 md:px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedNiches.includes(n) ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"}`}>
                 {n}
               </button>
             ))}
@@ -133,11 +134,14 @@ export default function Campaigns() {
         </div>
 
         <div className="mb-8">
-          <div className="text-xs text-[#64748B] mb-2 font-medium uppercase tracking-wide">Platform</div>
+          <div className="text-xs text-[#64748B] mb-2 font-medium uppercase tracking-wide">
+            Platform {selectedPlatforms.length > 0 && <span className="text-purple-400 normal-case">({selectedPlatforms.length} selected)</span>}
+          </div>
           <div className="flex gap-2 flex-wrap">
-            {platforms.map((p) => (
-              <button key={p} onClick={() => setSelectedPlatform(p)}
-                className={`px-3 md:px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedPlatform === p ? "bg-[#F8FAFC] text-[#0A0A0F]" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"}`}>
+            {PLATFORMS.map((p) => (
+              <button key={p}
+                onClick={() => setSelectedPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])}
+                className={`px-3 md:px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedPlatforms.includes(p) ? "bg-[#F8FAFC] text-[#0A0A0F]" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"}`}>
                 {p}
               </button>
             ))}

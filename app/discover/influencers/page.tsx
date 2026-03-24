@@ -2,9 +2,7 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import Navbar from "@/app/components/Navbar"
-
-const niches = ["All", "Food", "Tech", "Fashion", "Finance", "Fitness", "Travel", "Gaming", "Education", "Entertainment", "Beauty", "Lifestyle", "Sports", "Health"]
-const platforms = ["All", "Instagram", "YouTube", "Facebook", "LinkedIn", "X (Twitter)"]
+import { NICHES, PLATFORMS } from "@/lib/constants"
 
 const colorMap: Record<string, string> = {
   PS: "bg-purple-500", RK: "bg-orange-500", AN: "bg-green-500",
@@ -20,27 +18,43 @@ export default function DiscoverInfluencers() {
   const { data: session, status } = useSession()
   const loggedIn = status !== "loading" && !!session
 
-  const [influencers, setInfluencers] = useState<any[]>([])
+  const [allInfluencers, setAllInfluencers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedNiche, setSelectedNiche] = useState("All")
-  const [selectedPlatform, setSelectedPlatform] = useState("All")
+  const [selectedNiches, setSelectedNiches] = useState<string[]>([])
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
   const [search, setSearch] = useState("")
 
   useEffect(() => {
     fetchInfluencers()
-  }, [selectedNiche, selectedPlatform, search])
+  }, [])
 
   async function fetchInfluencers() {
     setLoading(true)
-    const params = new URLSearchParams()
-    if (selectedNiche !== "All") params.set("niche", selectedNiche)
-    if (selectedPlatform !== "All") params.set("platform", selectedPlatform)
-    if (search) params.set("search", search)
-    const res = await fetch(`/api/influencers?${params}`)
+    const res = await fetch("/api/influencers")
     const data = await res.json()
-    setInfluencers(data.influencers || [])
+    setAllInfluencers(data.influencers || [])
     setLoading(false)
   }
+
+  function toggleNiche(n: string) {
+    setSelectedNiches(prev => prev.includes(n) ? prev.filter(x => x !== n) : [...prev, n])
+  }
+
+  function togglePlatform(p: string) {
+    setSelectedPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])
+  }
+
+  const influencers = allInfluencers.filter(inf => {
+    const infNiches = inf.niches?.length ? inf.niches : (inf.niche ? [inf.niche] : [])
+    const infPlatforms = inf.platforms?.length ? inf.platforms : (inf.platform ? [inf.platform] : [])
+    const matchNiche = selectedNiches.length === 0 || infNiches.some((n: string) => selectedNiches.includes(n))
+    const matchPlatform = selectedPlatforms.length === 0 || infPlatforms.some((p: string) => selectedPlatforms.includes(p))
+    const matchSearch = !search ||
+      inf.name?.toLowerCase().includes(search.toLowerCase()) ||
+      infNiches.some((n: string) => n.toLowerCase().includes(search.toLowerCase())) ||
+      inf.location?.toLowerCase().includes(search.toLowerCase())
+    return matchNiche && matchPlatform && matchSearch
+  })
 
   return (
     <main className="min-h-screen bg-[#0A0A0F]">
@@ -72,15 +86,17 @@ export default function DiscoverInfluencers() {
           onChange={e => setSearch(e.target.value)}
         />
 
-        {/* Niche pills */}
+        {/* Niche pills (multi-select) */}
         <div className="mb-3">
-          <p className="text-xs text-[#64748B] font-medium uppercase tracking-wide mb-2">Niche</p>
-          <div className="flex gap-2 overflow-x-auto pb-1" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
-            {niches.map(n => (
+          <p className="text-xs text-[#64748B] font-medium uppercase tracking-wide mb-2">
+            Niche {selectedNiches.length > 0 && <span className="text-purple-400 normal-case">({selectedNiches.length} selected)</span>}
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            {NICHES.map(n => (
               <button
                 key={n}
-                onClick={() => setSelectedNiche(n)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedNiche === n ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"}`}
+                onClick={() => toggleNiche(n)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedNiches.includes(n) ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"}`}
               >
                 {n}
               </button>
@@ -88,15 +104,17 @@ export default function DiscoverInfluencers() {
           </div>
         </div>
 
-        {/* Platform pills */}
+        {/* Platform pills (multi-select) */}
         <div className="mb-5">
-          <p className="text-xs text-[#64748B] font-medium uppercase tracking-wide mb-2">Platform</p>
-          <div className="flex gap-2 overflow-x-auto pb-1" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
-            {platforms.map(p => (
+          <p className="text-xs text-[#64748B] font-medium uppercase tracking-wide mb-2">
+            Platform {selectedPlatforms.length > 0 && <span className="text-purple-400 normal-case">({selectedPlatforms.length} selected)</span>}
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            {PLATFORMS.map(p => (
               <button
                 key={p}
-                onClick={() => setSelectedPlatform(p)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedPlatform === p ? "bg-[#F8FAFC] text-[#0A0A0F]" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"}`}
+                onClick={() => togglePlatform(p)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedPlatforms.includes(p) ? "bg-[#F8FAFC] text-[#0A0A0F]" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"}`}
               >
                 {p}
               </button>
@@ -107,8 +125,8 @@ export default function DiscoverInfluencers() {
         {/* Count */}
         <p className="text-xs text-[#64748B] mb-4">
           {loading ? "Loading..." : `${influencers.length} influencer${influencers.length !== 1 ? "s" : ""}`}
-          {selectedNiche !== "All" && ` · ${selectedNiche}`}
-          {selectedPlatform !== "All" && ` · ${selectedPlatform}`}
+          {selectedNiches.length > 0 && ` · ${selectedNiches.join(", ")}`}
+          {selectedPlatforms.length > 0 && ` · ${selectedPlatforms.join(", ")}`}
         </p>
 
         {/* Cards */}

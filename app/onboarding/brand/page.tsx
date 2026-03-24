@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { INDUSTRIES } from "@/lib/constants"
 
 const STEPS = ["Account", "Company Details", "First Campaign"]
 
@@ -174,7 +175,7 @@ export default function BrandOnboarding() {
                     <label className="block text-xs font-medium text-[#94A3B8] mb-1">Industry</label>
                     <select value={industry} onChange={e => setIndustry(e.target.value)} className="w-full px-3 py-2.5 border border-[#1E1E2E] rounded-lg text-sm bg-[#0A0A0F] text-[#F8FAFC] focus:outline-none focus:border-purple-500">
                       <option value="">Select industry</option>
-                      {["Fashion", "Beauty", "Food & Beverage", "Tech", "Finance", "Health & Fitness", "Travel", "Gaming", "Education", "Retail", "Other"].map(i => (
+                      {INDUSTRIES.map(i => (
                         <option key={i} value={i}>{i}</option>
                       ))}
                     </select>

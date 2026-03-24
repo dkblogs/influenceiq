@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
 import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
 import { useApp } from "@/app/context/AppContext"
+import { NICHES, PLATFORMS, INDUSTRIES } from "@/lib/constants"
 
 const inputClass = "w-full px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm focus:outline-none focus:border-purple-500 bg-[#0A0A0F] text-[#F8FAFC] placeholder-[#64748B] transition-colors"
 const readonlyClass = "w-full px-4 py-2.5 bg-[#0D0D1A] border border-[#1E1E2E] rounded-lg text-sm text-[#64748B] cursor-not-allowed"
@@ -165,9 +166,6 @@ export default function ProfilePage() {
   const [customPlatform, setCustomPlatform] = useState("")
   const [gender, setGender] = useState("")
   const [bio, setBio] = useState("")
-
-  const NICHES = ["Food", "Tech", "Fashion", "Finance", "Fitness", "Travel", "Gaming", "Education", "Entertainment", "Beauty", "Lifestyle", "Sports", "Health", "Other"]
-  const PLATFORMS = ["Instagram", "YouTube", "Facebook", "LinkedIn", "X (Twitter)", "Snapchat", "Pinterest"]
 
   function toggleNiche(n: string) {
     setSelectedNiches(prev =>
@@ -1279,16 +1277,7 @@ export default function ProfilePage() {
                       <label className={labelClass}>Industry / Niche</label>
                       <select value={industry} onChange={e => setIndustry(e.target.value)} className={selectClass}>
                         <option value="">Select industry</option>
-                        <option>Fashion</option>
-                        <option>Beauty</option>
-                        <option>Tech</option>
-                        <option>Food & Beverage</option>
-                        <option>Health & Fitness</option>
-                        <option>Travel</option>
-                        <option>Education</option>
-                        <option>Finance</option>
-                        <option>Entertainment</option>
-                        <option>Other</option>
+                        {INDUSTRIES.map(i => <option key={i} value={i}>{i}</option>)}
                       </select>
                     </div>
                     <div>

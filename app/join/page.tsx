@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
+import { NICHES, PLATFORMS } from "@/lib/constants"
 
 export default function Join() {
   const { data: session, status } = useSession()
@@ -51,9 +52,6 @@ export default function Join() {
       setForm(p => ({ ...p, name: p.name || user.name || "" }))
     }
   }, [user?.name])
-
-  const NICHES = ["Food", "Tech", "Fashion", "Finance", "Fitness", "Travel", "Gaming", "Education", "Entertainment", "Beauty", "Lifestyle", "Sports", "Health", "Other"]
-  const PLATFORMS = ["Instagram", "YouTube", "Facebook", "LinkedIn", "X (Twitter)", "Snapchat", "Pinterest"]
 
   function set(field: string, value: string) {
     setForm(p => ({ ...p, [field]: value }))

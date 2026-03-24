@@ -2,11 +2,10 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { NICHES, PLATFORMS } from "@/lib/constants"
 
 const STEPS = ["Account", "Creator Details", "Verify Handle", "First Action"]
 
-const NICHES = ["Food", "Tech", "Fashion", "Finance", "Fitness", "Travel", "Gaming", "Education", "Entertainment", "Beauty", "Lifestyle", "Sports", "Health", "Other"]
-const PLATFORMS = ["Instagram", "YouTube", "Facebook", "LinkedIn", "X (Twitter)", "Snapchat", "Pinterest"]
 const GENDERS = ["Male", "Female", "Non-binary", "Prefer not to say"]
 
 export default function InfluencerOnboarding() {

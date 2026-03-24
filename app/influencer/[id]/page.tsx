@@ -6,6 +6,7 @@ import Navbar from "@/app/components/Navbar"
 import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
 import { useApp } from "@/app/context/AppContext"
 import React from "react"
+import { CONTENT_TYPES } from "@/lib/constants"
 
 function firstName(name: string) {
   return name?.split(" ")[0] || name
@@ -825,7 +826,7 @@ export default function InfluencerProfile() {
                     <label className="block text-xs font-medium text-[#94A3B8] mb-1">Content Type *</label>
                     <select value={proposalForm.contentType} onChange={e => setProposalForm(p => ({ ...p, contentType: e.target.value }))}
                       className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-purple-500">
-                      {["Instagram Post", "Instagram Reel", "Instagram Story", "YouTube Video", "Multiple Deliverables"].map(o => <option key={o}>{o}</option>)}
+                      {CONTENT_TYPES.map(o => <option key={o}>{o}</option>)}
                     </select>
                   </div>
                   <div>

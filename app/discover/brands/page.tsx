@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import Navbar from "@/app/components/Navbar"
+import { INDUSTRIES } from "@/lib/constants"
 
 const colorMap: Record<number, string> = {
   0: "bg-purple-500", 1: "bg-blue-500", 2: "bg-green-500",
@@ -29,6 +30,7 @@ export default function DiscoverBrands() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [toast, setToast] = useState("")
+  const [selectedIndustries, setSelectedIndustries] = useState<string[]>([])
 
   useEffect(() => {
     fetch("/api/brands")
@@ -37,9 +39,15 @@ export default function DiscoverBrands() {
       .catch(() => setLoading(false))
   }, [])
 
-  const filtered = brands.filter(b =>
-    !search || b.name?.toLowerCase().includes(search.toLowerCase())
-  )
+  function toggleIndustry(i: string) {
+    setSelectedIndustries(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i])
+  }
+
+  const filtered = brands.filter(b => {
+    const matchSearch = !search || b.name?.toLowerCase().includes(search.toLowerCase())
+    const matchIndustry = selectedIndustries.length === 0 || selectedIndustries.includes(b.industry)
+    return matchSearch && matchIndustry
+  })
 
   function showComingSoon() {
     setToast("Brand profile pages coming soon!")
@@ -62,11 +70,29 @@ export default function DiscoverBrands() {
         <p className="text-sm text-[#94A3B8] mb-4">Browse brands on InfluenceIQ looking to collaborate with influencers.</p>
 
         <input
-          className="w-full px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm bg-[#12121A] text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500 mb-6"
+          className="w-full px-4 py-2.5 border border-[#1E1E2E] rounded-lg text-sm bg-[#12121A] text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500 mb-4"
           placeholder="Search brands by name..."
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
+
+        {/* Industry filter (multi-select) */}
+        <div className="mb-5">
+          <p className="text-xs text-[#64748B] font-medium uppercase tracking-wide mb-2">
+            Industry {selectedIndustries.length > 0 && <span className="text-purple-400 normal-case">({selectedIndustries.length} selected)</span>}
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            {INDUSTRIES.map(i => (
+              <button
+                key={i}
+                onClick={() => toggleIndustry(i)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedIndustries.includes(i) ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"}`}
+              >
+                {i}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <p className="text-xs text-[#64748B] mb-4">
           {loading ? "Loading..." : `${filtered.length} brand${filtered.length !== 1 ? "s" : ""}`}
