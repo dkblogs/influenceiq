@@ -486,41 +486,95 @@ export default function Dashboard() {
               <>
                 <a href="/proposals?status=agreed" className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block">
                   <div className="text-sm text-[#94A3B8] mb-1">Agreed collaborations</div>
-                  <div className="text-2xl font-bold text-[#F8FAFC]">{agreedProposalCount ?? "—"}</div>
-                  <div className="text-xs text-purple-400 mt-1">View all →</div>
+                  {agreedProposalCount === 0 ? (
+                    <div>
+                      <p className="text-white/50 text-sm">No collaborations yet</p>
+                      <a href="/discover/influencers" className="text-purple-400 text-xs hover:text-purple-300 mt-1 block">👉 Send your first proposal →</a>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold text-[#F8FAFC]">{agreedProposalCount ?? "—"}</div>
+                      <div className="text-xs text-purple-400 mt-1">View all →</div>
+                    </>
+                  )}
                 </a>
                 <a href="/proposals" className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block">
                   <div className="text-sm text-[#94A3B8] mb-1">Proposals sent</div>
-                  <div className="text-2xl font-bold text-[#F8FAFC]">{brandProposalCount ?? "—"}</div>
-                  <div className="text-xs text-purple-400 mt-1">View all →</div>
+                  {brandProposalCount === 0 ? (
+                    <div>
+                      <p className="text-white/50 text-sm">No proposals sent yet</p>
+                      <a href="/discover/influencers" className="text-purple-400 text-xs hover:text-purple-300 mt-1 block">👉 Find an influencer →</a>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold text-[#F8FAFC]">{brandProposalCount ?? "—"}</div>
+                      <div className="text-xs text-purple-400 mt-1">View all →</div>
+                    </>
+                  )}
                 </a>
                 <a href="/discover/influencers" className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block">
                   <div className="text-sm text-[#94A3B8] mb-1">AI reports</div>
-                  <div className="text-2xl font-bold text-[#F8FAFC]">{brandAiReportCount ?? "—"}</div>
-                  <div className="text-xs text-purple-400 mt-1">Browse influencers →</div>
+                  {brandAiReportCount === 0 ? (
+                    <div>
+                      <p className="text-white/50 text-sm">No reports generated</p>
+                      <a href="/discover/influencers" className="text-purple-400 text-xs hover:text-purple-300 mt-1 block">👉 Analyse an influencer →</a>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold text-[#F8FAFC]">{brandAiReportCount ?? "—"}</div>
+                      <div className="text-xs text-purple-400 mt-1">Browse influencers →</div>
+                    </>
+                  )}
                 </a>
               </>
             ) : (
               <>
                 <a href="/dashboard/campaigns-applied" className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block">
                   <div className="text-sm text-[#94A3B8] mb-1">Campaigns applied</div>
-                  <div className="text-2xl font-bold text-[#F8FAFC]">{campaignApplicationCount ?? "—"}</div>
-                  <div className="text-xs text-purple-400 mt-1">View history →</div>
+                  {campaignApplicationCount === 0 ? (
+                    <div>
+                      <p className="text-white/50 text-sm">You haven&apos;t applied yet</p>
+                      <a href="/campaigns" className="text-purple-400 text-xs hover:text-purple-300 mt-1 block">👉 Start applying now →</a>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold text-[#F8FAFC]">{campaignApplicationCount ?? "—"}</div>
+                      <div className="text-xs text-purple-400 mt-1">View history →</div>
+                    </>
+                  )}
                 </a>
                 <div className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E]">
                   <div className="text-sm text-[#94A3B8] mb-1">Collaboration requests</div>
-                  <div className="text-2xl font-bold text-[#F8FAFC]">{collaborationRequestCount ?? "—"}</div>
-                  <div className="text-xs text-[#64748B] mt-1">Sent by you</div>
+                  {collaborationRequestCount === 0 ? (
+                    <div>
+                      <p className="text-white/50 text-sm">No requests yet</p>
+                      <a href="/profile" className="text-purple-400 text-xs hover:text-purple-300 mt-1 block">👉 Improve your profile to get invites →</a>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold text-[#F8FAFC]">{collaborationRequestCount ?? "—"}</div>
+                      <div className="text-xs text-[#64748B] mt-1">Sent by you</div>
+                    </>
+                  )}
                 </div>
                 <a
                   href={myInfluencerProfile?.id ? `/report/${myInfluencerProfile.id}` : "#"}
                   className="bg-[#12121A] rounded-2xl p-4 md:p-5 border border-[#1E1E2E] hover:border-purple-500/30 transition-colors block"
                 >
                   <div className="text-sm text-[#94A3B8] mb-1">AI reports generated</div>
-                  <div className="text-2xl font-bold text-[#F8FAFC]">
-                    {myInfluencerProfile?.aiReportGeneratedAt ? 1 + aiReportsCount : aiReportsCount}
-                  </div>
-                  <div className="text-xs text-purple-400 mt-1">View report →</div>
+                  {(myInfluencerProfile?.aiReportGeneratedAt ? 1 + aiReportsCount : aiReportsCount) === 0 ? (
+                    <div>
+                      <p className="text-white/50 text-sm">No report yet</p>
+                      <a href="#ai-score" className="text-purple-400 text-xs hover:text-purple-300 mt-1 block">👉 Generate your first AI score →</a>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold text-[#F8FAFC]">
+                        {myInfluencerProfile?.aiReportGeneratedAt ? 1 + aiReportsCount : aiReportsCount}
+                      </div>
+                      <div className="text-xs text-purple-400 mt-1">View report →</div>
+                    </>
+                  )}
                 </a>
               </>
             )}
