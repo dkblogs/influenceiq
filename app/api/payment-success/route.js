@@ -1,10 +1,14 @@
 import { prisma } from "@/lib/prisma"
 import { sendEmail, paymentConfirmationEmail } from "@/lib/email"
+import { checkRateLimit, LIMITS } from "@/lib/withRateLimit"
 
 const PLAN_CREDITS = { Starter: 100, Growth: 400, Agency: 1200 }
 
 export async function POST(request) {
   try {
+    const rl = await checkRateLimit(LIMITS.payment, "payment-success")
+    if (rl) return rl
+
     const body = await request.json()
     const { plan, razorpay_payment_id, userId } = body
 

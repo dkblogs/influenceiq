@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 import { sendEmail, proposalReceivedEmail } from "@/lib/email"
+import { checkRateLimit, LIMITS } from "@/lib/withRateLimit"
 
 export async function GET(request) {
   try {
@@ -72,6 +73,9 @@ export async function POST(request) {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) return Response.json({ error: "Unauthorized" }, { status: 401 })
     if (session.user.role !== "brand") return Response.json({ error: "Only brands can send proposals" }, { status: 403 })
+
+    const rl = await checkRateLimit(LIMITS.proposals, "proposals")
+    if (rl) return rl
 
     const body = await request.json()
     const {

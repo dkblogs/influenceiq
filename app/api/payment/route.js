@@ -1,4 +1,5 @@
 import Razorpay from "razorpay"
+import { checkRateLimit, LIMITS } from "@/lib/withRateLimit"
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -7,6 +8,9 @@ const razorpay = new Razorpay({
 
 export async function POST(request) {
   try {
+    const rl = await checkRateLimit(LIMITS.payment, "payment")
+    if (rl) return rl
+
     const body = await request.json()
     const { amount, credits, plan } = body
 

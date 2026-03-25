@@ -1,6 +1,7 @@
 import Groq from "groq-sdk"
 import { prisma } from "@/lib/prisma"
 import { NICHES } from "@/lib/constants"
+import { checkRateLimit, LIMITS } from "@/lib/withRateLimit"
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
@@ -12,6 +13,9 @@ const ALL_NICHES = NICHES.filter(n => n !== "Other")
 
 export async function GET() {
   try {
+    const rl = await checkRateLimit(LIMITS.nicheTrends, "niche-trends")
+    if (rl) return rl
+
     // Return cached data if fresh
     if (cache && Date.now() - cache.generatedAt < CACHE_TTL_MS) {
       console.log("[niche-trends] Returning cached data")

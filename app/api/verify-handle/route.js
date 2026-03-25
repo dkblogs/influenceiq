@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { getInfluencerForUser } from "@/lib/getInfluencerForUser"
+import { checkRateLimit, LIMITS } from "@/lib/withRateLimit"
 
 const APIFY_TOKEN = process.env.APIFY_API_TOKEN
 
@@ -85,6 +86,9 @@ export async function POST(request) {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) return Response.json({ error: "Unauthorized" }, { status: 401 })
     if (session.user.role !== "influencer") return Response.json({ error: "Only influencers can verify handles" }, { status: 403 })
+
+    const rl = await checkRateLimit(LIMITS.verifyHandle, "verify-handle")
+    if (rl) return rl
 
     const { platform, handle, step } = await request.json()
     if (!platform || !handle || !step) return Response.json({ error: "platform, handle and step are required" }, { status: 400 })

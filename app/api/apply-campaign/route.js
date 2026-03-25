@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 import { sendEmail, applicationReceivedEmail } from "@/lib/email"
+import { checkRateLimit, LIMITS } from "@/lib/withRateLimit"
 
 export async function POST(request) {
   try {
@@ -12,6 +13,9 @@ export async function POST(request) {
     if (session.user.role !== "influencer") {
       return Response.json({ error: "Only influencers can apply to campaigns" }, { status: 403 })
     }
+
+    const rl = await checkRateLimit(LIMITS.applyCampaign, "apply-campaign")
+    if (rl) return rl
 
     const body = await request.json()
     const { campaignId, userId } = body

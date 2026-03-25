@@ -2,6 +2,7 @@ import Groq from "groq-sdk"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
+import { checkRateLimit, LIMITS } from "@/lib/withRateLimit"
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
@@ -11,6 +12,10 @@ export async function POST(request) {
     if (!session?.user?.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    const rl = await checkRateLimit(LIMITS.aiBrand, "ai-report-brand")
+    if (rl) return rl
+
     if (session.user.role !== "brand") {
       return Response.json({ error: "Only brands can use this route" }, { status: 403 })
     }

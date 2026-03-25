@@ -1,10 +1,14 @@
 import { prisma } from "../../../lib/prisma"
 import { sendEmail, welcomeEmail } from "../../../lib/email"
+import { checkRateLimit, LIMITS } from "@/lib/withRateLimit"
 const bcrypt = require("bcryptjs")
 
 
 export async function POST(request) {
   try {
+    const rl = await checkRateLimit(LIMITS.auth, "signup")
+    if (rl) return rl
+
     const body = await request.json()
     const { name, password, role, instagramHandle, youtubeHandle } = body
     const email = typeof body.email === "string" ? body.email.toLowerCase().trim() : ""

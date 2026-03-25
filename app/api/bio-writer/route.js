@@ -2,6 +2,7 @@ import Groq from "groq-sdk"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
+import { checkRateLimit, LIMITS } from "@/lib/withRateLimit"
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
@@ -11,6 +12,9 @@ export async function POST(request) {
     if (!session?.user?.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    const rl = await checkRateLimit(LIMITS.bioWriter, "bio-writer")
+    if (rl) return rl
 
     const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { credits: true } })
     if (!user || user.credits < 1) {

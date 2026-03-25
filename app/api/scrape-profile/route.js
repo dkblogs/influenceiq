@@ -1,3 +1,5 @@
+import { checkRateLimit, LIMITS } from "@/lib/withRateLimit"
+
 const APIFY_TOKEN = process.env.APIFY_API_TOKEN
 
 async function pollRun(runId) {
@@ -85,6 +87,9 @@ async function scrapeYouTube(handle) {
 
 export async function POST(request) {
   try {
+    const rl = await checkRateLimit(LIMITS.scrapeProfile, "scrape-profile")
+    if (rl) return rl
+
     const { instagramHandle, youtubeHandle } = await request.json()
 
     if (!instagramHandle && !youtubeHandle) {

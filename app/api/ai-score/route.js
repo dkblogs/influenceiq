@@ -2,6 +2,7 @@ import Groq from "groq-sdk"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
+import { checkRateLimit, LIMITS } from "@/lib/withRateLimit"
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
@@ -11,6 +12,10 @@ export async function POST(request) {
     if (!session?.user?.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    const limit = session.user.role === "influencer" ? LIMITS.aiInfluencer : LIMITS.aiBrand
+    const rl = await checkRateLimit(limit, "ai-score")
+    if (rl) return rl
 
     if (session.user.role !== "influencer") {
       return Response.json({ error: "Only influencers can generate their own AI score" }, { status: 403 })
