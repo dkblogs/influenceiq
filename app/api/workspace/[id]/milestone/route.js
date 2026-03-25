@@ -22,6 +22,21 @@ export async function PATCH(request, context) {
     const { milestoneId, status } = await request.json()
     if (!milestoneId || !status) return Response.json({ error: "milestoneId and status required" }, { status: 400 })
 
+    // Fetch the target milestone and all milestones for sequential check
+    const [targetMilestone, allMilestones] = await Promise.all([
+      prisma.workspaceMilestone.findUnique({ where: { id: milestoneId } }),
+      prisma.workspaceMilestone.findMany({ where: { workspaceId: workspace.id }, orderBy: { order: "asc" } }),
+    ])
+    if (!targetMilestone) return Response.json({ error: "Milestone not found" }, { status: 404 })
+
+    // Enforce sequential order — all previous milestones must be completed
+    const previousIncomplete = allMilestones.filter(m => m.order < targetMilestone.order && m.status !== "completed")
+    if (previousIncomplete.length > 0) {
+      return Response.json({
+        error: `Complete "${previousIncomplete[0].title}" first before proceeding`,
+      }, { status: 400 })
+    }
+
     const milestone = await prisma.workspaceMilestone.update({
       where: { id: milestoneId },
       data: {

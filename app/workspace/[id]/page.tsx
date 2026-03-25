@@ -401,39 +401,55 @@ export default function WorkspacePage() {
           <div className="space-y-3">
             {workspace.milestones.map((m, i) => {
               const owner = milestoneOwner(m.title)
-              const canAct = m.status !== "completed" && (owner === "both" || (isBrand ? owner === "brand" : owner === "influencer"))
+              const isCorrectRole = owner === "both" || (isBrand ? owner === "brand" : owner === "influencer")
               const waitingFor = owner === "brand" ? "Brand" : "Influencer"
-              const isYourTurn = owner === "both" || (isBrand ? owner === "brand" : owner === "influencer")
+
+              // Sequential check: all milestones with lower order must be completed
+              const prevMilestones = workspace.milestones.filter(p => p.order < m.order)
+              const allPrevCompleted = prevMilestones.every(p => p.status === "completed")
+              const firstIncomplete = prevMilestones.find(p => p.status !== "completed")
+
+              const isLocked = m.status !== "completed" && !allPrevCompleted
+              const canAct = m.status !== "completed" && allPrevCompleted && isCorrectRole
 
               return (
-                <div key={m.id} className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5">
+                <div key={m.id} className={`bg-[#12121A] rounded-2xl border p-5 transition-opacity ${
+                  isLocked ? "border-[#1E1E2E] opacity-50" : "border-[#1E1E2E]"
+                }`}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-                        m.status === "completed" ? "bg-[#10B981] text-white" : "bg-[#1E1E2E] text-[#64748B]"
+                        m.status === "completed" ? "bg-[#10B981] text-white"
+                          : isLocked ? "bg-[#1E1E2E] text-[#64748B]"
+                          : "bg-[#1E1E2E] text-[#64748B]"
                       }`}>
-                        {m.status === "completed" ? "✓" : i + 1}
+                        {m.status === "completed" ? "✓" : isLocked ? "🔒" : i + 1}
                       </div>
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-medium text-[#F8FAFC]">{m.title}</span>
-                          {m.status !== "completed" && (
+                          {m.status !== "completed" && !isLocked && (
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                              isYourTurn ? "bg-purple-600/20 text-purple-300 border border-purple-500/20" : "bg-[#1E1E2E] text-[#64748B]"
+                              isCorrectRole ? "bg-purple-600/20 text-purple-300 border border-purple-500/20" : "bg-[#1E1E2E] text-[#64748B]"
                             }`}>
-                              {isYourTurn ? "Your turn" : `${waitingFor}'s turn`}
+                              {isCorrectRole ? "Your turn" : `${waitingFor}'s turn`}
                             </span>
                           )}
                         </div>
                         {m.description && <div className="text-sm text-[#94A3B8] mt-0.5">{m.description}</div>}
                         {m.completedAt && <div className="text-xs text-[#10B981] mt-1">Completed {timeAgo(m.completedAt)}</div>}
+                        {isLocked && firstIncomplete && (
+                          <div className="text-xs text-[#64748B] mt-1">
+                            Complete &quot;{firstIncomplete.title}&quot; first
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${MILESTONE_STATUS_STYLE[m.status] || MILESTONE_STATUS_STYLE.pending}`}>
                         {m.status}
                       </span>
-                      {m.status !== "completed" && (
+                      {m.status !== "completed" && !isLocked && (
                         canAct ? (
                           <div className="flex gap-1">
                             {m.status === "pending" && (
