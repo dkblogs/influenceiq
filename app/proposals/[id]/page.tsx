@@ -31,7 +31,8 @@ export default function ProposalDetailPage() {
 
   const [proposal, setProposal] = useState<any>(null)
   const [messages, setMessages] = useState<any[]>([])
-  const [workspaceId, setWorkspaceId] = useState<string | null>(null)
+  const [workspaceId, setWorkspaceId] = useState<string | null | undefined>(undefined)
+  const [creatingWorkspace, setCreatingWorkspace] = useState(false)
   const [loading, setLoading] = useState(true)
   const [msgText, setMsgText] = useState("")
   const [sendingMsg, setSendingMsg] = useState(false)
@@ -69,15 +70,38 @@ export default function ProposalDetailPage() {
         revisionsCounter: pData.proposal.revisions,
         notes: "",
       })
-      // Load workspace ID if agreed
-      if (pData.proposal.status === "agreed") {
-        fetch(`/api/proposals/${id}/workspace`).then(r => r.json()).then(d => {
-          if (d.workspaceId) setWorkspaceId(d.workspaceId)
-        }).catch(() => {})
-      }
     }
     setMessages(mData.messages || [])
     setLoading(false)
+  }
+
+  useEffect(() => {
+    if (proposal?.status === "agreed") {
+      fetch(`/api/proposals/${id}/workspace`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.workspaceId) setWorkspaceId(data.workspaceId)
+          else setWorkspaceId(null)
+        })
+        .catch(() => setWorkspaceId(null))
+    }
+  }, [proposal?.status, id])
+
+  async function createWorkspace() {
+    setCreatingWorkspace(true)
+    try {
+      const res = await fetch("/api/workspace", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ proposalId: id }),
+      })
+      const data = await res.json()
+      if (res.ok && data.id) setWorkspaceId(data.id)
+      else showToast("Failed to create workspace")
+    } catch {
+      showToast("Failed to create workspace")
+    }
+    setCreatingWorkspace(false)
   }
 
   function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(""), 3000) }
@@ -214,7 +238,12 @@ export default function ProposalDetailPage() {
                   📞 View Contact Details →
                 </a>
               )}
-              {workspaceId ? (
+              {workspaceId === undefined ? (
+                <span className="inline-flex items-center gap-2 bg-purple-600/20 text-purple-400 border border-purple-500/20 px-4 py-2 rounded-lg text-sm">
+                  <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z"/></svg>
+                  Opening Workspace...
+                </span>
+              ) : workspaceId ? (
                 <a
                   href={`/workspace/${workspaceId}`}
                   className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
@@ -222,9 +251,16 @@ export default function ProposalDetailPage() {
                   🚀 Open Campaign Workspace →
                 </a>
               ) : (
-                <span className="inline-flex items-center gap-2 bg-purple-600/20 text-purple-400 border border-purple-500/20 px-4 py-2 rounded-lg text-sm">
-                  🚀 Workspace loading...
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 text-amber-400 text-sm">⚠️ Workspace not created yet</span>
+                  <button
+                    onClick={createWorkspace}
+                    disabled={creatingWorkspace}
+                    className="inline-flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    {creatingWorkspace ? "Creating..." : "Create Workspace"}
+                  </button>
+                </div>
               )}
             </div>
           </div>
