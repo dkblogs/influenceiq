@@ -173,6 +173,7 @@ export default function Dashboard() {
   const [brandProposalCount, setBrandProposalCount] = useState<number | null>(null)
   const [brandAiReportCount, setBrandAiReportCount] = useState<number | null>(null)
   const [agreedProposalCount, setAgreedProposalCount] = useState<number | null>(null)
+  const [activeWorkspaces, setActiveWorkspaces] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -260,6 +261,15 @@ export default function Dashboard() {
         } else if (brandStatsResult.status === "rejected") {
           console.error("[dashboard] Brand stats fetch failed:", brandStatsResult.reason)
         }
+
+        // Fetch active workspaces for all roles
+        try {
+          const wsRes = await fetch("/api/my-workspaces")
+          if (wsRes.ok) {
+            const wsData = await wsRes.json()
+            setActiveWorkspaces(wsData || [])
+          }
+        } catch (e) { console.error("[dashboard] Workspaces fetch error:", e) }
       } catch (error) {
         console.error("[dashboard] loadDashboard error:", error)
       } finally {
@@ -578,6 +588,53 @@ export default function Dashboard() {
                 </a>
               </>
             )}
+          </div>
+        )}
+
+        {/* Active Workspaces */}
+        {activeWorkspaces.length > 0 && (
+          <div className="mb-6 bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-medium text-[#F8FAFC]">Active Workspaces</h2>
+              <span className="text-xs text-[#64748B]">{activeWorkspaces.length} active</span>
+            </div>
+            <div className="space-y-3">
+              {activeWorkspaces.map(ws => {
+                const completed = (ws.milestones || []).filter((m: any) => m.status === "completed").length
+                const total = (ws.milestones || []).length
+                const progress = total > 0 ? Math.round((completed / total) * 100) : 0
+                return (
+                  <a
+                    key={ws.id}
+                    href={`/workspace/${ws.id}`}
+                    className="flex items-center justify-between gap-4 bg-[#0A0A12] hover:bg-[#1E1E2E]/50 border border-[#1E1E2E] rounded-xl p-4 transition-colors group"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-[#F8FAFC] text-sm truncate">{ws.campaignTitle}</div>
+                      <div className="flex items-center gap-3 mt-2">
+                        <div className="flex-1 h-1.5 bg-[#1E1E2E] rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-purple-600 to-purple-400 rounded-full"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-[#64748B] flex-shrink-0">{completed}/{total}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className={`text-xs px-2.5 py-1 rounded-full border ${
+                        ws.paymentStatus === "confirmed" ? "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/20"
+                        : ws.paymentStatus === "sent" ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                        : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                      }`}>
+                        {ws.paymentStatus}
+                      </span>
+                      <span className="text-[#64748B] group-hover:text-purple-400 transition-colors text-sm">→</span>
+                    </div>
+                  </a>
+                )
+              })}
+            </div>
           </div>
         )}
 

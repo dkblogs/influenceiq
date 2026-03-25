@@ -85,6 +85,34 @@ export async function POST(request, context) {
       }).catch(() => {})
     }
 
+    // Auto-create campaign workspace
+    try {
+      const existingWs = await prisma.campaignWorkspace.findUnique({ where: { proposalId: id } })
+      if (!existingWs) {
+        await prisma.campaignWorkspace.create({
+          data: {
+            proposalId: id,
+            brandId: proposal.brandId,
+            influencerId: proposal.influencerId,
+            campaignTitle: proposal.campaignTitle,
+            paymentAmount: finalRemuneration,
+            milestones: {
+              create: [
+                { title: "Campaign Kickoff", description: "Brief alignment, assets shared, creative direction confirmed", order: 1 },
+                { title: "Content Planning", description: "Content plan, shoot dates, and script/outline submitted", order: 2 },
+                { title: "Content Creation", description: "Raw content created and ready for review", order: 3 },
+                { title: "Content Review", description: "Brand reviews and approves the content", order: 4 },
+                { title: "Content Goes Live", description: "Post published on agreed platforms", order: 5 },
+                { title: "Campaign Complete", description: "Final analytics and results submitted", order: 6 },
+              ],
+            },
+          },
+        })
+      }
+    } catch (wsErr) {
+      console.error("workspace auto-create failed:", wsErr.message)
+    }
+
     return Response.json({ success: true })
   } catch (e) {
     console.error("agree POST:", e.message)

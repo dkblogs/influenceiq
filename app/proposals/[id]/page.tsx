@@ -31,6 +31,7 @@ export default function ProposalDetailPage() {
 
   const [proposal, setProposal] = useState<any>(null)
   const [messages, setMessages] = useState<any[]>([])
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [msgText, setMsgText] = useState("")
   const [sendingMsg, setSendingMsg] = useState(false)
@@ -68,6 +69,12 @@ export default function ProposalDetailPage() {
         revisionsCounter: pData.proposal.revisions,
         notes: "",
       })
+      // Load workspace ID if agreed
+      if (pData.proposal.status === "agreed") {
+        fetch(`/api/proposals/${id}/workspace`).then(r => r.json()).then(d => {
+          if (d.workspaceId) setWorkspaceId(d.workspaceId)
+        }).catch(() => {})
+      }
     }
     setMessages(mData.messages || [])
     setLoading(false)
@@ -198,14 +205,28 @@ export default function ProposalDetailPage() {
           <div className="bg-[#10B981]/10 border border-[#10B981]/20 rounded-2xl p-5 mb-6">
             <div className="text-lg font-semibold text-[#10B981] mb-1">✅ Both parties have agreed</div>
             <div className="text-sm text-[#94A3B8]">Final terms: <strong className="text-[#F8FAFC]">{currentRemuneration}</strong> · Timeline: <strong className="text-[#F8FAFC]">{currentTimeline}</strong> · {currentRevisions} revisions</div>
-            {isBrandViewing && (
-              <a
-                href={`/influencer/${proposal.influencerId}`}
-                className="mt-3 inline-flex items-center gap-2 bg-[#10B981] hover:bg-[#0EA572] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-              >
-                📞 View Contact Details →
-              </a>
-            )}
+            <div className="flex flex-wrap gap-2 mt-3">
+              {isBrandViewing && (
+                <a
+                  href={`/influencer/${proposal.influencerId}`}
+                  className="inline-flex items-center gap-2 bg-[#10B981] hover:bg-[#0EA572] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  📞 View Contact Details →
+                </a>
+              )}
+              {workspaceId ? (
+                <a
+                  href={`/workspace/${workspaceId}`}
+                  className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  🚀 Open Campaign Workspace →
+                </a>
+              ) : (
+                <span className="inline-flex items-center gap-2 bg-purple-600/20 text-purple-400 border border-purple-500/20 px-4 py-2 rounded-lg text-sm">
+                  🚀 Workspace loading...
+                </span>
+              )}
+            </div>
           </div>
         )}
 

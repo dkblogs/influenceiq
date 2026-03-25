@@ -258,8 +258,76 @@ model Proposal {
   additionalTerms     String?   @db.Text
   rounds              ProposalRound[]
   messages            ProposalMessage[]
+  workspace           CampaignWorkspace?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
+}
+
+model CampaignWorkspace {
+  id             String    @id @default(cuid())
+  proposalId     String    @unique
+  proposal       Proposal  @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  brandId        String
+  influencerId   String
+  campaignTitle  String
+  status         String    @default("active")
+  paymentStatus  String    @default("pending")
+  paymentAmount  String?
+  paymentNotes   String?   @db.Text
+  milestones     WorkspaceMilestone[]
+  deliverables   WorkspaceDeliverable[]
+  reviews        WorkspaceReview[]
+  messages       WorkspaceMessage[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model WorkspaceMilestone {
+  id          String            @id @default(cuid())
+  workspaceId String
+  workspace   CampaignWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  title       String
+  description String?           @db.Text
+  dueDate     DateTime?
+  status      String            @default("pending")
+  completedAt DateTime?
+  order       Int               @default(0)
+  createdAt   DateTime          @default(now())
+}
+
+model WorkspaceDeliverable {
+  id          String            @id @default(cuid())
+  workspaceId String
+  workspace   CampaignWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  title       String
+  description String?           @db.Text
+  fileUrl     String?
+  status      String            @default("pending")
+  feedback    String?           @db.Text
+  submittedAt DateTime?
+  approvedAt  DateTime?
+  createdAt   DateTime          @default(now())
+}
+
+model WorkspaceReview {
+  id          String            @id @default(cuid())
+  workspaceId String
+  workspace   CampaignWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  reviewerId  String
+  reviewerRole String
+  rating      Int
+  comment     String            @db.Text
+  createdAt   DateTime          @default(now())
+}
+
+model WorkspaceMessage {
+  id          String            @id @default(cuid())
+  workspaceId String
+  workspace   CampaignWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  senderId    String
+  senderRole  String
+  message     String            @db.Text
+  createdAt   DateTime          @default(now())
 }
 
 model ProposalRound {

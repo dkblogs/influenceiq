@@ -96,11 +96,21 @@ export default function Navbar() {
             href="/proposals"
             onClick={() => setCampaignsOpen(false)}
             className={mobile
+              ? "text-sm py-2 text-[#94A3B8] hover:text-[#F8FAFC] border-b border-[#1E1E2E] transition-colors"
+              : "block px-4 py-2.5 text-sm text-[#94A3B8] hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors border-b border-[#1E1E2E]"
+            }
+          >
+            Proposals
+          </a>
+          <a
+            href="/dashboard#workspaces"
+            onClick={() => setCampaignsOpen(false)}
+            className={mobile
               ? "text-sm py-2 text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
               : "block px-4 py-2.5 text-sm text-[#94A3B8] hover:bg-[#1E1E2E] hover:text-[#F8FAFC] transition-colors"
             }
           >
-            Proposals
+            Workspaces
           </a>
         </div>
       )}
@@ -268,6 +278,7 @@ export default function Navbar() {
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse" />
               </a>
               {navLink("/proposals", "Proposals")}
+              {navLink("/dashboard#workspaces", "Workspaces")}
               {navLink("/niche-trends", "📊 Trends")}
               {navLink("/contact", "Contact Us")}
               <span className="w-px h-4 bg-[#1E1E2E]" />
@@ -354,6 +365,7 @@ export default function Navbar() {
                 { href: "/profile", label: "Profile" },
                 { href: "/campaigns", label: "Campaigns" },
                 { href: "/proposals", label: "Proposals" },
+                { href: "/dashboard#workspaces", label: "Workspaces" },
                 { href: "/niche-trends", label: "📊 Trends" },
                 { href: "/contact", label: "Contact Us" },
               ].map(l => (
