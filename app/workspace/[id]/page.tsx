@@ -16,14 +16,22 @@ type Workspace = {
   paymentStatus: string
   paymentAmount?: string
   paymentNotes?: string
+  paymentSentAt?: string
+  paymentConfirmedAt?: string
   brandId: string
   influencerId: string
   isBrand: boolean
   milestones: Milestone[]
   deliverables: Deliverable[]
   reviews: Review[]
-  messages: Message[]
-  proposal: any
+  proposal: {
+    id: string
+    messages: Message[]
+    contentType?: string
+    deliverables?: string
+    timeline?: string
+    revisions?: number
+  }
   createdAt: string
 }
 
@@ -47,6 +55,14 @@ const PAYMENT_STATUS_STYLE: Record<string, string> = {
   pending: "bg-amber-500/10 text-amber-400 border-amber-500/20",
   sent: "bg-blue-500/10 text-blue-400 border-blue-500/20",
   confirmed: "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/20",
+}
+
+// Determine which role owns each milestone based on title keywords
+function milestoneOwner(title: string): "brand" | "influencer" | "both" {
+  const t = title.toLowerCase()
+  if (t.includes("review") || t.includes("confirm") || t.includes("payment")) return "brand"
+  if (t.includes("kickoff")) return "both"
+  return "influencer"
 }
 
 function timeAgo(d: string) {
@@ -112,7 +128,7 @@ export default function WorkspacePage() {
     if (activeTab === "Chat") {
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100)
     }
-  }, [activeTab, workspace?.messages])
+  }, [activeTab, workspace?.proposal?.messages])
 
   async function loadWorkspace() {
     setLoading(true)
@@ -128,20 +144,16 @@ export default function WorkspacePage() {
     setTimeout(() => setToast(""), 3000)
   }
 
-  async function updateMilestone(milestoneId: string, status: string) {
+  async function updateMilestone(milestoneId: string, milestoneStatus: string) {
     setActionLoading(milestoneId)
     const res = await fetch(`/api/workspace/${id}/milestone`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ milestoneId, status }),
+      body: JSON.stringify({ milestoneId, status: milestoneStatus }),
     })
     setActionLoading("")
-    if (res.ok) {
-      showToast("Milestone updated")
-      loadWorkspace()
-    } else {
-      showToast("Failed to update milestone")
-    }
+    if (res.ok) { showToast("Milestone updated"); loadWorkspace() }
+    else showToast("Failed to update milestone")
   }
 
   async function submitDeliverable() {
@@ -158,41 +170,40 @@ export default function WorkspacePage() {
       setShowDlForm(false)
       showToast("Deliverable submitted")
       loadWorkspace()
-    } else {
-      showToast("Failed to submit deliverable")
-    }
+    } else showToast("Failed to submit deliverable")
   }
 
-  async function reviewDeliverable(deliverableId: string, status: string, feedback: string) {
+  async function reviewDeliverable(deliverableId: string, dlStatus: string, feedback: string) {
     setActionLoading(deliverableId)
     const res = await fetch(`/api/workspace/${id}/deliverable`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ deliverableId, status, feedback }),
+      body: JSON.stringify({ deliverableId, status: dlStatus, feedback }),
     })
     setActionLoading("")
-    if (res.ok) {
-      showToast(status === "approved" ? "Deliverable approved" : "Revision requested")
-      loadWorkspace()
-    } else {
-      showToast("Failed to update deliverable")
-    }
+    if (res.ok) { showToast(dlStatus === "approved" ? "Deliverable approved" : "Revision requested"); loadWorkspace() }
+    else showToast("Failed to update deliverable")
   }
 
-  async function updatePayment(data: { paymentStatus?: string; paymentNotes?: string }) {
+  async function paymentAction(action: string) {
     setActionLoading("payment")
     const res = await fetch(`/api/workspace/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ action }),
     })
     setActionLoading("")
-    if (res.ok) {
-      showToast("Payment status updated")
-      loadWorkspace()
-    } else {
-      showToast("Failed to update payment")
-    }
+    if (res.ok) { showToast(action === "payment_sent" ? "Payment marked as sent" : "Payment confirmed!"); loadWorkspace() }
+    else showToast("Failed to update payment")
+  }
+
+  async function updatePaymentNotes(notes: string) {
+    await fetch(`/api/workspace/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paymentNotes: notes }),
+    })
+    loadWorkspace()
   }
 
   async function submitReview() {
@@ -204,31 +215,21 @@ export default function WorkspacePage() {
       body: JSON.stringify(reviewForm),
     })
     setActionLoading("")
-    if (res.ok) {
-      setShowReviewForm(false)
-      showToast("Review submitted!")
-      loadWorkspace()
-    } else {
-      const d = await res.json()
-      showToast(d.error || "Failed to submit review")
-    }
+    if (res.ok) { setShowReviewForm(false); showToast("Review submitted!"); loadWorkspace() }
+    else { const d = await res.json(); showToast(d.error || "Failed to submit review") }
   }
 
   async function sendMessage() {
-    if (!msgText.trim()) return
+    if (!msgText.trim() || !workspace) return
     setSendingMsg(true)
-    const res = await fetch(`/api/workspace/${id}/message`, {
+    const res = await fetch(`/api/proposals/${workspace.proposal.id}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: msgText }),
     })
     setSendingMsg(false)
-    if (res.ok) {
-      setMsgText("")
-      loadWorkspace()
-    } else {
-      showToast("Failed to send message")
-    }
+    if (res.ok) { setMsgText(""); loadWorkspace() }
+    else showToast("Failed to send message")
   }
 
   if (loading) return (
@@ -252,11 +253,16 @@ export default function WorkspacePage() {
   const progress = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0
   const myReview = workspace.reviews.find(r => r.reviewerRole === (isBrand ? "brand" : "influencer"))
 
+  // Chat: all proposal messages, split at workspace createdAt
+  const allMessages = workspace.proposal?.messages || []
+  const workspaceStartedAt = new Date(workspace.createdAt)
+  const preMsgs = allMessages.filter(m => new Date(m.createdAt) < workspaceStartedAt)
+  const postMsgs = allMessages.filter(m => new Date(m.createdAt) >= workspaceStartedAt)
+
   return (
     <div className="min-h-screen bg-[#0A0A12]">
       <Navbar />
 
-      {/* Toast */}
       {toast && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-[#1E1E2E] border border-purple-500/30 text-white px-4 py-2.5 rounded-xl text-sm shadow-xl">
           {toast}
@@ -266,8 +272,8 @@ export default function WorkspacePage() {
       <div className="max-w-5xl mx-auto px-4 py-8 pt-24">
         {/* Header */}
         <div className="mb-6">
-          <a href="/proposals" className="text-xs text-[#64748B] hover:text-[#94A3B8] mb-3 inline-flex items-center gap-1">
-            ← Back to proposals
+          <a href="/workspaces" className="text-xs text-[#64748B] hover:text-[#94A3B8] mb-3 inline-flex items-center gap-1">
+            ← Back to workspaces
           </a>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -284,7 +290,6 @@ export default function WorkspacePage() {
             </div>
           </div>
 
-          {/* Progress bar */}
           <div className="mt-4">
             <div className="flex justify-between text-xs text-[#64748B] mb-1.5">
               <span>Campaign progress</span>
@@ -315,18 +320,17 @@ export default function WorkspacePage() {
           ))}
         </div>
 
-        {/* Tab content */}
+        {/* ── OVERVIEW ── */}
         {activeTab === "Overview" && (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Campaign details */}
               <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5">
                 <h2 className="font-semibold text-[#F8FAFC] mb-4">Campaign Details</h2>
                 <div className="space-y-3">
                   {[
                     { label: "Content Type", value: workspace.proposal?.contentType },
                     { label: "Agreed Payment", value: workspace.paymentAmount, highlight: true },
-                    { label: "Timeline", value: workspace.proposal?.rounds?.[0]?.timelineCounter || workspace.proposal?.timeline },
+                    { label: "Timeline", value: workspace.proposal?.timeline },
                     { label: "Revisions", value: `${workspace.proposal?.revisions || 2} rounds` },
                   ].map(item => (
                     <div key={item.label} className="flex justify-between items-center gap-3">
@@ -337,7 +341,6 @@ export default function WorkspacePage() {
                 </div>
               </div>
 
-              {/* Quick links */}
               <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5">
                 <h2 className="font-semibold text-[#F8FAFC] mb-4">Quick Links</h2>
                 <div className="space-y-2">
@@ -349,23 +352,18 @@ export default function WorkspacePage() {
                       👤 View Influencer Profile →
                     </a>
                   )}
-                  <button
-                    onClick={() => setActiveTab("Chat")}
-                    className="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors"
-                  >
+                  <button onClick={() => setActiveTab("Chat")} className="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors">
                     💬 Open Chat →
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Deliverables brief */}
             <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5">
               <h2 className="font-semibold text-[#F8FAFC] mb-3">Agreed Deliverables</h2>
               <p className="text-sm text-[#94A3B8] whitespace-pre-line leading-relaxed">{workspace.proposal?.deliverables || "—"}</p>
             </div>
 
-            {/* Next milestone */}
             {(() => {
               const next = workspace.milestones.find(m => m.status !== "completed")
               if (!next) return (
@@ -374,18 +372,22 @@ export default function WorkspacePage() {
                   <div className="font-semibold text-[#10B981]">All milestones completed!</div>
                   <div className="text-sm text-[#94A3B8] mt-1">Don&apos;t forget to leave a review for each other</div>
                   {!myReview && (
-                    <button
-                      onClick={() => setActiveTab("Reviews")}
-                      className="mt-3 bg-[#10B981] hover:bg-[#0EA572] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                    >
+                    <button onClick={() => setActiveTab("Reviews")} className="mt-3 bg-[#10B981] hover:bg-[#0EA572] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                       Leave a Review →
                     </button>
                   )}
                 </div>
               )
+              const owner = milestoneOwner(next.title)
+              const isYourTurn = owner === "both" || (isBrand ? owner === "brand" : owner === "influencer")
               return (
                 <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-5">
-                  <div className="text-xs text-purple-400 uppercase tracking-wide mb-1">Next Milestone</div>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="text-xs text-purple-400 uppercase tracking-wide">Next Milestone</div>
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${isYourTurn ? "bg-purple-600/30 text-purple-300" : "bg-[#1E1E2E] text-[#64748B]"}`}>
+                      {isYourTurn ? "Your turn" : `${owner === "brand" ? "Brand" : "Influencer"}'s turn`}
+                    </span>
+                  </div>
                   <div className="font-semibold text-[#F8FAFC]">{next.title}</div>
                   {next.description && <div className="text-sm text-[#94A3B8] mt-1">{next.description}</div>}
                 </div>
@@ -394,59 +396,78 @@ export default function WorkspacePage() {
           </div>
         )}
 
+        {/* ── MILESTONES ── */}
         {activeTab === "Milestones" && (
           <div className="space-y-3">
-            {workspace.milestones.map((m, i) => (
-              <div key={m.id} className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-                      m.status === "completed" ? "bg-[#10B981] text-white" : "bg-[#1E1E2E] text-[#64748B]"
-                    }`}>
-                      {m.status === "completed" ? "✓" : i + 1}
+            {workspace.milestones.map((m, i) => {
+              const owner = milestoneOwner(m.title)
+              const canAct = m.status !== "completed" && (owner === "both" || (isBrand ? owner === "brand" : owner === "influencer"))
+              const waitingFor = owner === "brand" ? "Brand" : "Influencer"
+              const isYourTurn = owner === "both" || (isBrand ? owner === "brand" : owner === "influencer")
+
+              return (
+                <div key={m.id} className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+                        m.status === "completed" ? "bg-[#10B981] text-white" : "bg-[#1E1E2E] text-[#64748B]"
+                      }`}>
+                        {m.status === "completed" ? "✓" : i + 1}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-[#F8FAFC]">{m.title}</span>
+                          {m.status !== "completed" && (
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                              isYourTurn ? "bg-purple-600/20 text-purple-300 border border-purple-500/20" : "bg-[#1E1E2E] text-[#64748B]"
+                            }`}>
+                              {isYourTurn ? "Your turn" : `${waitingFor}'s turn`}
+                            </span>
+                          )}
+                        </div>
+                        {m.description && <div className="text-sm text-[#94A3B8] mt-0.5">{m.description}</div>}
+                        {m.completedAt && <div className="text-xs text-[#10B981] mt-1">Completed {timeAgo(m.completedAt)}</div>}
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-medium text-[#F8FAFC]">{m.title}</div>
-                      {m.description && <div className="text-sm text-[#94A3B8] mt-0.5">{m.description}</div>}
-                      {m.completedAt && (
-                        <div className="text-xs text-[#10B981] mt-1">Completed {timeAgo(m.completedAt)}</div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${MILESTONE_STATUS_STYLE[m.status] || MILESTONE_STATUS_STYLE.pending}`}>
+                        {m.status}
+                      </span>
+                      {m.status !== "completed" && (
+                        canAct ? (
+                          <div className="flex gap-1">
+                            {m.status === "pending" && (
+                              <button
+                                onClick={() => updateMilestone(m.id, "in-progress")}
+                                disabled={actionLoading === m.id}
+                                className="text-xs bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50"
+                              >
+                                Start
+                              </button>
+                            )}
+                            <button
+                              onClick={() => updateMilestone(m.id, "completed")}
+                              disabled={actionLoading === m.id}
+                              className="text-xs bg-[#10B981]/10 hover:bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/20 px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50"
+                            >
+                              {actionLoading === m.id ? "..." : "Mark Done"}
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-[#64748B] italic">Waiting for {waitingFor}...</span>
+                        )
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${MILESTONE_STATUS_STYLE[m.status] || MILESTONE_STATUS_STYLE.pending}`}>
-                      {m.status}
-                    </span>
-                    {m.status !== "completed" && (
-                      <div className="flex gap-1">
-                        {m.status === "pending" && (
-                          <button
-                            onClick={() => updateMilestone(m.id, "in-progress")}
-                            disabled={actionLoading === m.id}
-                            className="text-xs bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50"
-                          >
-                            Start
-                          </button>
-                        )}
-                        <button
-                          onClick={() => updateMilestone(m.id, "completed")}
-                          disabled={actionLoading === m.id}
-                          className="text-xs bg-[#10B981]/10 hover:bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/20 px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50"
-                        >
-                          {actionLoading === m.id ? "..." : "Mark Done"}
-                        </button>
-                      </div>
-                    )}
-                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 
+        {/* ── DELIVERABLES ── */}
         {activeTab === "Deliverables" && (
           <div className="space-y-4">
-            {/* Submit button (influencer only) */}
             {!isBrand && (
               <button
                 onClick={() => setShowDlForm(v => !v)}
@@ -488,10 +509,7 @@ export default function WorkspacePage() {
                   >
                     {actionLoading === "dl" ? "Submitting..." : "Submit Deliverable"}
                   </button>
-                  <button
-                    onClick={() => setShowDlForm(false)}
-                    className="px-4 bg-[#1E1E2E] hover:bg-[#2A2A3E] text-[#94A3B8] rounded-xl text-sm transition-colors"
-                  >
+                  <button onClick={() => setShowDlForm(false)} className="px-4 bg-[#1E1E2E] hover:bg-[#2A2A3E] text-[#94A3B8] rounded-xl text-sm transition-colors">
                     Cancel
                   </button>
                 </div>
@@ -518,20 +536,30 @@ export default function WorkspacePage() {
           </div>
         )}
 
+        {/* ── PAYMENT ── */}
         {activeTab === "Payment" && (
           <div className="space-y-4">
             <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-6">
-              <h2 className="font-semibold text-[#F8FAFC] mb-4">Payment Status</h2>
+              <h2 className="font-semibold text-[#F8FAFC] mb-5">Payment Status</h2>
+
+              {/* Two-step tracker */}
               <div className="flex items-center gap-3 mb-6">
-                <span className={`text-sm font-medium px-4 py-2 rounded-full border ${PAYMENT_STATUS_STYLE[workspace.paymentStatus]}`}>
-                  {workspace.paymentStatus === "pending" ? "⏳ Payment Pending"
-                    : workspace.paymentStatus === "sent" ? "💸 Payment Sent"
-                    : "✅ Payment Confirmed"}
-                </span>
-                {workspace.paymentAmount && (
-                  <span className="text-lg font-bold text-purple-400">{workspace.paymentAmount}</span>
-                )}
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border ${
+                  workspace.paymentSentAt ? "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/20" : "bg-[#1E1E2E] text-[#64748B] border-[#1E1E2E]"
+                }`}>
+                  {workspace.paymentSentAt ? "✓" : "1"} Brand sent
+                </div>
+                <div className="h-px flex-1 bg-[#1E1E2E]" />
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border ${
+                  workspace.paymentConfirmedAt ? "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/20" : "bg-[#1E1E2E] text-[#64748B] border-[#1E1E2E]"
+                }`}>
+                  {workspace.paymentConfirmedAt ? "✓" : "2"} Influencer confirmed
+                </div>
               </div>
+
+              {workspace.paymentAmount && (
+                <div className="text-2xl font-bold text-purple-400 mb-4">{workspace.paymentAmount}</div>
+              )}
 
               {workspace.paymentNotes && (
                 <div className="bg-[#0A0A12] rounded-xl p-3 mb-4 text-sm text-[#94A3B8]">
@@ -540,48 +568,69 @@ export default function WorkspacePage() {
                 </div>
               )}
 
+              {/* Brand controls */}
               {isBrand && (
                 <div className="space-y-3">
-                  <div className="text-sm font-medium text-[#F8FAFC]">Update Payment Status</div>
-                  <div className="flex flex-wrap gap-2">
-                    {(["pending", "sent", "confirmed"] as const).map(ps => (
-                      <button
-                        key={ps}
-                        onClick={() => updatePayment({ paymentStatus: ps })}
-                        disabled={workspace.paymentStatus === ps || actionLoading === "payment"}
-                        className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors disabled:opacity-40 ${
-                          workspace.paymentStatus === ps
-                            ? PAYMENT_STATUS_STYLE[ps]
-                            : "bg-[#1E1E2E] text-[#64748B] border-[#1E1E2E] hover:border-purple-500/30"
-                        }`}
-                      >
-                        {ps === "pending" ? "Mark Pending" : ps === "sent" ? "Mark Sent" : "Mark Confirmed"}
-                      </button>
-                    ))}
-                  </div>
+                  {!workspace.paymentSentAt ? (
+                    <button
+                      onClick={() => paymentAction("payment_sent")}
+                      disabled={actionLoading === "payment"}
+                      className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-xl py-3 text-sm font-medium transition-colors"
+                    >
+                      {actionLoading === "payment" ? "Updating..." : "💸 Mark Payment as Sent"}
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-[#10B981]">
+                      ✓ You marked payment as sent {timeAgo(workspace.paymentSentAt)}
+                    </div>
+                  )}
+                  {workspace.paymentConfirmedAt && (
+                    <div className="flex items-center gap-2 text-sm text-[#10B981]">
+                      ✓ Influencer confirmed receipt {timeAgo(workspace.paymentConfirmedAt)}
+                    </div>
+                  )}
                   <textarea
                     placeholder="Add payment notes (UPI ID, transaction ref, etc.)"
                     defaultValue={workspace.paymentNotes || ""}
-                    onBlur={e => { if (e.target.value !== (workspace.paymentNotes || "")) updatePayment({ paymentNotes: e.target.value }) }}
+                    onBlur={e => { if (e.target.value !== (workspace.paymentNotes || "")) updatePaymentNotes(e.target.value) }}
                     rows={3}
                     className="w-full bg-[#0A0A12] border border-[#1E1E2E] rounded-xl px-3 py-2.5 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500/50 resize-none"
                   />
                 </div>
               )}
 
+              {/* Influencer controls */}
               {!isBrand && (
-                <div className="bg-[#0A0A12] rounded-xl p-4 text-sm text-[#94A3B8]">
-                  {workspace.paymentStatus === "pending"
-                    ? "Payment has not been sent yet. Reach out to the brand if you have questions."
-                    : workspace.paymentStatus === "sent"
-                    ? "The brand has marked payment as sent. Confirm once you receive it."
-                    : "Payment has been confirmed. Thank you!"}
+                <div className="space-y-3">
+                  {!workspace.paymentSentAt ? (
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-sm text-amber-300">
+                      ⏳ Waiting for brand to send payment. Reach out via chat if you have questions.
+                    </div>
+                  ) : !workspace.paymentConfirmedAt ? (
+                    <div className="space-y-3">
+                      <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-sm text-blue-300">
+                        💸 Brand has marked payment as sent {timeAgo(workspace.paymentSentAt)}. Confirm once you receive it.
+                      </div>
+                      <button
+                        onClick={() => paymentAction("payment_confirmed")}
+                        disabled={actionLoading === "payment"}
+                        className="w-full bg-[#10B981] hover:bg-[#0EA572] disabled:opacity-50 text-white rounded-xl py-3 text-sm font-medium transition-colors"
+                      >
+                        {actionLoading === "payment" ? "Confirming..." : "✅ Confirm Payment Received"}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="bg-[#10B981]/10 border border-[#10B981]/20 rounded-xl p-4 text-sm text-[#10B981]">
+                      ✅ You confirmed receipt {timeAgo(workspace.paymentConfirmedAt)}. Payment complete!
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </div>
         )}
 
+        {/* ── REVIEWS ── */}
         {activeTab === "Reviews" && (
           <div className="space-y-4">
             {!myReview && (
@@ -589,10 +638,7 @@ export default function WorkspacePage() {
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="font-semibold text-[#F8FAFC]">Leave a Review</h2>
                   {!showReviewForm && (
-                    <button
-                      onClick={() => setShowReviewForm(true)}
-                      className="text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl transition-colors"
-                    >
+                    <button onClick={() => setShowReviewForm(true)} className="text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl transition-colors">
                       Write Review
                     </button>
                   )}
@@ -618,10 +664,7 @@ export default function WorkspacePage() {
                       >
                         {actionLoading === "review" ? "Submitting..." : "Submit Review"}
                       </button>
-                      <button
-                        onClick={() => setShowReviewForm(false)}
-                        className="px-4 bg-[#1E1E2E] hover:bg-[#2A2A3E] text-[#94A3B8] rounded-xl text-sm transition-colors"
-                      >
+                      <button onClick={() => setShowReviewForm(false)} className="px-4 bg-[#1E1E2E] hover:bg-[#2A2A3E] text-[#94A3B8] rounded-xl text-sm transition-colors">
                         Cancel
                       </button>
                     </div>
@@ -654,23 +697,24 @@ export default function WorkspacePage() {
           </div>
         )}
 
+        {/* ── CHAT ── */}
         {activeTab === "Chat" && (
           <div className="flex flex-col h-[60vh]">
             <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-1">
-              {workspace.messages.length === 0 && (
+              {allMessages.length === 0 && (
                 <div className="text-center py-12 text-[#64748B]">
                   <div className="text-3xl mb-2">💬</div>
                   <p className="text-sm">No messages yet. Start the conversation!</p>
                 </div>
               )}
-              {workspace.messages.map(msg => {
+
+              {/* Pre-workspace messages (negotiation context) */}
+              {preMsgs.map(msg => {
                 const isMe = msg.senderId === user?.id
                 return (
                   <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
-                      isMe
-                        ? "bg-purple-600 text-white rounded-br-sm"
-                        : "bg-[#12121A] border border-[#1E1E2E] text-[#F8FAFC] rounded-bl-sm"
+                    <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm opacity-60 ${
+                      isMe ? "bg-purple-600/60 text-white rounded-br-sm" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] rounded-bl-sm"
                     }`}>
                       <p>{msg.message}</p>
                       <p className={`text-xs mt-1 ${isMe ? "text-purple-300" : "text-[#64748B]"}`}>{timeAgo(msg.createdAt)}</p>
@@ -678,6 +722,31 @@ export default function WorkspacePage() {
                   </div>
                 )
               })}
+
+              {/* Divider */}
+              {preMsgs.length > 0 && (
+                <div className="flex items-center gap-3 py-2">
+                  <div className="flex-1 h-px bg-[#1E1E2E]" />
+                  <span className="text-xs text-[#64748B] whitespace-nowrap px-2">── Proposal agreed · Workspace started ──</span>
+                  <div className="flex-1 h-px bg-[#1E1E2E]" />
+                </div>
+              )}
+
+              {/* Post-workspace messages */}
+              {postMsgs.map(msg => {
+                const isMe = msg.senderId === user?.id
+                return (
+                  <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
+                      isMe ? "bg-purple-600 text-white rounded-br-sm" : "bg-[#12121A] border border-[#1E1E2E] text-[#F8FAFC] rounded-bl-sm"
+                    }`}>
+                      <p>{msg.message}</p>
+                      <p className={`text-xs mt-1 ${isMe ? "text-purple-300" : "text-[#64748B]"}`}>{timeAgo(msg.createdAt)}</p>
+                    </div>
+                  </div>
+                )
+              })}
+
               <div ref={messagesEndRef} />
             </div>
             <div className="flex gap-2">

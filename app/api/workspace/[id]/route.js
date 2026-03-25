@@ -9,7 +9,6 @@ async function getWorkspaceAndCheck(id, userId) {
       milestones: { orderBy: { order: "asc" } },
       deliverables: { orderBy: { createdAt: "asc" } },
       reviews: { orderBy: { createdAt: "desc" } },
-      messages: { orderBy: { createdAt: "asc" } },
       proposal: {
         select: {
           id: true,
@@ -20,6 +19,7 @@ async function getWorkspaceAndCheck(id, userId) {
           remuneration: true,
           timeline: true,
           revisions: true,
+          messages: { orderBy: { createdAt: "asc" } },
           brand: { select: { id: true, name: true, companyName: true } },
           influencer: { select: { id: true, name: true, handle: true } },
         },
@@ -64,15 +64,67 @@ export async function PATCH(request, context) {
 
     const result = await getWorkspaceAndCheck(id, session.user.id)
     if (!result) return Response.json({ error: "Not found" }, { status: 404 })
-    if (!result.isBrand) return Response.json({ error: "Only brand can update payment" }, { status: 403 })
 
+    const { workspace, isBrand, isInfluencer, influencerUserId } = result
     const body = await request.json()
-    const allowed = ["paymentStatus", "paymentNotes", "status"]
+
+    // Action: brand marks payment sent
+    if (body.action === "payment_sent") {
+      if (!isBrand) return Response.json({ error: "Only brand can mark payment sent" }, { status: 403 })
+      const updated = await prisma.campaignWorkspace.update({
+        where: { id },
+        data: { paymentStatus: "sent", paymentSentAt: new Date(), updatedAt: new Date() },
+      })
+      if (influencerUserId) {
+        prisma.notification.create({
+          data: {
+            userId: influencerUserId,
+            type: "workspace_payment",
+            title: "💸 Payment Sent",
+            message: `Brand has marked payment as sent for "${workspace.campaignTitle}"`,
+            link: `/workspace/${id}`,
+          },
+        }).catch(() => {})
+      }
+      return Response.json(updated)
+    }
+
+    // Action: influencer confirms payment received
+    if (body.action === "payment_confirmed") {
+      if (!isInfluencer) return Response.json({ error: "Only influencer can confirm payment" }, { status: 403 })
+      const updated = await prisma.campaignWorkspace.update({
+        where: { id },
+        data: { paymentStatus: "confirmed", paymentConfirmedAt: new Date(), updatedAt: new Date() },
+      })
+      // Auto-mark the Payment / Campaign Complete milestone
+      const paymentMilestone = workspace.milestones.find(m =>
+        m.title.toLowerCase().includes("payment") || m.title.toLowerCase().includes("campaign complete")
+      )
+      if (paymentMilestone && paymentMilestone.status !== "completed") {
+        await prisma.workspaceMilestone.update({
+          where: { id: paymentMilestone.id },
+          data: { status: "completed", completedAt: new Date() },
+        })
+      }
+      prisma.notification.create({
+        data: {
+          userId: workspace.brandId,
+          type: "workspace_payment",
+          title: "✅ Payment Confirmed",
+          message: `Influencer confirmed payment received for "${workspace.campaignTitle}"`,
+          link: `/workspace/${id}`,
+        },
+      }).catch(() => {})
+      return Response.json(updated)
+    }
+
+    // Generic field update (brand only for paymentNotes/status)
+    if (!isBrand) return Response.json({ error: "Only brand can update workspace" }, { status: 403 })
+    const allowed = ["paymentNotes", "status"]
     const data = {}
     for (const key of allowed) {
       if (body[key] !== undefined) data[key] = body[key]
     }
-
     const updated = await prisma.campaignWorkspace.update({ where: { id }, data: { ...data, updatedAt: new Date() } })
     return Response.json(updated)
   } catch (e) {

@@ -271,9 +271,11 @@ model CampaignWorkspace {
   influencerId   String
   campaignTitle  String
   status         String    @default("active")
-  paymentStatus  String    @default("pending")
-  paymentAmount  String?
-  paymentNotes   String?   @db.Text
+  paymentStatus      String    @default("pending")
+  paymentAmount      String?
+  paymentNotes       String?   @db.Text
+  paymentSentAt      DateTime?
+  paymentConfirmedAt DateTime?
   milestones     WorkspaceMilestone[]
   deliverables   WorkspaceDeliverable[]
   reviews        WorkspaceReview[]
