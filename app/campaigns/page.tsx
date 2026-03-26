@@ -122,11 +122,11 @@ export default function Campaigns() {
           <div className="text-xs text-[#64748B] mb-2 font-medium uppercase tracking-wide">
             Niche {selectedNiches.length > 0 && <span className="text-purple-400 normal-case">({selectedNiches.length} selected)</span>}
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 overflow-x-auto flex-nowrap pb-1">
             {NICHES.map((n) => (
               <button key={n}
                 onClick={() => setSelectedNiches(prev => prev.includes(n) ? prev.filter(x => x !== n) : [...prev, n])}
-                className={`px-3 md:px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedNiches.includes(n) ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"}`}>
+                className={`flex-shrink-0 px-3 md:px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedNiches.includes(n) ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"}`}>
                 {n}
               </button>
             ))}
@@ -137,11 +137,11 @@ export default function Campaigns() {
           <div className="text-xs text-[#64748B] mb-2 font-medium uppercase tracking-wide">
             Platform {selectedPlatforms.length > 0 && <span className="text-purple-400 normal-case">({selectedPlatforms.length} selected)</span>}
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 overflow-x-auto flex-nowrap pb-1">
             {PLATFORMS.map((p) => (
               <button key={p}
                 onClick={() => setSelectedPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])}
-                className={`px-3 md:px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedPlatforms.includes(p) ? "bg-[#F8FAFC] text-[#0A0A0F]" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"}`}>
+                className={`flex-shrink-0 px-3 md:px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedPlatforms.includes(p) ? "bg-[#F8FAFC] text-[#0A0A0F]" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"}`}>
                 {p}
               </button>
             ))}

@@ -432,7 +432,7 @@ export default function InfluencerProfile() {
             </a>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-3 md:gap-4 mb-6">
+          <div className="grid grid-cols-3 sm:grid-cols-3 gap-3 md:gap-4 mb-6">
             <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-4 md:p-5 text-center">
               {followersPublic ? (
                 <div className="text-xl md:text-2xl font-bold text-[#F8FAFC]">{influencer.followers}</div>
@@ -793,8 +793,8 @@ export default function InfluencerProfile() {
 
       {/* Proposal Modal */}
       {showProposalModal && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-start justify-center p-4 overflow-y-auto">
-          <div className="bg-[#12121A] border border-[#1E1E2E] rounded-2xl w-full max-w-2xl my-8 shadow-2xl">
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-start justify-center sm:p-4 overflow-y-auto">
+          <div className="bg-[#12121A] border border-[#1E1E2E] sm:rounded-2xl w-full sm:max-w-2xl sm:my-8 shadow-2xl">
             <div className="flex items-center justify-between px-6 py-5 border-b border-[#1E1E2E]">
               <div>
                 <h2 className="font-semibold text-[#F8FAFC]">Send Collaboration Proposal</h2>

@@ -31,7 +31,7 @@ export default function HomePage() {
       </div>
 
       {/* Role cards */}
-      <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
+      <div className="flex flex-col md:flex-row gap-4 w-full max-w-sm">
         <a
           href="/for-brands"
           className="bg-[#12121A] border border-[#1E1E2E] rounded-2xl p-8 flex flex-col items-center justify-center gap-3 hover:border-purple-500/50 hover:bg-purple-500/5 transition-all group"

@@ -213,12 +213,12 @@ export default function NicheTrends() {
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3 mb-6">
               {/* Niche filter */}
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-2 overflow-x-auto flex-nowrap pb-1">
                 {niches.map(n => (
                   <button
                     key={n}
                     onClick={() => setNicheFilter(n)}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                       nicheFilter === n
                         ? "bg-purple-600 text-white"
                         : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] hover:text-[#F8FAFC]"

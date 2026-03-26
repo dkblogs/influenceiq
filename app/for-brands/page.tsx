@@ -16,7 +16,7 @@ export default function ForBrandsPage() {
           <div className="inline-flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-4 py-1.5 rounded-full text-xs text-purple-300 mb-6">
             🏢 For Brands & Businesses
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-[#F8FAFC] mb-5 leading-tight">
+          <h1 className="text-3xl md:text-5xl font-bold text-[#F8FAFC] mb-5 leading-tight">
             Find Your Perfect Influencer.<br />
             <span className="text-purple-400">Pay Zero Commission.</span>
           </h1>
@@ -26,13 +26,13 @@ export default function ForBrandsPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
               href="/signup?role=brand"
-              className="bg-purple-600 text-white px-7 py-3.5 rounded-xl text-sm font-semibold hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20"
+              className="w-full md:w-auto bg-purple-600 text-white px-7 py-3.5 rounded-xl text-sm font-semibold hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20"
             >
               Get Started Free →
             </a>
             <a
               href="/discover/influencers"
-              className="bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] px-7 py-3.5 rounded-xl text-sm font-semibold hover:border-purple-500/40 hover:text-[#F8FAFC] transition-colors"
+              className="w-full md:w-auto bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] px-7 py-3.5 rounded-xl text-sm font-semibold hover:border-purple-500/40 hover:text-[#F8FAFC] transition-colors"
             >
               Browse Influencers
             </a>
@@ -162,7 +162,7 @@ export default function ForBrandsPage() {
           <p className="text-[#64748B] text-sm mb-7">Join hundreds of brands already using InfluenceIQ to grow</p>
           <a
             href="/signup?role=brand"
-            className="inline-block bg-purple-600 text-white px-8 py-3.5 rounded-xl text-sm font-semibold hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20"
+            className="inline-block w-full md:w-auto bg-purple-600 text-white px-8 py-3.5 rounded-xl text-sm font-semibold hover:bg-purple-500 transition-colors shadow-lg shadow-purple-500/20"
           >
             Let's Go →
           </a>

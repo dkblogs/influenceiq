@@ -25,9 +25,9 @@ const influencerActions: [string, string][] = [
 
 function ActionRow({ action, cost }: { action: string; cost: string }) {
   return (
-    <div className="flex justify-between items-center py-2 border-b border-[#1E1E2E]">
-      <span className="text-sm text-[#94A3B8]">{action}</span>
-      <span className={`text-sm font-medium whitespace-nowrap ml-4 ${cost === "Free" ? "text-[#10B981]" : "text-purple-400"}`}>{cost}</span>
+    <div className="flex justify-between items-center py-2 border-b border-[#1E1E2E] gap-2">
+      <span className="text-sm text-[#94A3B8] flex-1 min-w-0">{action}</span>
+      <span className={`text-sm font-medium whitespace-nowrap flex-shrink-0 ${cost === "Free" ? "text-[#10B981]" : "text-purple-400"}`}>{cost}</span>
     </div>
   )
 }

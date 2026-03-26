@@ -16,7 +16,7 @@ export default function ForInfluencersPage() {
           <div className="inline-flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/20 px-4 py-1.5 rounded-full text-xs text-cyan-300 mb-6">
             ⭐ For Creators & Influencers
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-[#F8FAFC] mb-5 leading-tight">
+          <h1 className="text-3xl md:text-5xl font-bold text-[#F8FAFC] mb-5 leading-tight">
             Get Discovered. Collaborate.<br />
             <span className="text-cyan-400">Earn More.</span>
           </h1>
@@ -26,13 +26,13 @@ export default function ForInfluencersPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
               href="/signup?role=influencer"
-              className="bg-cyan-600 text-white px-7 py-3.5 rounded-xl text-sm font-semibold hover:bg-cyan-500 transition-colors shadow-lg shadow-cyan-500/20"
+              className="w-full md:w-auto bg-cyan-600 text-white px-7 py-3.5 rounded-xl text-sm font-semibold hover:bg-cyan-500 transition-colors shadow-lg shadow-cyan-500/20"
             >
               Join as Creator →
             </a>
             <a
               href="/campaigns"
-              className="bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] px-7 py-3.5 rounded-xl text-sm font-semibold hover:border-cyan-500/40 hover:text-[#F8FAFC] transition-colors"
+              className="w-full md:w-auto bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] px-7 py-3.5 rounded-xl text-sm font-semibold hover:border-cyan-500/40 hover:text-[#F8FAFC] transition-colors"
             >
               Browse Campaigns
             </a>
@@ -161,7 +161,7 @@ export default function ForInfluencersPage() {
           <p className="text-[#64748B] text-sm mb-7">Join hundreds of creators already on InfluenceIQ</p>
           <a
             href="/signup?role=influencer"
-            className="inline-block bg-cyan-600 text-white px-8 py-3.5 rounded-xl text-sm font-semibold hover:bg-cyan-500 transition-colors shadow-lg shadow-cyan-500/20"
+            className="inline-block w-full md:w-auto bg-cyan-600 text-white px-8 py-3.5 rounded-xl text-sm font-semibold hover:bg-cyan-500 transition-colors shadow-lg shadow-cyan-500/20"
           >
             Let's Go →
           </a>
