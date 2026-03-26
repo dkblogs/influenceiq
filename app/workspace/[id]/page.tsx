@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { useParams, useRouter } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
+import { supabase } from "@/lib/supabase"
 
 type Milestone = { id: string; title: string; description?: string; status: string; order: number; completedAt?: string }
 type Deliverable = { id: string; title: string; description?: string; fileUrl?: string; status: string; feedback?: string; submittedAt?: string }
@@ -129,6 +130,42 @@ export default function WorkspacePage() {
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100)
     }
   }, [activeTab, workspace?.proposal?.messages])
+
+  // Realtime subscription for workspace chat
+  useEffect(() => {
+    const proposalId = workspace?.proposal?.id
+    if (!proposalId) return
+    const channel = supabase
+      .channel(`workspace-messages-${proposalId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "ProposalMessage",
+          filter: `proposalId=eq.${proposalId}`,
+        },
+        (payload) => {
+          setWorkspace(prev => {
+            if (!prev) return prev
+            const msgs = prev.proposal.messages
+            if (msgs.some(m => m.id === (payload.new as any).id)) return prev
+            return {
+              ...prev,
+              proposal: {
+                ...prev.proposal,
+                messages: [...msgs, payload.new as Message],
+              },
+            }
+          })
+          if (activeTab === "Chat") {
+            setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50)
+          }
+        }
+      )
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [workspace?.proposal?.id])
 
   async function loadWorkspace() {
     setLoading(true)
@@ -280,7 +317,7 @@ export default function WorkspacePage() {
               <h1 className="text-2xl font-bold text-[#F8FAFC]">{workspace.campaignTitle}</h1>
               <p className="text-sm text-[#64748B] mt-1">Campaign Workspace · {isBrand ? "Brand View" : "Influencer View"}</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2">
               <span className={`text-xs font-medium px-3 py-1 rounded-full border ${PAYMENT_STATUS_STYLE[workspace.paymentStatus] || PAYMENT_STATUS_STYLE.pending}`}>
                 Payment: {workspace.paymentStatus}
               </span>
@@ -417,7 +454,7 @@ export default function WorkspacePage() {
                   isLocked ? "border-[#1E1E2E] opacity-50" : "border-[#1E1E2E]"
                 }`}>
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                         m.status === "completed" ? "bg-[#10B981] text-white"
                           : isLocked ? "bg-[#1E1E2E] text-[#64748B]"
@@ -559,13 +596,13 @@ export default function WorkspacePage() {
               <h2 className="font-semibold text-[#F8FAFC] mb-5">Payment Status</h2>
 
               {/* Two-step tracker */}
-              <div className="flex items-center gap-3 mb-6">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
                 <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border ${
                   workspace.paymentSentAt ? "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/20" : "bg-[#1E1E2E] text-[#64748B] border-[#1E1E2E]"
                 }`}>
                   {workspace.paymentSentAt ? "✓" : "1"} Brand sent
                 </div>
-                <div className="h-px flex-1 bg-[#1E1E2E]" />
+                <div className="hidden sm:block h-px flex-1 bg-[#1E1E2E]" />
                 <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border ${
                   workspace.paymentConfirmedAt ? "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/20" : "bg-[#1E1E2E] text-[#64748B] border-[#1E1E2E]"
                 }`}>

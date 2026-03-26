@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { useParams, useRouter } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
+import { supabase } from "@/lib/supabase"
 
 const STATUS_STYLE: Record<string, string> = {
   pending:     "bg-amber-500/10 text-amber-400 border-amber-500/20",
@@ -54,6 +55,32 @@ export default function ProposalDetailPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
+
+  // Realtime subscription for new messages
+  useEffect(() => {
+    if (!id) return
+    const channel = supabase
+      .channel(`proposal-messages-${id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "ProposalMessage",
+          filter: `proposalId=eq.${id}`,
+        },
+        (payload) => {
+          setMessages(prev => {
+            // Avoid duplicates (our own optimistic messages)
+            if (prev.some(m => m.id === (payload.new as any).id)) return prev
+            return [...prev, payload.new as any]
+          })
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+        }
+      )
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [id])
 
   async function loadProposal() {
     const [pRes, mRes] = await Promise.all([
@@ -338,11 +365,11 @@ export default function ProposalDetailPage() {
           </div>
 
           {/* RIGHT — Chat */}
-          <div className="flex flex-col bg-[#12121A] rounded-2xl border border-[#1E1E2E] overflow-hidden" style={{ minHeight: "480px" }}>
+          <div className="flex flex-col bg-[#12121A] rounded-2xl border border-[#1E1E2E] overflow-hidden min-h-[360px] lg:min-h-[480px]">
             <div className="px-5 py-4 border-b border-[#1E1E2E]">
               <h2 className="font-semibold text-[#F8FAFC] text-sm">Messages</h2>
             </div>
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3" style={{ maxHeight: "400px" }}>
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 max-h-[320px] lg:max-h-[400px]">
               {messages.length === 0 ? (
                 <div className="text-center text-xs text-[#64748B] py-8">No messages yet. Start the conversation.</div>
               ) : messages.map((msg: any) => {

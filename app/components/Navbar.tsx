@@ -24,6 +24,15 @@ export default function Navbar() {
   const showFullGuestNav = !loggedIn && publicPages.some(p => pathname.startsWith(p))
   const signupHref = pathname === "/for-influencers" ? "/signup?role=influencer" : pathname === "/for-brands" ? "/signup?role=brand" : "/signup"
 
+  // Request browser notification permission on login
+  useEffect(() => {
+    if (status === "authenticated" && typeof window !== "undefined" && "Notification" in window) {
+      if (window.Notification.permission === "default") {
+        window.Notification.requestPermission()
+      }
+    }
+  }, [status])
+
   // Close dropdowns on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {

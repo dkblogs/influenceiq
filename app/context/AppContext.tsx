@@ -1,6 +1,7 @@
 "use client"
 import { createContext, useContext, useState, useEffect, useCallback } from "react"
 import { useSession } from "next-auth/react"
+import { supabase } from "@/lib/supabase"
 
 interface AppContextType {
   credits: number | null
@@ -60,12 +61,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [status, userId])
 
-  // Poll notifications every 30s
+  // Realtime subscription for new notifications (replaces 30s polling)
   useEffect(() => {
-    if (status !== "authenticated") return
-    const interval = setInterval(refreshNotifications, 30000)
-    return () => clearInterval(interval)
-  }, [status, refreshNotifications])
+    if (status !== "authenticated" || !userId) return
+    const channel = supabase
+      .channel(`notifications-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "Notification",
+          filter: `userId=eq.${userId}`,
+        },
+        (payload) => {
+          setUnreadCount(prev => prev + 1)
+          if (typeof window !== "undefined" && "Notification" in window && window.Notification.permission === "granted") {
+            new window.Notification((payload.new as any).title ?? "New notification", {
+              body: (payload.new as any).message,
+              icon: "/favicon.ico",
+            })
+          }
+        }
+      )
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [status, userId])
 
   // Global event listeners
   useEffect(() => {
