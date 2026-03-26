@@ -1,9 +1,9 @@
 "use client"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useParams, useRouter } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
-import { supabase } from "@/lib/supabase"
+import ChatWidget from "@/app/components/ChatWidget"
 
 const STATUS_STYLE: Record<string, string> = {
   pending:     "bg-amber-500/10 text-amber-400 border-amber-500/20",
@@ -31,17 +31,13 @@ export default function ProposalDetailPage() {
   const user = session?.user as any
 
   const [proposal, setProposal] = useState<any>(null)
-  const [messages, setMessages] = useState<any[]>([])
   const [workspaceId, setWorkspaceId] = useState<string | null | undefined>(undefined)
   const [creatingWorkspace, setCreatingWorkspace] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [msgText, setMsgText] = useState("")
-  const [sendingMsg, setSendingMsg] = useState(false)
   const [actionLoading, setActionLoading] = useState("")
   const [showCounter, setShowCounter] = useState(false)
   const [toast, setToast] = useState("")
   const [counter, setCounter] = useState({ remunerationCounter: "", deliverablesCounter: "", timelineCounter: "", revisionsCounter: "", notes: "" })
-  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const role = user?.role
   const myRole = role === "brand" ? "brand" : "influencer"
@@ -52,53 +48,19 @@ export default function ProposalDetailPage() {
     loadProposal()
   }, [status, id])
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
-
-  // Realtime subscription for new messages
-  useEffect(() => {
-    if (!id) return
-    const channel = supabase
-      .channel(`proposal-messages-${id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "ProposalMessage",
-          filter: `proposalId=eq.${id}`,
-        },
-        (payload) => {
-          setMessages(prev => {
-            // Avoid duplicates (our own optimistic messages)
-            if (prev.some(m => m.id === (payload.new as any).id)) return prev
-            return [...prev, payload.new as any]
-          })
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-        }
-      )
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [id])
-
   async function loadProposal() {
-    const [pRes, mRes] = await Promise.all([
-      fetch(`/api/proposals/${id}`),
-      fetch(`/api/proposals/${id}/messages`),
-    ])
-    const [pData, mData] = await Promise.all([pRes.json(), mRes.json()])
-    if (pData.proposal) {
-      setProposal(pData.proposal)
+    const res = await fetch(`/api/proposals/${id}`)
+    const data = await res.json()
+    if (data.proposal) {
+      setProposal(data.proposal)
       setCounter({
-        remunerationCounter: pData.proposal.remuneration,
-        deliverablesCounter: pData.proposal.deliverables,
-        timelineCounter: pData.proposal.timeline,
-        revisionsCounter: pData.proposal.revisions,
+        remunerationCounter: data.proposal.remuneration,
+        deliverablesCounter: data.proposal.deliverables,
+        timelineCounter: data.proposal.timeline,
+        revisionsCounter: data.proposal.revisions,
         notes: "",
       })
     }
-    setMessages(mData.messages || [])
     setLoading(false)
   }
 
@@ -132,20 +94,6 @@ export default function ProposalDetailPage() {
   }
 
   function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(""), 3000) }
-
-  async function sendMessage() {
-    if (!msgText.trim()) return
-    setSendingMsg(true)
-    const res = await fetch(`/api/proposals/${id}/messages`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: msgText.trim() }),
-    })
-    const data = await res.json()
-    if (data.message) setMessages(prev => [...prev, data.message])
-    setMsgText("")
-    setSendingMsg(false)
-  }
 
   async function doAction(action: string, body: Record<string, any> = {}) {
     setActionLoading(action)
@@ -293,9 +241,7 @@ export default function ProposalDetailPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* LEFT — Proposal details */}
-          <div className="space-y-4">
+        <div className="space-y-4 max-w-2xl">
             {/* Current terms */}
             <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5">
               <h2 className="font-semibold text-[#F8FAFC] mb-4">Current Terms</h2>
@@ -362,49 +308,6 @@ export default function ProposalDetailPage() {
                 </div>
               </div>
             )}
-          </div>
-
-          {/* RIGHT — Chat */}
-          <div className="flex flex-col bg-[#12121A] rounded-2xl border border-[#1E1E2E] overflow-hidden min-h-[360px] lg:min-h-[480px]">
-            <div className="px-5 py-4 border-b border-[#1E1E2E]">
-              <h2 className="font-semibold text-[#F8FAFC] text-sm">Messages</h2>
-            </div>
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 max-h-[320px] lg:max-h-[400px]">
-              {messages.length === 0 ? (
-                <div className="text-center text-xs text-[#64748B] py-8">No messages yet. Start the conversation.</div>
-              ) : messages.map((msg: any) => {
-                const isMine = msg.senderId === user?.id
-                return (
-                  <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${isMine ? "bg-purple-600 text-white rounded-br-sm" : "bg-[#1E1E2E] text-[#F8FAFC] rounded-bl-sm"}`}>
-                      {!isMine && <div className="text-xs text-[#64748B] mb-1 capitalize">{msg.senderRole}</div>}
-                      <p className="text-sm leading-relaxed">{msg.message}</p>
-                      <div className={`text-xs mt-1 ${isMine ? "text-purple-200/70" : "text-[#64748B]"}`}>{timeAgo(msg.createdAt)}</div>
-                    </div>
-                  </div>
-                )
-              })}
-              <div ref={messagesEndRef} />
-            </div>
-            {isActive && (
-              <div className="px-4 py-3 border-t border-[#1E1E2E] flex gap-2">
-                <input
-                  value={msgText}
-                  onChange={e => setMsgText(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
-                  placeholder="Type a message..."
-                  className="flex-1 bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl px-3 py-2 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500"
-                />
-                <button
-                  onClick={sendMessage}
-                  disabled={sendingMsg || !msgText.trim()}
-                  className="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors flex-shrink-0"
-                >
-                  Send
-                </button>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Action bar */}
@@ -562,6 +465,16 @@ export default function ProposalDetailPage() {
           </div>
         )}
       </div>
+
+      {proposal && user && (
+        <ChatWidget
+          proposalId={id}
+          currentUserId={user.id}
+          currentUserRole={myRole as "brand" | "influencer"}
+          currentUserName={user.name || ""}
+          otherPartyName={isBrandViewing ? proposal.influencerName : proposal.brandName}
+        />
+      )}
     </main>
   )
 }

@@ -1,9 +1,9 @@
 "use client"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useParams, useRouter } from "next/navigation"
 import Navbar from "@/app/components/Navbar"
-import { supabase } from "@/lib/supabase"
+import ChatWidget from "@/app/components/ChatWidget"
 
 type Milestone = { id: string; title: string; description?: string; status: string; order: number; completedAt?: string }
 type Deliverable = { id: string; title: string; description?: string; fileUrl?: string; status: string; feedback?: string; submittedAt?: string }
@@ -36,7 +36,7 @@ type Workspace = {
   createdAt: string
 }
 
-const TABS = ["Overview", "Milestones", "Deliverables", "Payment", "Reviews", "Chat"] as const
+const TABS = ["Overview", "Milestones", "Deliverables", "Payment", "Reviews"] as const
 type Tab = typeof TABS[number]
 
 const MILESTONE_STATUS_STYLE: Record<string, string> = {
@@ -105,7 +105,6 @@ export default function WorkspacePage() {
   const [activeTab, setActiveTab] = useState<Tab>("Overview")
   const [toast, setToast] = useState("")
   const [actionLoading, setActionLoading] = useState("")
-  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Deliverable form
   const [dlForm, setDlForm] = useState({ title: "", description: "", fileUrl: "" })
@@ -115,9 +114,6 @@ export default function WorkspacePage() {
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" })
   const [showReviewForm, setShowReviewForm] = useState(false)
 
-  // Chat
-  const [msgText, setMsgText] = useState("")
-  const [sendingMsg, setSendingMsg] = useState(false)
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/login"); return }
@@ -125,47 +121,6 @@ export default function WorkspacePage() {
     loadWorkspace()
   }, [status, id])
 
-  useEffect(() => {
-    if (activeTab === "Chat") {
-      setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100)
-    }
-  }, [activeTab, workspace?.proposal?.messages])
-
-  // Realtime subscription for workspace chat
-  useEffect(() => {
-    const proposalId = workspace?.proposal?.id
-    if (!proposalId) return
-    const channel = supabase
-      .channel(`workspace-messages-${proposalId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "ProposalMessage",
-          filter: `proposalId=eq.${proposalId}`,
-        },
-        (payload) => {
-          setWorkspace(prev => {
-            if (!prev) return prev
-            const msgs = prev.proposal.messages
-            if (msgs.some(m => m.id === (payload.new as any).id)) return prev
-            return {
-              ...prev,
-              proposal: {
-                ...prev.proposal,
-                messages: [...msgs, payload.new as Message],
-              },
-            }
-          })
-          if (activeTab === "Chat") {
-            setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50)
-          }
-        }
-      )
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [workspace?.proposal?.id])
 
   async function loadWorkspace() {
     setLoading(true)
@@ -256,19 +211,6 @@ export default function WorkspacePage() {
     else { const d = await res.json(); showToast(d.error || "Failed to submit review") }
   }
 
-  async function sendMessage() {
-    if (!msgText.trim() || !workspace) return
-    setSendingMsg(true)
-    const res = await fetch(`/api/proposals/${workspace.proposal.id}/messages`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: msgText }),
-    })
-    setSendingMsg(false)
-    if (res.ok) { setMsgText(""); loadWorkspace() }
-    else showToast("Failed to send message")
-  }
-
   if (loading) return (
     <div className="min-h-screen bg-[#0A0A12]">
       <Navbar />
@@ -289,12 +231,6 @@ export default function WorkspacePage() {
   const totalMilestones = workspace.milestones.length
   const progress = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0
   const myReview = workspace.reviews.find(r => r.reviewerRole === (isBrand ? "brand" : "influencer"))
-
-  // Chat: all proposal messages, split at workspace createdAt
-  const allMessages = workspace.proposal?.messages || []
-  const workspaceStartedAt = new Date(workspace.createdAt)
-  const preMsgs = allMessages.filter(m => new Date(m.createdAt) < workspaceStartedAt)
-  const postMsgs = allMessages.filter(m => new Date(m.createdAt) >= workspaceStartedAt)
 
   return (
     <div className="min-h-screen bg-[#0A0A12]">
@@ -389,9 +325,6 @@ export default function WorkspacePage() {
                       👤 View Influencer Profile →
                     </a>
                   )}
-                  <button onClick={() => setActiveTab("Chat")} className="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors">
-                    💬 Open Chat →
-                  </button>
                 </div>
               </div>
             </div>
@@ -750,78 +683,17 @@ export default function WorkspacePage() {
           </div>
         )}
 
-        {/* ── CHAT ── */}
-        {activeTab === "Chat" && (
-          <div className="flex flex-col h-[60vh]">
-            <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-1">
-              {allMessages.length === 0 && (
-                <div className="text-center py-12 text-[#64748B]">
-                  <div className="text-3xl mb-2">💬</div>
-                  <p className="text-sm">No messages yet. Start the conversation!</p>
-                </div>
-              )}
-
-              {/* Pre-workspace messages (negotiation context) */}
-              {preMsgs.map(msg => {
-                const isMe = msg.senderId === user?.id
-                return (
-                  <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm opacity-60 ${
-                      isMe ? "bg-purple-600/60 text-white rounded-br-sm" : "bg-[#12121A] border border-[#1E1E2E] text-[#94A3B8] rounded-bl-sm"
-                    }`}>
-                      <p>{msg.message}</p>
-                      <p className={`text-xs mt-1 ${isMe ? "text-purple-300" : "text-[#64748B]"}`}>{timeAgo(msg.createdAt)}</p>
-                    </div>
-                  </div>
-                )
-              })}
-
-              {/* Divider */}
-              {preMsgs.length > 0 && (
-                <div className="flex items-center gap-3 py-2">
-                  <div className="flex-1 h-px bg-[#1E1E2E]" />
-                  <span className="text-xs text-[#64748B] whitespace-nowrap px-2">── Proposal agreed · Workspace started ──</span>
-                  <div className="flex-1 h-px bg-[#1E1E2E]" />
-                </div>
-              )}
-
-              {/* Post-workspace messages */}
-              {postMsgs.map(msg => {
-                const isMe = msg.senderId === user?.id
-                return (
-                  <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
-                      isMe ? "bg-purple-600 text-white rounded-br-sm" : "bg-[#12121A] border border-[#1E1E2E] text-[#F8FAFC] rounded-bl-sm"
-                    }`}>
-                      <p>{msg.message}</p>
-                      <p className={`text-xs mt-1 ${isMe ? "text-purple-300" : "text-[#64748B]"}`}>{timeAgo(msg.createdAt)}</p>
-                    </div>
-                  </div>
-                )
-              })}
-
-              <div ref={messagesEndRef} />
-            </div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={msgText}
-                onChange={e => setMsgText(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
-                placeholder="Type a message..."
-                className="flex-1 bg-[#12121A] border border-[#1E1E2E] rounded-xl px-4 py-3 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500/50"
-              />
-              <button
-                onClick={sendMessage}
-                disabled={sendingMsg || !msgText.trim()}
-                className="bg-purple-600 hover:bg-purple-700 disabled:opacity-40 text-white rounded-xl px-5 text-sm font-medium transition-colors"
-              >
-                {sendingMsg ? "..." : "Send"}
-              </button>
-            </div>
-          </div>
-        )}
       </div>
+
+      {workspace && user && (
+        <ChatWidget
+          proposalId={workspace.proposal.id}
+          currentUserId={user.id}
+          currentUserRole={isBrand ? "brand" : "influencer"}
+          currentUserName={user.name || ""}
+          otherPartyName={isBrand ? "the influencer" : "the brand"}
+        />
+      )}
     </div>
   )
 }
