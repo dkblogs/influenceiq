@@ -59,7 +59,7 @@ export default function AgreedCollaborationsPage() {
           <div className="space-y-3">
             {proposals.map((p: any) => {
               const inf = p.influencer
-              const agreedDate = new Date(p.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+              const agreedDate = new Date(p.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" })
               return (
                 <div key={p.id} className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 hover:border-purple-500/20 transition-all">
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">

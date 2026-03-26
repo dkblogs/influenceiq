@@ -82,7 +82,7 @@ export default function CampaignsAppliedPage() {
                     </div>
                   </div>
                   <div className="text-xs text-[#64748B] whitespace-nowrap flex-shrink-0">
-                    Applied {new Date(app.appliedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                    Applied {new Date(app.appliedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" })}
                   </div>
                 </div>
                 {app.campaign?.deadline && (

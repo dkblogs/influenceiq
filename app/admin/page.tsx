@@ -176,7 +176,7 @@ export default function Admin() {
                   <div key={t.id} className="flex items-center justify-between">
                     <div>
                       <div className="text-sm font-medium text-[#F8FAFC]">{t.type}</div>
-                      <div className="text-xs text-[#64748B]">{new Date(t.createdAt).toLocaleDateString()}</div>
+                      <div className="text-xs text-[#64748B]">{new Date(t.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" })}</div>
                     </div>
                     <div className={`text-sm font-medium ${t.amount > 0 ? "text-[#10B981]" : "text-red-400"}`}>
                       {t.amount > 0 ? "+" : ""}{t.amount} cr
@@ -212,7 +212,7 @@ export default function Admin() {
                       </span>
                     </td>
                     <td className="px-6 py-3 font-medium text-purple-400">{u.credits}</td>
-                    <td className="px-6 py-3 text-[#64748B]">{new Date(u.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-3 text-[#64748B]">{new Date(u.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" })}</td>
                     <td className="px-6 py-3">
                       {u.role === "brand" && (
                         <button
@@ -299,7 +299,7 @@ export default function Admin() {
                     <td className="px-6 py-3">
                       <span className="text-xs bg-[#10B981]/10 text-[#10B981] px-2 py-0.5 rounded-full border border-[#10B981]/20">{c.status}</span>
                     </td>
-                    <td className="px-6 py-3 text-[#64748B]">{new Date(c.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-3 text-[#64748B]">{new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" })}</td>
                   </tr>
                 ))}
               </tbody>
@@ -345,7 +345,7 @@ export default function Admin() {
                           {m.status}
                         </span>
                       </td>
-                      <td className="px-6 py-3 text-[#64748B] text-xs whitespace-nowrap">{new Date(m.createdAt).toLocaleDateString()}</td>
+                      <td className="px-6 py-3 text-[#64748B] text-xs whitespace-nowrap">{new Date(m.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" })}</td>
                       <td className="px-6 py-3">
                         {m.status === "unread" && (
                           <button
@@ -381,7 +381,7 @@ export default function Admin() {
                     <td className={`px-6 py-3 font-medium ${t.amount > 0 ? "text-[#10B981]" : "text-red-400"}`}>
                       {t.amount > 0 ? "+" : ""}{t.amount} credits
                     </td>
-                    <td className="px-6 py-3 text-[#64748B]">{new Date(t.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-3 text-[#64748B]">{new Date(t.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" })}</td>
                   </tr>
                 ))}
               </tbody>

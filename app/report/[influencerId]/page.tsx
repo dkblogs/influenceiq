@@ -194,7 +194,7 @@ export default function ReportPage() {
           <span>
             Report generated on{" "}
             {influencer.aiReportGeneratedAt
-              ? new Date(influencer.aiReportGeneratedAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
+              ? new Date(influencer.aiReportGeneratedAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" })
               : "—"}
           </span>
           <div className="flex gap-3">

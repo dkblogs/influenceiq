@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
+import { formatIST } from "@/lib/utils"
 
 interface ChatWidgetProps {
   proposalId: string
@@ -134,7 +135,7 @@ export default function ChatWidget({ proposalId, currentUserId, currentUserRole,
                   } ${msg.temp ? "opacity-70" : ""}`}>
                     <p>{msg.message}</p>
                     <p className={`text-xs mt-1 ${isMe ? "text-purple-200" : "text-white/40"}`}>
-                      {new Date(msg.createdAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                      {formatIST(msg.createdAt)}
                     </p>
                   </div>
                 </div>

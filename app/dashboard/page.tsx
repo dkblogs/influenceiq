@@ -762,7 +762,7 @@ export default function Dashboard() {
                   )}
                   {myInfluencerProfile?.aiReportGeneratedAt && (
                     <span className="text-xs text-[#64748B]">
-                      Last generated {new Date(myInfluencerProfile.aiReportGeneratedAt).toLocaleDateString("en-IN")}
+                      Last generated {new Date(myInfluencerProfile.aiReportGeneratedAt).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}
                     </span>
                   )}
                 </div>
@@ -801,7 +801,7 @@ export default function Dashboard() {
                                     <span className="text-xs bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded-full font-medium">Latest</span>
                                   )}
                                   <span className="text-xs text-[#64748B]">
-                                    {new Date(entry.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                                    {new Date(entry.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" })}
                                   </span>
                                   <span className={`text-[#64748B] text-xs transition-transform ${isExpanded ? "rotate-180" : ""}`}>▼</span>
                                 </div>

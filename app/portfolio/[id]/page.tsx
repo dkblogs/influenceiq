@@ -110,7 +110,7 @@ function PortfolioCard({ item }: { item: any }) {
         </div>
         {item.completedAt && (
           <span className="text-xs text-[#64748B] whitespace-nowrap flex-shrink-0 mt-0.5">
-            {new Date(item.completedAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
+            {new Date(item.completedAt).toLocaleDateString("en-IN", { month: "short", year: "numeric", timeZone: "Asia/Kolkata" })}
           </span>
         )}
       </div>

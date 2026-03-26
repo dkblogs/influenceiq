@@ -73,7 +73,7 @@ function timeAgo(d: string) {
   if (mins < 60) return `${mins}m ago`
   const hours = Math.floor(mins / 60)
   if (hours < 24) return `${hours}h ago`
-  return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short" })
+  return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" })
 }
 
 function StarRating({ value, onChange }: { value: number; onChange?: (v: number) => void }) {

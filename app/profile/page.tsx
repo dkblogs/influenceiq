@@ -674,7 +674,7 @@ export default function ProfilePage() {
                           {item.description && <div className="text-xs text-[#64748B] mt-0.5 line-clamp-1">{item.description}</div>}
                           {item.completedAt && (
                             <div className="text-xs text-[#64748B] mt-0.5">
-                              {new Date(item.completedAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
+                              {new Date(item.completedAt).toLocaleDateString("en-IN", { month: "short", year: "numeric", timeZone: "Asia/Kolkata" })}
                             </div>
                           )}
                         </div>
@@ -1178,7 +1178,7 @@ export default function ProfilePage() {
                             {item.results && <div className="text-xs text-[#10B981] mt-0.5 truncate">{item.results}</div>}
                             {item.completedAt && (
                               <div className="text-xs text-[#64748B] mt-0.5">
-                                {new Date(item.completedAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
+                                {new Date(item.completedAt).toLocaleDateString("en-IN", { month: "short", year: "numeric", timeZone: "Asia/Kolkata" })}
                               </div>
                             )}
                           </div>

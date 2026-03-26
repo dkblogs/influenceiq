@@ -380,7 +380,7 @@ export default function InfluencerProfile() {
                       </div>
                       {item.completedAt && (
                         <span className="text-xs text-[#64748B] whitespace-nowrap flex-shrink-0 mt-0.5">
-                          {new Date(item.completedAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
+                          {new Date(item.completedAt).toLocaleDateString("en-IN", { month: "short", year: "numeric", timeZone: "Asia/Kolkata" })}
                         </span>
                       )}
                     </div>
@@ -760,7 +760,7 @@ export default function InfluencerProfile() {
                   <p className="text-sm text-[#94A3B8]">{r.review}</p>
                   <div className="flex items-center justify-between mt-2">
                     <div className="text-xs text-[#64748B]">
-                      {new Date(r.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" })}
+                      {new Date(r.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric", timeZone: "Asia/Kolkata" })}
                     </div>
                     {isOwner && (
                       <div className="flex gap-2">
