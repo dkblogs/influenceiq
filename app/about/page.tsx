@@ -59,7 +59,7 @@ export default function About() {
 
       {/* Mission */}
       <section className="bg-gray-50 px-8 py-16">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 gap-12 items-center">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
           <div>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Our mission</h2>
             <p className="text-gray-500 leading-relaxed mb-4">
@@ -96,7 +96,7 @@ export default function About() {
       {/* Stats */}
       <section className="px-8 py-16 max-w-4xl mx-auto">
         <h2 className="text-2xl font-semibold text-gray-900 text-center mb-10">By the numbers</h2>
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           <div className="text-center">
             <div className="text-4xl font-semibold text-purple-600 mb-2">12,400+</div>
             <div className="text-sm text-gray-500">Influencers listed</div>
@@ -120,7 +120,7 @@ export default function About() {
       <section className="bg-purple-600 px-8 py-16">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl font-semibold text-white mb-10">What we believe</h2>
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div className="bg-purple-500 rounded-xl p-6">
               <div className="text-2xl mb-3">✨</div>
               <div className="font-medium text-white mb-2">Authentic always wins</div>
@@ -149,11 +149,11 @@ export default function About() {
       <section className="px-8 py-16 text-center">
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">Ready to get started?</h2>
         <p className="text-gray-500 mb-8">Join thousands of brands and influencers already on InfluenceIQ.</p>
-        <div className="flex justify-center gap-4">
-          <a href="/discover" className="bg-purple-600 text-white px-8 py-3 rounded-lg text-sm font-medium hover:bg-purple-700">
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <a href="/discover" className="w-full sm:w-auto bg-purple-600 text-white px-8 py-3 rounded-lg text-sm font-medium hover:bg-purple-700 text-center">
             Find Influencers
           </a>
-          <a href="/join" className="border border-gray-200 text-gray-600 px-8 py-3 rounded-lg text-sm hover:bg-gray-50">
+          <a href="/join" className="w-full sm:w-auto border border-gray-200 text-gray-600 px-8 py-3 rounded-lg text-sm hover:bg-gray-50 text-center">
             Join as Influencer
           </a>
         </div>

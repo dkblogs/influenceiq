@@ -28,8 +28,8 @@ export default function PlatformComparison({ heading, subheading }: { heading: s
           <p className="text-gray-400 text-lg">{subheading}</p>
         </div>
 
-        {/* Comparison Table */}
-        <div className="rounded-2xl overflow-hidden border border-[#1E1E2E] mb-14">
+        {/* Comparison Table — desktop */}
+        <div className="hidden md:block rounded-2xl overflow-hidden border border-[#1E1E2E] mb-14">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gradient-to-r from-purple-900/60 to-purple-800/40">
@@ -48,6 +48,25 @@ export default function PlatformComparison({ heading, subheading }: { heading: s
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Comparison Cards — mobile */}
+        <div className="md:hidden space-y-3 mb-14">
+          {rows.map(([feature, iq, other], i) => (
+            <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <p className="text-white/60 text-sm mb-3">{feature}</p>
+              <div className="flex justify-between items-start gap-4">
+                <div className="flex-1">
+                  <p className="text-xs text-purple-400 mb-1">InfluenceIQ</p>
+                  <p className="text-green-400 text-sm font-medium">{iq}</p>
+                </div>
+                <div className="flex-1 text-right">
+                  <p className="text-xs text-white/40 mb-1">Others</p>
+                  <p className="text-red-400 text-sm">{other}</p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Savings Calculator */}
