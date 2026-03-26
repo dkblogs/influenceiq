@@ -35,9 +35,17 @@ export default function ChatWidget({ proposalId, currentUserId, currentUserRole,
         table: "ProposalMessage",
         filter: `proposalId=eq.${proposalId}`,
       }, (payload) => {
+        const incoming = payload.new as any
         setMessages(prev => {
-          if (prev.find(m => m.id === (payload.new as any).id)) return prev
-          return [...prev, payload.new]
+          if (incoming.senderId === currentUserId || incoming.senderRole === currentUserRole) {
+            // Replace the temp message with the real one
+            const withoutTemp = prev.filter(m => !m.temp)
+            if (withoutTemp.find(m => m.id === incoming.id)) return withoutTemp
+            return [...withoutTemp, incoming]
+          }
+          // Message from other party — add if not duplicate
+          if (prev.find(m => m.id === incoming.id)) return prev
+          return [...prev, incoming]
         })
         if (!open) setUnread(prev => prev + 1)
       })
@@ -56,21 +64,22 @@ export default function ChatWidget({ proposalId, currentUserId, currentUserRole,
   const sendMessage = async () => {
     if (!newMessage.trim() || sending) return
     setSending(true)
-    const text = newMessage.trim()
     const tempId = `temp-${Date.now()}`
-    setMessages(prev => [...prev, {
+    const tempMsg = {
       id: tempId,
-      message: text,
+      message: newMessage.trim(),
       senderRole: currentUserRole,
       senderId: currentUserId,
       createdAt: new Date().toISOString(),
       temp: true,
-    }])
+    }
+    setMessages(prev => [...prev, tempMsg])
+    const sentText = newMessage.trim()
     setNewMessage("")
     await fetch(`/api/proposals/${proposalId}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text }),
+      body: JSON.stringify({ message: sentText }),
     })
     setSending(false)
   }
