@@ -269,7 +269,7 @@ model CampaignWorkspace {
   proposal       Proposal  @relation(fields: [proposalId], references: [id], onDelete: Cascade)
   brandId        String
   influencerId   String
-  campaignTitle  String
+  campaignTitle  String?
   status         String    @default("active")
   paymentStatus      String    @default("pending")
   paymentAmount      String?
