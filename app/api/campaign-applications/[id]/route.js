@@ -88,8 +88,8 @@ export async function PATCH(request, context) {
             proposalId: proposal.id,
             brandId: application.campaign.brandId,
             influencerId: influencer.id,
-            campaignTitle,
-            paymentAmount: application.campaign.budget || "",
+            campaignTitle: application.campaign.title ?? "Campaign",
+            paymentAmount: application.campaign.budget ?? "",
             milestones: {
               create: [
                 { title: "Content Draft", description: "Influencer submits first content draft", order: 1 },
