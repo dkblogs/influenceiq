@@ -60,17 +60,21 @@ export default function CampaignsAppliedPage() {
         ) : (
           <div className="space-y-4">
             {applications.map(app => (
-              <a
+              <div
                 key={app.id}
-                href={app.campaign?.id ? `/campaigns/${app.campaign.id}` : "#"}
-                className="block bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 hover:border-purple-500/30 transition-colors"
+                className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-5 hover:border-purple-500/30 transition-colors"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <span className="text-[#F8FAFC] font-medium truncate">{app.campaign?.title ?? "Unknown Campaign"}</span>
+                      <a
+                        href={app.campaign?.id ? `/campaigns/${app.campaign.id}` : "#"}
+                        className="text-[#F8FAFC] font-medium truncate hover:text-purple-400 transition-colors"
+                      >
+                        {app.campaign?.title ?? "Unknown Campaign"}
+                      </a>
                       <span className={`text-xs px-2 py-0.5 rounded-full border font-medium capitalize ${STATUS_STYLES[app.status] ?? STATUS_STYLES.pending}`}>
-                        {app.status}
+                        {app.status === "accepted" ? "✅ Accepted" : app.status === "rejected" ? "❌ Not Selected" : "⏳ Pending"}
                       </span>
                     </div>
                     <div className="text-sm text-[#64748B] mb-2">{app.campaign?.brandName}</div>
@@ -81,14 +85,24 @@ export default function CampaignsAppliedPage() {
                       {app.campaign?.location && <span className="bg-[#1E1E2E] px-2 py-0.5 rounded">{app.campaign.location}</span>}
                     </div>
                   </div>
-                  <div className="text-xs text-[#64748B] whitespace-nowrap flex-shrink-0">
-                    Applied {new Date(app.appliedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" })}
+                  <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                    <div className="text-xs text-[#64748B] whitespace-nowrap">
+                      Applied {new Date(app.appliedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" })}
+                    </div>
+                    {app.status === "accepted" && app.workspaceId && (
+                      <a
+                        href={`/workspace/${app.workspaceId}`}
+                        className="text-xs bg-purple-600 text-white px-3 py-1.5 rounded-lg hover:bg-purple-500 transition-colors font-medium whitespace-nowrap"
+                      >
+                        🚀 Open Workspace →
+                      </a>
+                    )}
                   </div>
                 </div>
                 {app.campaign?.deadline && (
                   <div className="mt-3 text-xs text-[#64748B]">Deadline: {app.campaign.deadline}</div>
                 )}
-              </a>
+              </div>
             ))}
           </div>
         )}

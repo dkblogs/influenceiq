@@ -78,14 +78,17 @@ export default function MyCampaignsPage() {
         body: JSON.stringify({ status: newStatus }),
       })
       if (!res.ok) { showToast("Failed to update"); return }
+      const data = await res.json()
 
       setApplicantsMap(prev => ({
         ...prev,
         [campaignId]: (prev[campaignId] || []).map(a =>
-          a.id === applicationId ? { ...a, status: newStatus } : a
+          a.id === applicationId
+            ? { ...a, status: newStatus, workspaceId: data.workspaceId ?? null }
+            : a
         ),
       }))
-      showToast(newStatus === "accepted" ? "✅ Application accepted!" : "Application rejected.")
+      showToast(newStatus === "accepted" ? "✅ Application accepted! Workspace created." : "Application rejected.")
     } finally {
       setActionLoading(null)
     }
@@ -250,9 +253,20 @@ export default function MyCampaignsPage() {
 
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                   {alreadyActed ? (
-                                    <span className={`text-xs px-3 py-1.5 rounded-full border font-medium ${STATUS_STYLES[app.status] ?? STATUS_STYLES.pending}`}>
-                                      {STATUS_LABELS[app.status] ?? app.status}
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                      <span className={`text-xs px-3 py-1.5 rounded-full border font-medium ${STATUS_STYLES[app.status] ?? STATUS_STYLES.pending}`}>
+                                        {STATUS_LABELS[app.status] ?? app.status}
+                                      </span>
+                                      {app.status === "accepted" && app.workspaceId && (
+                                        <a
+                                          href={`/workspace/${app.workspaceId}`}
+                                          onClick={e => e.stopPropagation()}
+                                          className="text-xs bg-purple-600/20 text-purple-400 border border-purple-500/30 px-3 py-1.5 rounded-lg hover:bg-purple-600/30 transition-colors whitespace-nowrap"
+                                        >
+                                          🚀 Open Workspace →
+                                        </a>
+                                      )}
+                                    </div>
                                   ) : (
                                     <>
                                       <button

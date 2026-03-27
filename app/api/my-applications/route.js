@@ -38,14 +38,40 @@ export async function GET() {
     })
     const brandMap = Object.fromEntries(brands.map(b => [b.id, b.companyName || b.name || "Unknown Brand"]))
 
-    const result = applications.map(app => ({
-      id: app.id,
-      status: app.status,
-      appliedAt: app.createdAt,
-      campaign: app.campaign
-        ? { ...app.campaign, brandName: brandMap[app.campaign.brandId] ?? "Unknown Brand" }
-        : null,
-    }))
+    // Get influencer record for workspace lookup
+    const influencer = await prisma.influencer.findFirst({
+      where: { userId: session.user.id },
+      select: { id: true },
+    })
+
+    // For accepted applications, find linked workspace
+    const result = await Promise.all(
+      applications.map(async app => {
+        const base = {
+          id: app.id,
+          status: app.status,
+          appliedAt: app.createdAt,
+          campaign: app.campaign
+            ? { ...app.campaign, brandName: brandMap[app.campaign.brandId] ?? "Unknown Brand" }
+            : null,
+          workspaceId: null,
+        }
+
+        if (app.status === "accepted" && influencer && app.campaign) {
+          const proposal = await prisma.proposal.findFirst({
+            where: {
+              brandId: app.campaign.brandId,
+              influencerId: influencer.id,
+              status: "agreed",
+            },
+            include: { workspace: { select: { id: true } } },
+          })
+          return { ...base, workspaceId: proposal?.workspace?.id ?? null }
+        }
+
+        return base
+      })
+    )
 
     return Response.json({ applications: result })
   } catch (error) {
