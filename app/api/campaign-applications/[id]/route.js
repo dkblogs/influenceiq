@@ -76,6 +76,13 @@ export async function PATCH(request, context) {
           },
         })
 
+        console.log("Creating workspace with data:", JSON.stringify({
+          proposalId: proposal.id,
+          brandId: application.campaign.brandId,
+          influencerId: influencer.id,
+          campaignTitle: application.campaign.title,
+          paymentAmount: application.campaign.budget,
+        }))
         const workspace = await prisma.campaignWorkspace.create({
           data: {
             proposalId: proposal.id,
@@ -98,7 +105,9 @@ export async function PATCH(request, context) {
         workspaceId = workspace.id
         console.log("Workspace created:", workspaceId)
       } catch (wsError) {
-        console.error("Workspace creation failed (non-fatal):", wsError.message)
+        console.error("Workspace creation failed:", wsError.message)
+        console.error("Full error:", JSON.stringify(wsError, null, 2))
+        console.error("Stack:", wsError.stack)
       }
 
       // Step 3 — Unlock contact (non-fatal if fails)
