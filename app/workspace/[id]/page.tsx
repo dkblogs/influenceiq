@@ -32,6 +32,8 @@ type Workspace = {
     deliverables?: string
     timeline?: string
     revisions?: number
+    brand?: { id: string; name: string; companyName?: string }
+    influencer?: { id: string; name: string; handle: string }
   }
   createdAt: string
 }
@@ -691,7 +693,9 @@ export default function WorkspacePage() {
           currentUserId={user.id}
           currentUserRole={isBrand ? "brand" : "influencer"}
           currentUserName={user.name || ""}
-          otherPartyName={isBrand ? "the influencer" : "the brand"}
+          otherPartyName={isBrand
+            ? (workspace.proposal.influencer?.name ?? "Influencer")
+            : (workspace.proposal.brand?.companyName || workspace.proposal.brand?.name ?? "Brand")}
         />
       )}
     </div>

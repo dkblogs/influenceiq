@@ -51,12 +51,46 @@ export async function POST(request, context) {
       },
     }).catch(() => {})
 
-    // Notify both parties
+    // Auto-create workspace first so we can link notifications to it
+    let workspaceId = null
+    try {
+      const existingWs = await prisma.campaignWorkspace.findUnique({ where: { proposalId: id } })
+      if (existingWs) {
+        workspaceId = existingWs.id
+      } else {
+        const ws = await prisma.campaignWorkspace.create({
+          data: {
+            proposalId: id,
+            brandId: proposal.brandId,
+            influencerId: proposal.influencerId,
+            campaignTitle: proposal.campaignTitle,
+            paymentAmount: finalRemuneration,
+            milestones: {
+              create: [
+                { title: "Campaign Kickoff", description: "Brief alignment, assets shared, creative direction confirmed", order: 1 },
+                { title: "Content Planning", description: "Content plan, shoot dates, and script/outline submitted", order: 2 },
+                { title: "Content Creation", description: "Raw content created and ready for review", order: 3 },
+                { title: "Content Review", description: "Brand reviews and approves the content", order: 4 },
+                { title: "Content Goes Live", description: "Post published on agreed platforms", order: 5 },
+                { title: "Campaign Complete", description: "Final analytics and results submitted", order: 6 },
+              ],
+            },
+          },
+        })
+        workspaceId = ws.id
+      }
+    } catch (wsErr) {
+      console.error("workspace auto-create failed:", wsErr.message)
+    }
+
+    const wsLink = workspaceId ? `/workspace/${workspaceId}` : `/proposals/${id}`
+
+    // Notify both parties — link directly to workspace
     const notifications = [
-      { userId: proposal.brandId, message: `🎉 Proposal agreed! Contact details for ${influencerName} are now available on their profile.` },
+      { userId: proposal.brandId, message: `🎉 Proposal agreed! Workspace is ready for "${proposal.campaignTitle}".` },
     ]
     if (influencer?.userId) {
-      notifications.push({ userId: influencer.userId, message: `${brandName} — proposal for "${proposal.campaignTitle}" is agreed!` })
+      notifications.push({ userId: influencer.userId, message: `${brandName} — proposal for "${proposal.campaignTitle}" is agreed! Workspace is ready.` })
     }
     for (const n of notifications) {
       prisma.notification.create({
@@ -65,7 +99,7 @@ export async function POST(request, context) {
           type: "proposal_agreed",
           title: "🎉 Proposal Agreed!",
           message: n.message,
-          link: `/proposals/${id}`,
+          link: wsLink,
         },
       }).catch(() => {})
     }
@@ -85,35 +119,7 @@ export async function POST(request, context) {
       }).catch(() => {})
     }
 
-    // Auto-create campaign workspace
-    try {
-      const existingWs = await prisma.campaignWorkspace.findUnique({ where: { proposalId: id } })
-      if (!existingWs) {
-        await prisma.campaignWorkspace.create({
-          data: {
-            proposalId: id,
-            brandId: proposal.brandId,
-            influencerId: proposal.influencerId,
-            campaignTitle: proposal.campaignTitle,
-            paymentAmount: finalRemuneration,
-            milestones: {
-              create: [
-                { title: "Campaign Kickoff", description: "Brief alignment, assets shared, creative direction confirmed", order: 1 },
-                { title: "Content Planning", description: "Content plan, shoot dates, and script/outline submitted", order: 2 },
-                { title: "Content Creation", description: "Raw content created and ready for review", order: 3 },
-                { title: "Content Review", description: "Brand reviews and approves the content", order: 4 },
-                { title: "Content Goes Live", description: "Post published on agreed platforms", order: 5 },
-                { title: "Campaign Complete", description: "Final analytics and results submitted", order: 6 },
-              ],
-            },
-          },
-        })
-      }
-    } catch (wsErr) {
-      console.error("workspace auto-create failed:", wsErr.message)
-    }
-
-    return Response.json({ success: true })
+    return Response.json({ success: true, workspaceId })
   } catch (e) {
     console.error("agree POST:", e.message)
     return Response.json({ error: "Failed to agree" }, { status: 500 })

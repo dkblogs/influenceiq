@@ -17,7 +17,6 @@ export async function PATCH(request, context) {
       return Response.json({ error: "Invalid status" }, { status: 400 })
     }
 
-    console.log("1. Fetching application details for id:", id)
     // Load application with full campaign details
     const application = await prisma.campaignApplication.findUnique({
       where: { id },
@@ -29,9 +28,8 @@ export async function PATCH(request, context) {
     if (application.campaign.brandId !== session.user.id) {
       return Response.json({ error: "Forbidden" }, { status: 403 })
     }
-    console.log("1. OK — campaign:", application.campaign.title, "userId:", application.userId)
 
-    // Get influencer record and user email
+    // Get influencer record and user email (CampaignApplication has userId, not influencer relation)
     const [influencer, influencerUser] = await Promise.all([
       prisma.influencer.findFirst({
         where: { userId: application.userId },
@@ -42,26 +40,28 @@ export async function PATCH(request, context) {
         select: { email: true },
       }),
     ])
-    console.log("1b. influencer:", influencer?.id, influencer?.name, "| email:", influencerUser?.email)
 
-    const influencerName = influencer?.name || "Influencer"
+    if (!influencer) {
+      return Response.json({ error: "Influencer profile not found for this user" }, { status: 404 })
+    }
+
+    const influencerName = influencer.name || "Influencer"
     const campaignTitle = application.campaign.title
 
-    console.log("2. Updating application status:", id, "→", status)
+    // 1. Update application status
     const updated = await prisma.campaignApplication.update({
       where: { id },
       data: { status },
     })
-    console.log("2. OK")
 
     if (status === "accepted") {
-      console.log("3. Creating proposal — brandId:", application.campaign.brandId, "influencerId:", influencer?.id)
+      // 2. Auto-create Proposal from campaign details
       const proposal = await prisma.proposal.create({
         data: {
           brandId: application.campaign.brandId,
           influencerId: influencer.id,
           status: "agreed",
-          campaignTitle: application.campaign.title,
+          campaignTitle,
           contentType: application.campaign.platform || "Multiple Deliverables",
           description: application.campaign.description || "",
           deliverables: application.campaign.requirements || "",
@@ -74,14 +74,15 @@ export async function PATCH(request, context) {
           revisions: 2,
         },
       })
-      console.log("3. OK — proposalId:", proposal.id)
 
-      console.log("4. Creating workspace with milestones...")
+      // 3. Auto-create workspace with 6 milestones (campaignTitle is required)
       const workspace = await prisma.campaignWorkspace.create({
         data: {
           proposalId: proposal.id,
           brandId: application.campaign.brandId,
           influencerId: influencer.id,
+          campaignTitle,
+          paymentAmount: application.campaign.budget || null,
           milestones: {
             create: [
               { title: "Content Draft", description: "Influencer submits first content draft", order: 1 },
@@ -94,9 +95,8 @@ export async function PATCH(request, context) {
           },
         },
       })
-      console.log("4. OK — workspaceId:", workspace.id)
 
-      console.log("5. Unlocking contact for brandId:", application.campaign.brandId, "influencerId:", influencer.id)
+      // 4. Auto-unlock contact for brand
       await prisma.unlockedContact.upsert({
         where: {
           userId_influencerId: {
@@ -114,9 +114,8 @@ export async function PATCH(request, context) {
           expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
         },
       })
-      console.log("5. OK")
 
-      console.log("6. Creating notification for userId:", influencer.userId)
+      // 5. Notify influencer — link directly to workspace
       await prisma.notification.create({
         data: {
           userId: influencer.userId,
@@ -126,9 +125,8 @@ export async function PATCH(request, context) {
           link: `/workspace/${workspace.id}`,
         },
       })
-      console.log("6. OK")
 
-      console.log("7. Sending acceptance email to:", influencerUser?.email)
+      // 6. Send acceptance email (fire-and-forget)
       if (influencerUser?.email) {
         sendEmail({
           to: influencerUser.email,
@@ -137,39 +135,33 @@ export async function PATCH(request, context) {
             campaignTitle,
             workspaceUrl: `${process.env.NEXTAUTH_URL}/workspace/${workspace.id}`,
           }),
-        }).catch(err => console.error("7. Email send failed:", err.message))
-      } else {
-        console.log("7. Skipped — no email address")
+        }).catch(() => {})
       }
 
-      console.log("8. Done! workspaceId:", workspace.id)
       return Response.json({ application: updated, workspaceId: workspace.id })
     } else {
-      console.log("3. Rejected path — creating notification for userId:", influencer?.userId)
-      if (influencer) {
-        await prisma.notification.create({
-          data: {
-            userId: influencer.userId,
-            type: "application_rejected",
-            title: "Application Update",
-            message: `Your application for "${campaignTitle}" was not selected this time. Keep applying!`,
-            link: "/campaigns",
-          },
-        })
-        console.log("3. OK — rejection notification created")
-      }
+      // Rejected: notify influencer
+      await prisma.notification.create({
+        data: {
+          userId: influencer.userId,
+          type: "application_rejected",
+          title: "Application Update",
+          message: `Your application for "${campaignTitle}" was not selected this time. Keep applying!`,
+          link: "/campaigns",
+        },
+      })
 
       if (influencerUser?.email) {
         sendEmail({
           to: influencerUser.email,
           ...applicationRejectedEmail({ influencerName, campaignTitle }),
-        }).catch(err => console.error("Rejection email failed:", err.message))
+        }).catch(() => {})
       }
 
       return Response.json({ application: updated })
     }
   } catch (error) {
-    console.error("Campaign accept error:", error.message, error.stack)
-    return Response.json({ error: "Failed to update", detail: error.message }, { status: 500 })
+    console.error("Campaign application PATCH error:", error.message, error.stack)
+    return Response.json({ error: "Failed to update application", detail: error.message }, { status: 500 })
   }
 }

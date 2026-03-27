@@ -71,14 +71,22 @@ export default function WorkspacesPage() {
             <div className="text-5xl mb-4">🚀</div>
             <h2 className="text-lg font-semibold text-[#F8FAFC] mb-2">No active workspaces yet</h2>
             <p className="text-sm text-[#64748B] max-w-sm mx-auto mb-6">
-              Agree on a proposal to start collaborating. Your workspace will be created automatically.
+              Workspaces are created automatically when a campaign application is accepted or a proposal is agreed.
             </p>
-            <a
-              href="/proposals"
-              className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-colors"
-            >
-              View Proposals →
-            </a>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <a
+                href="/campaigns"
+                className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-colors"
+              >
+                Browse Campaigns →
+              </a>
+              <a
+                href="/proposals"
+                className="inline-flex items-center gap-2 border border-[#1E1E2E] hover:border-purple-500/30 text-[#94A3B8] hover:text-[#F8FAFC] px-5 py-2.5 rounded-xl text-sm font-medium transition-colors"
+              >
+                View Proposals →
+              </a>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
@@ -125,7 +133,7 @@ export default function WorkspacesPage() {
                   </div>
 
                   {/* Next milestone + stats */}
-                  <div className="flex items-center justify-between gap-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="text-xs text-[#64748B]">
                       {nextMilestone ? (
                         <>Next: <span className="text-[#94A3B8]">{nextMilestone.title}</span></>
