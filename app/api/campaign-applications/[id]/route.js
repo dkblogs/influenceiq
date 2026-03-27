@@ -17,7 +17,7 @@ export async function PATCH(request, context) {
       return Response.json({ error: "Invalid status" }, { status: 400 })
     }
 
-    // Load application with full campaign details
+    // Load application with campaign (CampaignApplication has no influencer relation in schema)
     const application = await prisma.campaignApplication.findUnique({
       where: { id },
       include: { campaign: true },
@@ -29,7 +29,7 @@ export async function PATCH(request, context) {
       return Response.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    // Get influencer record and user email (CampaignApplication has userId, not influencer relation)
+    // Fetch influencer record and email separately (no relation on CampaignApplication)
     const [influencer, influencerUser] = await Promise.all([
       prisma.influencer.findFirst({
         where: { userId: application.userId },
@@ -41,127 +41,155 @@ export async function PATCH(request, context) {
       }),
     ])
 
-    if (!influencer) {
-      return Response.json({ error: "Influencer profile not found for this user" }, { status: 404 })
-    }
-
-    const influencerName = influencer.name || "Influencer"
     const campaignTitle = application.campaign.title
+    const influencerName = influencer?.name || "Influencer"
 
-    // 1. Update application status
+    // Step 1 — Update status (must succeed, outer catch handles failure)
     const updated = await prisma.campaignApplication.update({
       where: { id },
       data: { status },
     })
 
     if (status === "accepted") {
-      // 2. Auto-create Proposal from campaign details
-      const proposal = await prisma.proposal.create({
-        data: {
-          brandId: application.campaign.brandId,
-          influencerId: influencer.id,
-          status: "agreed",
-          campaignTitle,
-          contentType: application.campaign.platform || "Multiple Deliverables",
-          description: application.campaign.description || "",
-          deliverables: application.campaign.requirements || "",
-          location: application.campaign.location || "Remote",
-          timeline: application.campaign.deadline
-            ? `Until ${new Date(application.campaign.deadline).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}`
-            : "To be discussed",
-          remuneration: application.campaign.budget || "To be discussed",
-          exclusivity: false,
-          revisions: 2,
-        },
-      })
+      let workspaceId = null
 
-      // 3. Auto-create workspace with 6 milestones (campaignTitle is required)
-      const workspace = await prisma.campaignWorkspace.create({
-        data: {
-          proposalId: proposal.id,
-          brandId: application.campaign.brandId,
-          influencerId: influencer.id,
-          campaignTitle,
-          paymentAmount: application.campaign.budget || null,
-          milestones: {
-            create: [
-              { title: "Content Draft", description: "Influencer submits first content draft", order: 1 },
-              { title: "Brand Review", description: "Brand reviews and provides feedback", order: 2 },
-              { title: "Revisions", description: "Influencer makes requested changes", order: 3 },
-              { title: "Final Content", description: "Influencer submits final approved content", order: 4 },
-              { title: "Delivery Confirmation", description: "Brand confirms content delivery", order: 5 },
-              { title: "Payment", description: "Brand sends payment, influencer confirms receipt", order: 6 },
-            ],
-          },
-        },
-      })
+      // Step 2 — Create proposal + workspace (non-fatal if fails)
+      try {
+        if (!influencer) throw new Error("Influencer profile not found for userId: " + application.userId)
 
-      // 4. Auto-unlock contact for brand
-      await prisma.unlockedContact.upsert({
-        where: {
-          userId_influencerId: {
-            userId: application.campaign.brandId,
+        const proposal = await prisma.proposal.create({
+          data: {
+            brandId: application.campaign.brandId,
             influencerId: influencer.id,
-          },
-        },
-        create: {
-          userId: application.campaign.brandId,
-          influencerId: influencer.id,
-          unlockedAt: new Date(),
-          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-        },
-        update: {
-          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-        },
-      })
-
-      // 5. Notify influencer — link directly to workspace
-      await prisma.notification.create({
-        data: {
-          userId: influencer.userId,
-          type: "application_accepted",
-          title: "🎉 Your application was accepted!",
-          message: `${campaignTitle} — Your application has been accepted. Your workspace is ready!`,
-          link: `/workspace/${workspace.id}`,
-        },
-      })
-
-      // 6. Send acceptance email (fire-and-forget)
-      if (influencerUser?.email) {
-        sendEmail({
-          to: influencerUser.email,
-          ...applicationAcceptedEmail({
-            influencerName,
+            status: "agreed",
             campaignTitle,
-            workspaceUrl: `${process.env.NEXTAUTH_URL}/workspace/${workspace.id}`,
-          }),
-        }).catch(() => {})
+            contentType: application.campaign.platform || "Multiple Deliverables",
+            description: application.campaign.description || "",
+            deliverables: application.campaign.requirements || "",
+            location: application.campaign.location || "Remote",
+            timeline: application.campaign.deadline
+              ? `Until ${new Date(application.campaign.deadline).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}`
+              : "To be discussed",
+            remuneration: application.campaign.budget || "To be discussed",
+            exclusivity: false,
+            revisions: 2,
+          },
+        })
+
+        const workspace = await prisma.campaignWorkspace.create({
+          data: {
+            proposalId: proposal.id,
+            brandId: application.campaign.brandId,
+            influencerId: influencer.id,
+            campaignTitle,
+            paymentAmount: application.campaign.budget || "",
+            milestones: {
+              create: [
+                { title: "Content Draft", description: "Influencer submits first content draft", order: 1 },
+                { title: "Brand Review", description: "Brand reviews and provides feedback", order: 2 },
+                { title: "Revisions", description: "Influencer makes requested changes", order: 3 },
+                { title: "Final Content", description: "Influencer submits final approved content", order: 4 },
+                { title: "Delivery Confirmation", description: "Brand confirms content delivery", order: 5 },
+                { title: "Payment", description: "Brand sends payment, influencer confirms receipt", order: 6 },
+              ],
+            },
+          },
+        })
+        workspaceId = workspace.id
+        console.log("Workspace created:", workspaceId)
+      } catch (wsError) {
+        console.error("Workspace creation failed (non-fatal):", wsError.message)
       }
 
-      return Response.json({ application: updated, workspaceId: workspace.id })
-    } else {
-      // Rejected: notify influencer
-      await prisma.notification.create({
-        data: {
-          userId: influencer.userId,
-          type: "application_rejected",
-          title: "Application Update",
-          message: `Your application for "${campaignTitle}" was not selected this time. Keep applying!`,
-          link: "/campaigns",
-        },
-      })
+      // Step 3 — Unlock contact (non-fatal if fails)
+      try {
+        if (influencer) {
+          await prisma.unlockedContact.upsert({
+            where: {
+              userId_influencerId: {
+                userId: application.campaign.brandId,
+                influencerId: influencer.id,
+              },
+            },
+            create: {
+              userId: application.campaign.brandId,
+              influencerId: influencer.id,
+              unlockedAt: new Date(),
+              expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+            },
+            update: {
+              expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+            },
+          })
+        }
+      } catch (unlockError) {
+        console.error("Contact unlock failed (non-fatal):", unlockError.message)
+      }
 
+      // Step 4 — Send notification (non-fatal if fails)
+      try {
+        if (influencer?.userId) {
+          await prisma.notification.create({
+            data: {
+              userId: influencer.userId,
+              type: "application_accepted",
+              title: "🎉 Your application was accepted!",
+              message: `${campaignTitle} — Your application has been accepted. Your workspace is ready!`,
+              link: workspaceId ? `/workspace/${workspaceId}` : "/workspaces",
+            },
+          })
+        } else {
+          console.error("Could not find influencer userId for notification")
+        }
+      } catch (notifError) {
+        console.error("Notification failed (non-fatal):", notifError.message)
+      }
+
+      // Step 5 — Send email (non-fatal if fails)
+      try {
+        if (influencerUser?.email) {
+          await sendEmail({
+            to: influencerUser.email,
+            ...applicationAcceptedEmail({
+              influencerName,
+              campaignTitle,
+              workspaceUrl: `${process.env.NEXTAUTH_URL}/workspace/${workspaceId}`,
+            }),
+          })
+        }
+      } catch (emailError) {
+        console.error("Email failed (non-fatal):", emailError.message)
+      }
+
+      return Response.json({ success: true, application: updated, workspaceId })
+    }
+
+    // Rejected path
+    try {
+      if (influencer?.userId) {
+        await prisma.notification.create({
+          data: {
+            userId: influencer.userId,
+            type: "application_rejected",
+            title: "Application Update",
+            message: `Your application for "${campaignTitle}" was not selected this time. Keep applying!`,
+            link: "/campaigns",
+          },
+        })
+      }
       if (influencerUser?.email) {
-        sendEmail({
+        await sendEmail({
           to: influencerUser.email,
           ...applicationRejectedEmail({ influencerName, campaignTitle }),
-        }).catch(() => {})
+        })
       }
-
-      return Response.json({ application: updated })
+    } catch (rejError) {
+      console.error("Rejection notification failed (non-fatal):", rejError.message)
     }
+
+    return Response.json({ success: true, application: updated })
   } catch (error) {
     console.error("Campaign application PATCH error:", error.message, error.stack)
-    return Response.json({ error: "Failed to update application", detail: error.message }, { status: 500 })
+    return Response.json({ error: "Failed to update", detail: error.message }, { status: 500 })
   }
 }
