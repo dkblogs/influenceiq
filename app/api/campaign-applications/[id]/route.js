@@ -17,6 +17,7 @@ export async function PATCH(request, context) {
       return Response.json({ error: "Invalid status" }, { status: 400 })
     }
 
+    console.log("1. Fetching application details for id:", id)
     // Load application with full campaign details
     const application = await prisma.campaignApplication.findUnique({
       where: { id },
@@ -28,6 +29,7 @@ export async function PATCH(request, context) {
     if (application.campaign.brandId !== session.user.id) {
       return Response.json({ error: "Forbidden" }, { status: 403 })
     }
+    console.log("1. OK — campaign:", application.campaign.title, "userId:", application.userId)
 
     // Get influencer record and user email
     const [influencer, influencerUser] = await Promise.all([
@@ -40,18 +42,20 @@ export async function PATCH(request, context) {
         select: { email: true },
       }),
     ])
+    console.log("1b. influencer:", influencer?.id, influencer?.name, "| email:", influencerUser?.email)
 
     const influencerName = influencer?.name || "Influencer"
     const campaignTitle = application.campaign.title
 
-    // 1. Update application status
+    console.log("2. Updating application status:", id, "→", status)
     const updated = await prisma.campaignApplication.update({
       where: { id },
       data: { status },
     })
+    console.log("2. OK")
 
     if (status === "accepted") {
-      // 2. Auto-create Proposal from campaign details
+      console.log("3. Creating proposal — brandId:", application.campaign.brandId, "influencerId:", influencer?.id)
       const proposal = await prisma.proposal.create({
         data: {
           brandId: application.campaign.brandId,
@@ -70,8 +74,9 @@ export async function PATCH(request, context) {
           revisions: 2,
         },
       })
+      console.log("3. OK — proposalId:", proposal.id)
 
-      // 3. Auto-create workspace with 6 milestones
+      console.log("4. Creating workspace with milestones...")
       const workspace = await prisma.campaignWorkspace.create({
         data: {
           proposalId: proposal.id,
@@ -89,8 +94,9 @@ export async function PATCH(request, context) {
           },
         },
       })
+      console.log("4. OK — workspaceId:", workspace.id)
 
-      // 4. Auto-unlock contact for brand
+      console.log("5. Unlocking contact for brandId:", application.campaign.brandId, "influencerId:", influencer.id)
       await prisma.unlockedContact.upsert({
         where: {
           userId_influencerId: {
@@ -108,8 +114,9 @@ export async function PATCH(request, context) {
           expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
         },
       })
+      console.log("5. OK")
 
-      // 5. Notify influencer with workspace link
+      console.log("6. Creating notification for userId:", influencer.userId)
       await prisma.notification.create({
         data: {
           userId: influencer.userId,
@@ -119,8 +126,9 @@ export async function PATCH(request, context) {
           link: `/workspace/${workspace.id}`,
         },
       })
+      console.log("6. OK")
 
-      // 6. Send acceptance email (fire-and-forget)
+      console.log("7. Sending acceptance email to:", influencerUser?.email)
       if (influencerUser?.email) {
         sendEmail({
           to: influencerUser.email,
@@ -129,12 +137,15 @@ export async function PATCH(request, context) {
             campaignTitle,
             workspaceUrl: `${process.env.NEXTAUTH_URL}/workspace/${workspace.id}`,
           }),
-        }).catch(() => {})
+        }).catch(err => console.error("7. Email send failed:", err.message))
+      } else {
+        console.log("7. Skipped — no email address")
       }
 
+      console.log("8. Done! workspaceId:", workspace.id)
       return Response.json({ application: updated, workspaceId: workspace.id })
     } else {
-      // Rejected: notify influencer
+      console.log("3. Rejected path — creating notification for userId:", influencer?.userId)
       if (influencer) {
         await prisma.notification.create({
           data: {
@@ -145,19 +156,20 @@ export async function PATCH(request, context) {
             link: "/campaigns",
           },
         })
+        console.log("3. OK — rejection notification created")
       }
 
       if (influencerUser?.email) {
         sendEmail({
           to: influencerUser.email,
           ...applicationRejectedEmail({ influencerName, campaignTitle }),
-        }).catch(() => {})
+        }).catch(err => console.error("Rejection email failed:", err.message))
       }
 
       return Response.json({ application: updated })
     }
   } catch (error) {
-    console.error("Campaign application PATCH error:", error.message)
-    return Response.json({ error: "Failed to update application" }, { status: 500 })
+    console.error("Campaign accept error:", error.message, error.stack)
+    return Response.json({ error: "Failed to update", detail: error.message }, { status: 500 })
   }
 }
