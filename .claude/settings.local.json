@@ -12,7 +12,16 @@
       "Bash(mkdir -p \"c:/Users/admin/Desktop/influenceiq/app/campaigns/[id]\")",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(node scripts/cleanup-demo-data.js)",
+      "Bash(node scripts/verify-accounts.js)",
+      "Bash(node scripts/fix-account-data.js)",
+      "Bash(node scripts/cleanup-campaigns.js)",
+      "Bash(node scripts/list-campaigns.js)",
+      "Bash(npx next:*)",
+      "Bash(grep -n \"grid-cols\\\\|flex.*gap\\\\|px-\\\\|py-\\\\|max-w-\" app/workspace/[id]/page.tsx)",
+      "Bash(grep -n \"SUPABASE\" /c/Users/admin/Desktop/influenceiq/.env*)",
+      "Bash(grep -n \"messagesEndRef\\\\|sendingMsg\\\\|msgText\\\\|sendMessage\\\\|allMessages\\\\|preMsgs\\\\|postMsgs\\\\|workspaceStartedAt\\\\|activeTab.*Chat\\\\|Chat.*tab\\\\|useRef\" /c/Users/admin/Desktop/influenceiq/app/workspace/[id]/page.tsx)"
     ]
   }
 }
