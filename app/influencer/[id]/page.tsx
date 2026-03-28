@@ -78,6 +78,10 @@ export default function InfluencerProfile() {
   const [proposalError, setProposalError] = useState<React.ReactNode>("")
   const [portfolioItems, setPortfolioItems] = useState<any[]>([])
   const [portfolioLoading, setPortfolioLoading] = useState(false)
+  const [analytics, setAnalytics] = useState<any>(null)
+  const [analyticsLoading, setAnalyticsLoading] = useState(false)
+  const [analyticsError, setAnalyticsError] = useState<string | null>(null)
+  const [showAnalytics, setShowAnalytics] = useState(false)
 
   const colorMap: Record<string, string> = {
     PS: "bg-purple-500", RK: "bg-orange-500", AN: "bg-green-500",
@@ -150,6 +154,23 @@ export default function InfluencerProfile() {
     setTimeout(() => setSettingsSaved(false), 3000)
   }
 
+
+  async function fetchAnalytics() {
+    if (analytics) { setShowAnalytics(true); return }
+    setAnalyticsLoading(true)
+    setAnalyticsError(null)
+    try {
+      const res = await fetch(`/api/influencers/${params.id}/analytics`)
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed")
+      setAnalytics({ ...data.analytics, cached: data.cached })
+      setShowAnalytics(true)
+    } catch (err: any) {
+      setAnalyticsError(err.message)
+    } finally {
+      setAnalyticsLoading(false)
+    }
+  }
 
   async function generateBrandReport() {
     if (!session) { router.push("/login"); return }
@@ -474,6 +495,206 @@ export default function InfluencerProfile() {
               <div className="text-xl md:text-2xl font-bold text-[#F8FAFC]">{displayRate(influencer) ?? <span className="text-gray-500 text-sm">Not set</span>}</div>
               <div className="text-xs md:text-sm text-[#64748B] mt-1">Avg. rate</div>
             </div>
+          </div>
+        )}
+
+        {/* Audience Analytics */}
+        {(isBrand || isOwner) && (
+          <div className="mt-6 mb-6">
+            {!showAnalytics && (
+              <button
+                onClick={fetchAnalytics}
+                disabled={analyticsLoading}
+                className="w-full py-3 border border-indigo-500/30 rounded-xl text-indigo-400 hover:bg-indigo-500/10 transition-all flex items-center justify-center gap-2 text-sm font-medium"
+              >
+                {analyticsLoading ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    Fetching audience data... (this takes ~60s first time)
+                  </>
+                ) : (
+                  <><span>📊</span> View Audience Analytics</>
+                )}
+              </button>
+            )}
+
+            {analyticsError && (
+              <p className="text-red-400 text-sm text-center mt-2">{analyticsError}</p>
+            )}
+
+            {showAnalytics && analytics && (
+              <div className="space-y-4 mt-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-white font-semibold text-lg">Audience Analytics</h3>
+                  <div className="flex items-center gap-2">
+                    {analytics.cached && (
+                      <span className="text-xs text-gray-500">Cached · updates every 7 days</span>
+                    )}
+                    <button onClick={() => setShowAnalytics(false)} className="text-gray-500 hover:text-gray-300 text-sm">
+                      Hide
+                    </button>
+                  </div>
+                </div>
+
+                {/* Real metrics */}
+                {analytics.real && (
+                  <div className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-4 space-y-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-xs font-medium bg-green-500/10 text-green-400 px-2 py-1 rounded-full border border-green-500/20">✓ Real Data</span>
+                      <span className="text-xs text-gray-500">Based on last {analytics.postCount} posts</span>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {[
+                        { label: "Avg Likes", value: analytics.real.avgLikes?.toLocaleString() || "—" },
+                        { label: "Avg Comments", value: analytics.real.avgComments?.toLocaleString() || "—" },
+                        { label: "Avg Views", value: analytics.real.avgViews > 0 ? analytics.real.avgViews?.toLocaleString() : "—" },
+                        { label: "Posts/Week", value: analytics.real.postsPerWeek || "—" },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="bg-[#1E293B] rounded-lg p-3 text-center">
+                          <div className="text-white font-bold text-lg">{value}</div>
+                          <div className="text-gray-400 text-xs mt-1">{label}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {analytics.real.engagementTrend?.length > 0 && (
+                      <div>
+                        <p className="text-gray-400 text-xs mb-2">Engagement trend (last {analytics.real.engagementTrend.length} posts)</p>
+                        <div className="flex items-end gap-1 h-16">
+                          {analytics.real.engagementTrend.map((p: any, i: number) => {
+                            const val = parseFloat(p.engagement)
+                            const max = Math.max(...analytics.real.engagementTrend.map((x: any) => parseFloat(x.engagement)))
+                            const height = max > 0 ? Math.max((val / max) * 100, 4) : 4
+                            return (
+                              <div
+                                key={i}
+                                title={`${p.engagement}% engagement`}
+                                className="flex-1 bg-indigo-500/60 hover:bg-indigo-400 rounded-t transition-all cursor-pointer"
+                                style={{ height: `${height}%` }}
+                              />
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    {analytics.real.contentTypes && (
+                      <div>
+                        <p className="text-gray-400 text-xs mb-2">Content type breakdown</p>
+                        <div className="flex gap-2 flex-wrap">
+                          {Object.entries(analytics.real.contentTypes).map(([type, count]: [string, any]) => {
+                            const total = Object.values(analytics.real.contentTypes).reduce((a: any, b: any) => a + b, 0) as number
+                            const pct = Math.round((count / total) * 100)
+                            const colors: Record<string, string> = { image: "bg-blue-500/20 text-blue-400 border-blue-500/20", video: "bg-purple-500/20 text-purple-400 border-purple-500/20", carousel: "bg-amber-500/20 text-amber-400 border-amber-500/20" }
+                            return (
+                              <span key={type} className={`text-xs px-3 py-1 rounded-full border ${colors[type] || "bg-gray-500/20 text-gray-400 border-gray-500/20"}`}>
+                                {type} {pct}%
+                              </span>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    {analytics.real.topHashtags?.length > 0 && (
+                      <div>
+                        <p className="text-gray-400 text-xs mb-2">Top hashtags</p>
+                        <div className="flex gap-2 flex-wrap">
+                          {analytics.real.topHashtags.map((tag: string) => (
+                            <span key={tag} className="text-xs bg-[#1E293B] text-gray-300 px-2 py-1 rounded-full border border-[#334155]">#{tag}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* AI estimated demographics */}
+                {analytics.ai && (
+                  <div className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-4 space-y-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-xs font-medium bg-amber-500/10 text-amber-400 px-2 py-1 rounded-full border border-amber-500/20">✦ AI Estimated</span>
+                      <span className="text-xs text-gray-500">Inferred from content, niche & bio</span>
+                    </div>
+                    {analytics.ai.ageGroups && (
+                      <div>
+                        <p className="text-gray-400 text-xs mb-2">Estimated age groups</p>
+                        <div className="space-y-2">
+                          {analytics.ai.ageGroups.map(({ label, percent }: { label: string; percent: number }) => (
+                            <div key={label} className="flex items-center gap-2">
+                              <span className="text-gray-400 text-xs w-12">{label}</span>
+                              <div className="flex-1 bg-[#1E293B] rounded-full h-2">
+                                <div className="bg-indigo-500 h-2 rounded-full transition-all" style={{ width: `${percent}%` }} />
+                              </div>
+                              <span className="text-gray-300 text-xs w-8 text-right">{percent}%</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {analytics.ai.genderSplit && (
+                      <div>
+                        <p className="text-gray-400 text-xs mb-2">Estimated gender split</p>
+                        <div className="flex gap-3">
+                          {Object.entries(analytics.ai.genderSplit).map(([gender, pct]: [string, any]) => (
+                            <div key={gender} className="flex items-center gap-1.5">
+                              <div className={`w-2 h-2 rounded-full ${gender === "male" ? "bg-blue-400" : gender === "female" ? "bg-pink-400" : "bg-gray-400"}`} />
+                              <span className="text-gray-300 text-xs capitalize">{gender} {pct}%</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {analytics.ai.topLocations && (
+                      <div>
+                        <p className="text-gray-400 text-xs mb-2">Estimated top locations</p>
+                        <div className="space-y-2">
+                          {analytics.ai.topLocations.map(({ city, percent }: { city: string; percent: number }) => (
+                            <div key={city} className="flex items-center gap-2">
+                              <span className="text-gray-400 text-xs w-24 truncate">{city}</span>
+                              <div className="flex-1 bg-[#1E293B] rounded-full h-2">
+                                <div className="bg-teal-500 h-2 rounded-full" style={{ width: `${percent}%` }} />
+                              </div>
+                              <span className="text-gray-300 text-xs w-8 text-right">{percent}%</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {analytics.ai.audienceInterests?.length > 0 && (
+                      <div>
+                        <p className="text-gray-400 text-xs mb-2">Audience interests</p>
+                        <div className="flex gap-2 flex-wrap">
+                          {analytics.ai.audienceInterests.map((interest: string) => (
+                            <span key={interest} className="text-xs bg-indigo-500/10 text-indigo-300 px-3 py-1 rounded-full border border-indigo-500/20">{interest}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {analytics.ai.bestPostingTimes?.length > 0 && (
+                      <div>
+                        <p className="text-gray-400 text-xs mb-2">Best posting times (IST)</p>
+                        <div className="flex gap-2 flex-wrap">
+                          {analytics.ai.bestPostingTimes.map((time: string) => (
+                            <span key={time} className="text-xs bg-green-500/10 text-green-400 px-3 py-1 rounded-full border border-green-500/20">🕐 {time}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {analytics.ai.audienceSummary && (
+                      <p className="text-gray-400 text-sm leading-relaxed border-t border-[#1E293B] pt-3">{analytics.ai.audienceSummary}</p>
+                    )}
+                  </div>
+                )}
+
+                {!analytics.real && !analytics.ai && (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>Could not fetch analytics for this influencer.</p>
+                    <p className="text-xs mt-1">Instagram handle must be verified.</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
