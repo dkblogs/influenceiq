@@ -724,6 +724,14 @@ export default function ProfilePage() {
               >
                 Edit Profile
               </button>
+              {influencer?.id && (
+                <a
+                  href={`/influencer/${influencer.id}`}
+                  className="w-full block text-center border border-[#334155] text-gray-300 py-2.5 rounded-xl text-sm font-semibold hover:border-indigo-500/50 hover:text-indigo-300 transition-colors"
+                >
+                  View My Public Profile →
+                </a>
+              )}
             </div>
           </div>
         )}
