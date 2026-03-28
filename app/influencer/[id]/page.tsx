@@ -12,6 +12,25 @@ function firstName(name: string) {
   return name?.split(" ")[0] || name
 }
 
+function displayFollowers(inf: any): string | null {
+  if (inf.followers && inf.followers !== "0" && inf.followers !== "") return inf.followers
+  const total = (inf.instagramFollowers || 0) + (inf.youtubeFollowers || 0)
+  if (total === 0) return null
+  if (total >= 1000000) return (total / 1000000).toFixed(1) + "M"
+  if (total >= 1000) return Math.round(total / 1000) + "K"
+  return total.toString()
+}
+
+function displayEngagement(inf: any): string | null {
+  if (!inf.engagement || inf.engagement === "0%" || inf.engagement === "0") return null
+  return inf.engagement
+}
+
+function displayRate(inf: any): string | null {
+  if (!inf.rate || inf.rate === "₹0/post" || inf.rate === "0" || inf.rate === "") return null
+  return inf.rate
+}
+
 function SignupPromptCard() {
   return (
     <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-8 text-center">
@@ -433,9 +452,12 @@ export default function InfluencerProfile() {
           </div>
         ) : (
           <div className="grid grid-cols-3 sm:grid-cols-3 gap-3 md:gap-4 mb-6">
-            <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-4 md:p-5 text-center">
+<div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-4 md:p-5 text-center">
               {followersPublic ? (
-                <div className="text-xl md:text-2xl font-bold text-[#F8FAFC]">{influencer.followers}</div>
+                <div className="text-xl md:text-2xl font-bold text-[#F8FAFC]">{(() => {
+                  const count = displayFollowers(influencer)
+                  return count ? count : <span className="text-gray-500 text-sm">Not set</span>
+                })()}</div>
               ) : (
                 <div className="text-sm text-[#64748B] flex flex-col items-center gap-1">
                   <span className="text-lg">🔒</span>
@@ -445,11 +467,11 @@ export default function InfluencerProfile() {
               <div className="text-xs md:text-sm text-[#64748B] mt-1">Followers</div>
             </div>
             <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-4 md:p-5 text-center">
-              <div className="text-xl md:text-2xl font-bold text-[#F8FAFC]">{influencer.engagement}</div>
+              <div className="text-xl md:text-2xl font-bold text-[#F8FAFC]">{displayEngagement(influencer) ?? <span className="text-gray-500 text-sm">Not set</span>}</div>
               <div className="text-xs md:text-sm text-[#64748B] mt-1">Engagement</div>
             </div>
             <div className="bg-[#12121A] rounded-2xl border border-[#1E1E2E] p-4 md:p-5 text-center">
-              <div className="text-xl md:text-2xl font-bold text-[#F8FAFC]">{influencer.rate}</div>
+              <div className="text-xl md:text-2xl font-bold text-[#F8FAFC]">{displayRate(influencer) ?? <span className="text-gray-500 text-sm">Not set</span>}</div>
               <div className="text-xs md:text-sm text-[#64748B] mt-1">Avg. rate</div>
             </div>
           </div>

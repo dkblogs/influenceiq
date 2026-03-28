@@ -126,10 +126,13 @@ export default function DiscoverInfluencers() {
       infNiches.some((n: string) => n.toLowerCase().includes(search.toLowerCase())) ||
       inf.location?.toLowerCase().includes(search.toLowerCase())
 
-    const f = parseFollowers(inf.followers || inf.instagramFollowers || inf.youtubeFollowers)
+    const f = parseFollowers(displayFollowers(inf) || "0")
     const matchFollowers = f >= followerRange[0] && f <= followerRange[1]
 
     const e = parseEngagement(inf.engagement)
+    if (minEngagement > 0) {
+      console.log(`[engagement filter] ${inf.name}: raw="${inf.engagement}" parsed=${parseEngagement(inf.engagement)} min=${minEngagement}`)
+    }
     const matchEngagement = e >= minEngagement
 
     const matchGender = selectedGenders.length === 0 || selectedGenders.includes(inf.gender?.toLowerCase())
@@ -447,6 +450,8 @@ export default function DiscoverInfluencers() {
                         <p className="text-xs text-[#64748B]">Followers</p>
                       </div>
                       <div className="flex-1 bg-[#0D0D1A] rounded-lg p-2 text-center">
+                        {/* TODO: engagement fallback — can't compute from instagramFollowers alone
+                            (need raw like/comment counts). Show "Not set" when stored as "0%". */}
                         {inf.engagement && inf.engagement !== "0%" && inf.engagement !== "0"
                           ? <p className="text-xs font-medium text-[#F8FAFC]">{inf.engagement}</p>
                           : <p className="text-xs text-[#64748B]">Not set</p>
