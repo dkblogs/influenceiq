@@ -35,6 +35,60 @@ async function pollRun(runId) {
   throw new Error("Apify run timed out")
 }
 
+async function calculateEngagementRate(username, followersCount) {
+  try {
+    const runRes = await fetch(
+      "https://api.apify.com/v2/acts/apify~instagram-scraper/runs",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${APIFY_TOKEN}` },
+        body: JSON.stringify({
+          directUrls: [`https://www.instagram.com/${username}/`],
+          resultsType: "posts",
+          resultsLimit: 12,
+          addParentData: false,
+        }),
+      }
+    )
+    if (!runRes.ok) return null
+    const runData = await runRes.json()
+    const runId = runData.data?.id
+    if (!runId) return null
+
+    let datasetId = null
+    for (let i = 0; i < 20; i++) {
+      await new Promise(r => setTimeout(r, 3000))
+      const statusRes = await fetch(
+        `https://api.apify.com/v2/actor-runs/${runId}`,
+        { headers: { "Authorization": `Bearer ${APIFY_TOKEN}` } }
+      )
+      const statusData = await statusRes.json()
+      const status = statusData.data?.status
+      if (status === "SUCCEEDED") { datasetId = statusData.data?.defaultDatasetId; break }
+      if (status === "FAILED" || status === "ABORTED") return null
+    }
+
+    if (!datasetId) return null
+
+    const itemsRes = await fetch(
+      `https://api.apify.com/v2/datasets/${datasetId}/items`,
+      { headers: { "Authorization": `Bearer ${APIFY_TOKEN}` } }
+    )
+    const posts = await itemsRes.json()
+    if (!Array.isArray(posts) || posts.length === 0) return null
+
+    const totalEngagement = posts.reduce((sum, post) => {
+      return sum + (post.likesCount || post.likes || 0) + (post.commentsCount || post.comments || 0)
+    }, 0)
+    const avgEngagement = totalEngagement / posts.length
+    const rate = followersCount > 0 ? ((avgEngagement / followersCount) * 100).toFixed(2) : "0"
+    return `${rate}%`
+  } catch (err) {
+    console.error("[engagement-calc] failed:", err.message)
+    return null
+  }
+}
+
 async function fetchInstagramBio(handle) {
   const clean = handle.replace(/^@/, "")
   const runRes = await fetch(
@@ -161,6 +215,19 @@ export async function POST(request) {
           }
 
       await prisma.influencer.update({ where: { id: influencer.id }, data: updateData })
+
+      // Fire-and-forget engagement calculation for Instagram only
+      if (platform === "instagram" && scraped.followers) {
+        const cleanUsername = handle.replace(/^@/, "")
+        calculateEngagementRate(cleanUsername, scraped.followers).then(async (engagementRate) => {
+          if (engagementRate) {
+            await prisma.influencer.update({ where: { id: influencer.id }, data: { engagement: engagementRate } })
+            console.log(`[engagement] saved ${engagementRate} for ${cleanUsername}`)
+          }
+        }).catch(err => {
+          console.error("[engagement] background save failed:", err.message)
+        })
+      }
 
       return Response.json({ verified: true, followers: scraped.followers, bio: scraped.bio })
     }
