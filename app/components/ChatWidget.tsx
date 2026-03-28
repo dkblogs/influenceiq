@@ -36,7 +36,13 @@ export default function ChatWidget({ proposalId, currentUserId, currentUserRole,
         table: "ProposalMessage",
         filter: `proposalId=eq.${proposalId}`,
       }, (payload) => {
-        const incoming = payload.new as any
+        const raw = payload.new as any
+        const incoming = {
+          ...raw,
+          senderId: raw.senderId ?? raw.sender_id,
+          senderRole: raw.senderRole ?? raw.sender_role,
+          createdAt: raw.createdAt ?? raw.created_at,
+        }
         setMessages(prev => {
           if (incoming.senderId === currentUserId || incoming.senderRole === currentUserRole) {
             // Replace the temp message with the real one
@@ -135,7 +141,7 @@ export default function ChatWidget({ proposalId, currentUserId, currentUserRole,
                   } ${msg.temp ? "opacity-70" : ""}`}>
                     <p>{msg.message}</p>
                     <p className={`text-xs mt-1 ${isMe ? "text-purple-200" : "text-white/40"}`}>
-                      {formatIST(msg.createdAt)}
+                      {formatIST(msg.createdAt ?? msg.created_at)}
                     </p>
                   </div>
                 </div>
