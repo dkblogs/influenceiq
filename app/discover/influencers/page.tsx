@@ -10,8 +10,29 @@ const colorMap: Record<string, string> = {
   MI: "bg-red-500", KS: "bg-indigo-500", DR: "bg-teal-500",
 }
 
+const LANGUAGES = ["Hindi", "English", "Tamil", "Telugu", "Bengali", "Marathi", "Kannada", "Gujarati", "Punjabi", "Malayalam"]
+
 function firstName(name: string) {
   return name?.split(" ")[0] || name
+}
+
+function parseFollowers(str: string | number | undefined | null): number {
+  if (!str) return 0
+  const s = str.toString().replace(/,/g, "").trim()
+  if (s.endsWith("M") || s.endsWith("m")) return parseFloat(s) * 1000000
+  if (s.endsWith("K") || s.endsWith("k")) return parseFloat(s) * 1000
+  return parseFloat(s) || 0
+}
+
+function parseEngagement(str: string | undefined | null): number {
+  if (!str) return 0
+  return parseFloat(str.toString().replace("%", "").trim()) || 0
+}
+
+function formatFollowers(n: number): string {
+  if (n >= 1000000) return `${n % 1000000 === 0 ? n / 1000000 : (n / 1000000).toFixed(1)}M`
+  if (n >= 1000) return `${n % 1000 === 0 ? n / 1000 : (n / 1000).toFixed(1)}K`
+  return n.toString()
 }
 
 export default function DiscoverInfluencers() {
@@ -23,6 +44,15 @@ export default function DiscoverInfluencers() {
   const [selectedNiches, setSelectedNiches] = useState<string[]>([])
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
   const [search, setSearch] = useState("")
+
+  // Advanced filter state
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [followerRange, setFollowerRange] = useState<[number, number]>([0, 10000000])
+  const [minEngagement, setMinEngagement] = useState(0)
+  const [selectedGenders, setSelectedGenders] = useState<string[]>([])
+  const [verifiedOnly, setVerifiedOnly] = useState(false)
+  const [locationSearch, setLocationSearch] = useState("")
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([])
 
   useEffect(() => {
     fetchInfluencers()
@@ -44,6 +74,38 @@ export default function DiscoverInfluencers() {
     setSelectedPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])
   }
 
+  function toggleGender(g: string) {
+    setSelectedGenders(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g])
+  }
+
+  function toggleLanguage(l: string) {
+    setSelectedLanguages(prev => prev.includes(l) ? prev.filter(x => x !== l) : [...prev, l])
+  }
+
+  const advancedFilterCount = [
+    followerRange[0] > 0,
+    followerRange[1] < 10000000,
+    minEngagement > 0,
+    selectedGenders.length > 0,
+    verifiedOnly,
+    locationSearch.length > 0,
+    selectedLanguages.length > 0,
+  ].filter(Boolean).length
+
+  const hasAnyFilter = !!(search || selectedNiches.length > 0 || selectedPlatforms.length > 0 || advancedFilterCount > 0)
+
+  function resetAllFilters() {
+    setSearch("")
+    setSelectedNiches([])
+    setSelectedPlatforms([])
+    setFollowerRange([0, 10000000])
+    setMinEngagement(0)
+    setSelectedGenders([])
+    setVerifiedOnly(false)
+    setLocationSearch("")
+    setSelectedLanguages([])
+  }
+
   const influencers = allInfluencers.filter(inf => {
     const infNiches = inf.niches?.length ? inf.niches : (inf.niche ? [inf.niche] : [])
     const infPlatforms = inf.platforms?.length ? inf.platforms : (inf.platform ? [inf.platform] : [])
@@ -53,7 +115,23 @@ export default function DiscoverInfluencers() {
       inf.name?.toLowerCase().includes(search.toLowerCase()) ||
       infNiches.some((n: string) => n.toLowerCase().includes(search.toLowerCase())) ||
       inf.location?.toLowerCase().includes(search.toLowerCase())
-    return matchNiche && matchPlatform && matchSearch
+
+    const f = parseFollowers(inf.followers || inf.instagramFollowers || inf.youtubeFollowers)
+    const matchFollowers = f >= followerRange[0] && f <= followerRange[1]
+
+    const e = parseEngagement(inf.engagement)
+    const matchEngagement = e >= minEngagement
+
+    const matchGender = selectedGenders.length === 0 || selectedGenders.includes(inf.gender?.toLowerCase())
+
+    const matchVerified = !verifiedOnly || inf.verified === true || inf.instagramVerified === true || inf.youtubeVerified === true
+
+    const matchLocation = !locationSearch || inf.location?.toLowerCase().includes(locationSearch.toLowerCase())
+
+    // TODO: Language field not in schema yet — filter UI ready, filtering disabled until schema updated
+    const matchLanguage = true
+
+    return matchNiche && matchPlatform && matchSearch && matchFollowers && matchEngagement && matchGender && matchVerified && matchLocation && matchLanguage
   })
 
   return (
@@ -85,6 +163,151 @@ export default function DiscoverInfluencers() {
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
+
+        {/* Advanced Filters toggle row */}
+        <div className="flex items-center justify-between mb-3">
+          <button
+            onClick={() => setShowAdvanced(v => !v)}
+            className="flex items-center gap-2 text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
+          >
+            <span>Advanced Filters {showAdvanced ? "▴" : "▾"}</span>
+            {advancedFilterCount > 0 && (
+              <span className="bg-purple-600 text-white text-xs px-1.5 py-0.5 rounded-full font-medium leading-none">
+                {advancedFilterCount}
+              </span>
+            )}
+          </button>
+          {hasAnyFilter && (
+            <button
+              onClick={resetAllFilters}
+              className="text-xs text-[#64748B] hover:text-red-400 transition-colors"
+            >
+              Reset all
+            </button>
+          )}
+        </div>
+
+        {/* Advanced Filters panel */}
+        {showAdvanced && (
+          <div className="bg-[#12121A] border border-[#1E1E2E] rounded-xl p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+            {/* Follower Range */}
+            <div>
+              <p className="text-xs text-[#64748B] font-medium uppercase tracking-wide mb-2">Followers</p>
+              <div className="flex gap-2 items-center">
+                <input
+                  type="number"
+                  min={0}
+                  placeholder="Min e.g. 10000"
+                  value={followerRange[0] === 0 ? "" : followerRange[0]}
+                  onChange={e => setFollowerRange([parseInt(e.target.value) || 0, followerRange[1]])}
+                  className="flex-1 min-w-0 bg-[#0D0D1A] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500/50"
+                />
+                <span className="text-[#64748B] text-xs flex-shrink-0">–</span>
+                <input
+                  type="number"
+                  min={0}
+                  placeholder="Max e.g. 1000000"
+                  value={followerRange[1] >= 10000000 ? "" : followerRange[1]}
+                  onChange={e => setFollowerRange([followerRange[0], parseInt(e.target.value) || 10000000])}
+                  className="flex-1 min-w-0 bg-[#0D0D1A] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500/50"
+                />
+              </div>
+              {(followerRange[0] > 0 || followerRange[1] < 10000000) && (
+                <p className="text-xs text-purple-400 mt-1.5">
+                  {formatFollowers(followerRange[0])} – {followerRange[1] >= 10000000 ? "∞" : formatFollowers(followerRange[1])}
+                </p>
+              )}
+            </div>
+
+            {/* Min Engagement Rate */}
+            <div>
+              <p className="text-xs text-[#64748B] font-medium uppercase tracking-wide mb-2">Min Engagement Rate</p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={0.1}
+                  placeholder="e.g. 2.5"
+                  value={minEngagement === 0 ? "" : minEngagement}
+                  onChange={e => setMinEngagement(parseFloat(e.target.value) || 0)}
+                  className="flex-1 bg-[#0D0D1A] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500/50"
+                />
+                <span className="text-[#64748B] text-sm font-medium">%</span>
+              </div>
+            </div>
+
+            {/* Gender */}
+            <div>
+              <p className="text-xs text-[#64748B] font-medium uppercase tracking-wide mb-2">Gender</p>
+              <div className="flex gap-2 flex-wrap">
+                {["Male", "Female", "Other"].map(g => (
+                  <button
+                    key={g}
+                    onClick={() => toggleGender(g.toLowerCase())}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                      selectedGenders.includes(g.toLowerCase())
+                        ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20"
+                        : "bg-[#0D0D1A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"
+                    }`}
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Verified Only */}
+            <div>
+              <p className="text-xs text-[#64748B] font-medium uppercase tracking-wide mb-2">Verification</p>
+              <button
+                onClick={() => setVerifiedOnly(v => !v)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  verifiedOnly
+                    ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                    : "bg-[#0D0D1A] border border-[#1E1E2E] text-[#94A3B8] hover:border-purple-500/50 hover:text-[#F8FAFC]"
+                }`}
+              >
+                {verifiedOnly && <span>✓</span>} Verified only
+              </button>
+            </div>
+
+            {/* City / State */}
+            <div>
+              <p className="text-xs text-[#64748B] font-medium uppercase tracking-wide mb-2">City / State</p>
+              <input
+                type="text"
+                placeholder="e.g. Mumbai, Delhi"
+                value={locationSearch}
+                onChange={e => setLocationSearch(e.target.value)}
+                className="w-full bg-[#0D0D1A] border border-[#1E1E2E] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-purple-500/50"
+              />
+            </div>
+
+            {/* Language (coming soon) */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <p className="text-xs text-[#64748B] font-medium uppercase tracking-wide">Language</p>
+                <span className="text-xs bg-[#1E1E2E] text-[#64748B] px-1.5 py-0.5 rounded-full">coming soon</span>
+              </div>
+              {/* TODO: Language field not in schema yet — filter UI ready, filtering disabled until schema updated */}
+              <div className="flex gap-2 flex-wrap">
+                {LANGUAGES.map(l => (
+                  <button
+                    key={l}
+                    disabled
+                    onClick={() => toggleLanguage(l)}
+                    className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#0D0D1A] border border-[#1E1E2E] text-[#3D3D4E] cursor-not-allowed"
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        )}
 
         {/* Niche pills (multi-select) */}
         <div className="mb-3">
@@ -124,7 +347,11 @@ export default function DiscoverInfluencers() {
 
         {/* Count */}
         <p className="text-xs text-[#64748B] mb-4">
-          {loading ? "Loading..." : `${influencers.length} influencer${influencers.length !== 1 ? "s" : ""}`}
+          {loading ? "Loading..." : (
+            influencers.length < allInfluencers.length
+              ? <><span className="text-[#94A3B8]">Showing {influencers.length}</span> of {allInfluencers.length} influencers</>
+              : `${influencers.length} influencer${influencers.length !== 1 ? "s" : ""}`
+          )}
           {selectedNiches.length > 0 && ` · ${selectedNiches.join(", ")}`}
           {selectedPlatforms.length > 0 && ` · ${selectedPlatforms.join(", ")}`}
         </p>
