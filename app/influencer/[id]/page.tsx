@@ -26,6 +26,32 @@ function displayEngagement(inf: any): string | null {
   return inf.engagement
 }
 
+function Tip({ text }: { text: string }) {
+  const [show, setShow] = useState(false)
+  return (
+    <div className="relative inline-block">
+      <button
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        onClick={() => setShow(!show)}
+        className="text-gray-500 hover:text-indigo-400 transition-colors ml-1.5 text-xs leading-none"
+        aria-label="Improvement tip"
+      >
+        💡
+      </button>
+      {show && (
+        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1E293B] border border-indigo-500/20 rounded-xl p-3 text-xs text-gray-300 leading-relaxed shadow-xl">
+          <div className="flex items-start gap-2">
+            <span className="text-indigo-400 mt-0.5 flex-shrink-0">💡</span>
+            <span>{text}</span>
+          </div>
+          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#1E293B]"/>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function displayRate(inf: any): string | null {
   if (!inf.rate || inf.rate === "₹0/post" || inf.rate === "0" || inf.rate === "") return null
   return inf.rate
@@ -547,21 +573,26 @@ export default function InfluencerProfile() {
                       <span className="text-xs text-gray-500">Based on last {analytics.postCount} posts</span>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {[
-                        { label: "Avg Likes", value: analytics.real.avgLikes?.toLocaleString() || "—" },
-                        { label: "Avg Comments", value: analytics.real.avgComments?.toLocaleString() || "—" },
-                        { label: "Avg Views", value: analytics.real.avgViews > 0 ? analytics.real.avgViews?.toLocaleString() : "—" },
-                        { label: "Posts/Week", value: analytics.real.postsPerWeek || "—" },
-                      ].map(({ label, value }) => (
-                        <div key={label} className="bg-[#1E293B] rounded-lg p-3 text-center">
-                          <div className="text-white font-bold text-lg">{value}</div>
-                          <div className="text-gray-400 text-xs mt-1">{label}</div>
-                        </div>
-                      ))}
+                      <div className="bg-[#1E293B] rounded-lg p-3 text-center">
+                        <div className="text-white font-bold text-lg">{analytics.real.avgLikes?.toLocaleString() || "—"}</div>
+                        <div className="text-gray-400 text-xs mt-1">Avg Likes {isOwner && <Tip text="Post consistently at peak hours (7–9 PM IST). Use 5–8 relevant hashtags. Reels get 2–3x more likes than static posts on Instagram." />}</div>
+                      </div>
+                      <div className="bg-[#1E293B] rounded-lg p-3 text-center">
+                        <div className="text-white font-bold text-lg">{analytics.real.avgComments?.toLocaleString() || "—"}</div>
+                        <div className="text-gray-400 text-xs mt-1">Avg Comments {isOwner && <Tip text="End every caption with a question to drive comments. Reply to every comment in the first hour — it signals engagement to the algorithm." />}</div>
+                      </div>
+                      <div className="bg-[#1E293B] rounded-lg p-3 text-center">
+                        <div className="text-white font-bold text-lg">{analytics.real.avgViews > 0 ? analytics.real.avgViews?.toLocaleString() : "—"}</div>
+                        <div className="text-gray-400 text-xs mt-1">Avg Views</div>
+                      </div>
+                      <div className="bg-[#1E293B] rounded-lg p-3 text-center">
+                        <div className="text-white font-bold text-lg">{analytics.real.postsPerWeek || "—"}</div>
+                        <div className="text-gray-400 text-xs mt-1">Posts/Week {isOwner && <Tip text="Optimal posting frequency is 4–5x per week for Reels, 3–4x for static posts. Consistency matters more than volume." />}</div>
+                      </div>
                     </div>
                     {analytics.real.engagementTrend?.length > 0 && (
                       <div>
-                        <p className="text-gray-400 text-xs mb-2">Engagement trend (last {analytics.real.engagementTrend.length} posts)</p>
+                        <p className="text-gray-400 text-xs mb-2">Engagement trend (last {analytics.real.engagementTrend.length} posts) {isOwner && <Tip text="Engagement below 2% is low, 2–5% is good, 5%+ is excellent. If trending down, try more interactive content — polls, Q&As, collabs." />}</p>
                         <div className="flex items-end gap-1 h-16">
                           {analytics.real.engagementTrend.map((p: any, i: number) => {
                             const val = parseFloat(p.engagement)
@@ -581,7 +612,7 @@ export default function InfluencerProfile() {
                     )}
                     {analytics.real.contentTypes && (
                       <div>
-                        <p className="text-gray-400 text-xs mb-2">Content type breakdown</p>
+                        <p className="text-gray-400 text-xs mb-2">Content type breakdown {isOwner && <Tip text="Reels get 3–5x more reach than static posts. Aim for 60%+ Reels in your content mix to maximize organic reach." />}</p>
                         <div className="flex gap-2 flex-wrap">
                           {Object.entries(analytics.real.contentTypes).map(([type, count]: [string, any]) => {
                             const total = Object.values(analytics.real.contentTypes).reduce((a: any, b: any) => a + b, 0) as number
@@ -598,7 +629,7 @@ export default function InfluencerProfile() {
                     )}
                     {analytics.real.topHashtags?.length > 0 && (
                       <div>
-                        <p className="text-gray-400 text-xs mb-2">Top hashtags</p>
+                        <p className="text-gray-400 text-xs mb-2">Top hashtags {isOwner && <Tip text="Mix hashtag sizes: 2–3 large (1M+ posts), 3–4 medium (100K–1M), 2–3 niche-specific. Avoid banned hashtags." />}</p>
                         <div className="flex gap-2 flex-wrap">
                           {analytics.real.topHashtags.map((tag: string) => (
                             <span key={tag} className="text-xs bg-[#1E293B] text-gray-300 px-2 py-1 rounded-full border border-[#334155]">#{tag}</span>
@@ -618,7 +649,7 @@ export default function InfluencerProfile() {
                     </div>
                     {analytics.ai.ageGroups && (
                       <div>
-                        <p className="text-gray-400 text-xs mb-2">Estimated age groups</p>
+                        <p className="text-gray-400 text-xs mb-2">Estimated age groups {isOwner && <Tip text="Your content niche determines your audience age. Tech/Finance skews 25–34. Fashion/Beauty skews 18–24. Align your content to your target age group." />}</p>
                         <div className="space-y-2">
                           {analytics.ai.ageGroups.map(({ label, percent }: { label: string; percent: number }) => (
                             <div key={label} className="flex items-center gap-2">
@@ -634,7 +665,7 @@ export default function InfluencerProfile() {
                     )}
                     {analytics.ai.genderSplit && (
                       <div>
-                        <p className="text-gray-400 text-xs mb-2">Estimated gender split</p>
+                        <p className="text-gray-400 text-xs mb-2">Estimated gender split {isOwner && <Tip text="To attract more brand deals, know your audience gender. Brands in beauty/fashion prefer female-skewed audiences. Tech/Gaming prefer male-skewed." />}</p>
                         <div className="flex gap-3">
                           {Object.entries(analytics.ai.genderSplit).map(([gender, pct]: [string, any]) => (
                             <div key={gender} className="flex items-center gap-1.5">
@@ -647,7 +678,7 @@ export default function InfluencerProfile() {
                     )}
                     {analytics.ai.topLocations && (
                       <div>
-                        <p className="text-gray-400 text-xs mb-2">Estimated top locations</p>
+                        <p className="text-gray-400 text-xs mb-2">Estimated top locations {isOwner && <Tip text="Metro city audiences (Mumbai, Delhi, Bangalore) command higher brand deal rates. Use location tags in posts to attract local followers." />}</p>
                         <div className="space-y-2">
                           {analytics.ai.topLocations.map(({ city, percent }: { city: string; percent: number }) => (
                             <div key={city} className="flex items-center gap-2">
@@ -673,7 +704,7 @@ export default function InfluencerProfile() {
                     )}
                     {analytics.ai.bestPostingTimes?.length > 0 && (
                       <div>
-                        <p className="text-gray-400 text-xs mb-2">Best posting times (IST)</p>
+                        <p className="text-gray-400 text-xs mb-2">Best posting times (IST) {isOwner && <Tip text="Schedule posts 15 mins before peak time. Use Instagram Insights (if business account) to see your exact audience active hours." />}</p>
                         <div className="flex gap-2 flex-wrap">
                           {analytics.ai.bestPostingTimes.map((time: string) => (
                             <span key={time} className="text-xs bg-green-500/10 text-green-400 px-3 py-1 rounded-full border border-green-500/20">🕐 {time}</span>
