@@ -63,6 +63,7 @@ export default function DiscoverInfluencers() {
     const res = await fetch("/api/influencers")
     const data = await res.json()
     setAllInfluencers(data.influencers || [])
+    console.log("Sample influencer:", data.influencers?.[0])
     setLoading(false)
   }
 
