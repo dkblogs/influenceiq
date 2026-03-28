@@ -35,6 +35,15 @@ function formatFollowers(n: number): string {
   return n.toString()
 }
 
+function displayFollowers(inf: any): string | null {
+  if (inf.followers && inf.followers !== "0" && inf.followers !== "") return inf.followers
+  const total = (inf.instagramFollowers || 0) + (inf.youtubeFollowers || 0)
+  if (total === 0) return null
+  if (total >= 1000000) return (total / 1000000).toFixed(1) + "M"
+  if (total >= 1000) return Math.round(total / 1000) + "K"
+  return total.toString()
+}
+
 export default function DiscoverInfluencers() {
   const { data: session, status } = useSession()
   const loggedIn = status !== "loading" && !!session
@@ -427,15 +436,21 @@ export default function DiscoverInfluencers() {
                     </div>
                     <div className="flex gap-2 mb-3">
                       <div className="flex-1 bg-[#0D0D1A] rounded-lg p-2 text-center">
-                        {inf.followersPublic ? (
-                          <p className="text-xs font-medium text-[#F8FAFC]">{inf.followers}</p>
-                        ) : (
+                        {!inf.followersPublic ? (
                           <p className="text-xs text-[#64748B]">🔒 Private</p>
-                        )}
+                        ) : (() => {
+                          const count = displayFollowers(inf)
+                          return count
+                            ? <p className="text-xs font-medium text-[#F8FAFC]">{count}</p>
+                            : <p className="text-xs text-[#64748B]">Not set</p>
+                        })()}
                         <p className="text-xs text-[#64748B]">Followers</p>
                       </div>
                       <div className="flex-1 bg-[#0D0D1A] rounded-lg p-2 text-center">
-                        <p className="text-xs font-medium text-[#F8FAFC]">{inf.engagement}</p>
+                        {inf.engagement && inf.engagement !== "0%" && inf.engagement !== "0"
+                          ? <p className="text-xs font-medium text-[#F8FAFC]">{inf.engagement}</p>
+                          : <p className="text-xs text-[#64748B]">Not set</p>
+                        }
                         <p className="text-xs text-[#64748B]">Engagement</p>
                       </div>
                       <div className="flex-1 bg-[#0D0D1A] rounded-lg p-2 text-center">
