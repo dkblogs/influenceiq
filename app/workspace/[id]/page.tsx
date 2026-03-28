@@ -695,7 +695,7 @@ export default function WorkspacePage() {
           currentUserName={user.name || ""}
           otherPartyName={isBrand
             ? (workspace.proposal.influencer?.name ?? "Influencer")
-            : (workspace.proposal.brand?.companyName || workspace.proposal.brand?.name ?? "Brand")}
+            : ((workspace.proposal.brand?.companyName || workspace.proposal.brand?.name) ?? "Brand")}
         />
       )}
     </div>
