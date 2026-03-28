@@ -5,6 +5,7 @@ import InsufficientCreditsError from "@/app/components/InsufficientCreditsError"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useApp } from "@/app/context/AppContext"
+import ROICalculator from "@/app/components/ROICalculator"
 
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const [hovered, setHovered] = useState(0)
@@ -984,7 +985,12 @@ export default function Dashboard() {
                 {brandCampaigns.map((campaign) => (
                   <div key={campaign.id} className="flex items-center justify-between gap-4 p-3 border border-[#1E1E2E] rounded-xl hover:border-purple-500/30 transition-colors">
                     <div className="min-w-0">
-                      <div className="text-sm font-medium text-[#F8FAFC] truncate">{campaign.title}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm font-medium text-[#F8FAFC] truncate">{campaign.title}</div>
+                        {campaign.roiSavedAt && (
+                          <span className="flex-shrink-0 text-xs bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full">ROI Saved</span>
+                        )}
+                      </div>
                       <div className="text-xs text-[#64748B]">{campaign.niche} · {campaign.platform} · {campaign.status}</div>
                     </div>
                     <button
@@ -997,6 +1003,13 @@ export default function Dashboard() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ROI Calculator — brands only */}
+        {(session?.user as any)?.role === "brand" && (
+          <div className="mt-6">
+            <ROICalculator campaigns={brandCampaigns.map((c: any) => ({ id: c.id, title: c.title }))} />
           </div>
         )}
 

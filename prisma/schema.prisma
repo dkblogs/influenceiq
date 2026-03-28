@@ -184,9 +184,23 @@ model Campaign {
   slots        Int      @default(1)
   minFollowers String   @default("1K")
   location     String   @default("Pan India")
-  status       String   @default("Open")
-  createdAt    DateTime @default(now())
-  applications CampaignApplication[]
+  status             String    @default("Open")
+  roiBudget          Float?
+  roiInfluencers     Int?
+  roiAvgFollowers    Int?
+  roiEngagement      Float?
+  roiNiche           String?
+  roiEstReach        Int?
+  roiEstImpressions  Int?
+  roiCPM             Float?
+  roiEstClicks       Int?
+  roiEstConversions  Int?
+  roiEstRevenue      Float?
+  roiCPA             Float?
+  roiPercent         Float?
+  roiSavedAt         DateTime?
+  createdAt          DateTime  @default(now())
+  applications       CampaignApplication[]
 }
 
 model CampaignApplication {
